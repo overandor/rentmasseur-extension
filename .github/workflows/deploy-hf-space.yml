@@ -31,7 +31,7 @@ jobs:
       - name: Sync files to HF space
         run: |
           rm -rf hf-space/*
-          cp -r . hf-space/
+          rsync -av --exclude='hf-space' --exclude='.git' --exclude='.env' --exclude='debug' . hf-space/
           rm -rf hf-space/.git
           rm -rf hf-space/.env
           rm -rf hf-space/debug
