@@ -38,3 +38,11 @@ debug/
 # Content generator runtime (committed by CI/CD, not local)
 content/content_history.json
 content/daily_summary.json
+
+# Runtime metrics + receipts (generated at runtime, not committed)
+content/metrics_ingest.jsonl
+content/metrics/latest_metrics.json
+receipts/hf_action_*.json
+
+# Test binary
+cpp_os_server_test
