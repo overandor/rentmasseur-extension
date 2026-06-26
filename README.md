@@ -7,6 +7,7 @@ Chrome extension that adds a booking panel to RentMasseur.com profile pages, bac
 1. **CI/CD checker** (`checker.py` + `.github/workflows/availability.yml`) runs on a schedule and scrapes the configured provider list, recording observed availability in `availability.json`.
 2. **API server** (`server.py`) serves `availability.json` over `/api/availability/{slug}` and hosts `widget.html` / `verify.html` landing pages.
 3. **Chrome extension** (`content.js`) injects the booking panel, reads the slug from the RentMasseur URL, and fetches the latest availability from the API server.
+4. **Optimizer automation** (`rentmasseur_optimizer.py`, `rentmasseur_core.py`, `rentmasseur_coordinator.py`, `rentmasseur_availability.py`, `intent_router.py`) uses Selenium to log in, keep your own availability set to 24/7, and generate/update your profile bio via Groq LLM.
 
 ## Install the extension
 
@@ -39,6 +40,28 @@ For CI/CD mock mode:
 python3 checker.py --mock --output availability.json
 ```
 
+## Run the optimizer (logged-in profile automation)
+
+Requires a `.env` file with your RentMasseur and Groq credentials (see `.env.example`).
+
+```bash
+cp .env.example .env
+# edit .env with your credentials
+python3 rentmasseur_optimizer.py
+```
+
+Keep availability 24/7 only:
+
+```bash
+python3 rentmasseur_availability.py
+```
+
+Run the coordinator with intent routing to pick top bio strategies:
+
+```bash
+python3 rentmasseur_coordinator.py --pick-best --top-n 5
+```
+
 ## What it does
 
 - Detects when you view a masseur profile on `rentmasseur.com`
@@ -67,9 +90,16 @@ Click the extension icon in the toolbar → set your **Booking Server URL** (def
 | `availability.json` | Latest observed availability |
 | `server.py` | FastAPI availability + booking landing server |
 | `.github/workflows/availability.yml` | GitHub Actions CI/CD workflow |
+| `rentmasseur_optimizer.py` | Full optimizer: availability + bio update |
+| `rentmasseur_availability.py` | Standalone 24/7 availability keeper |
+| `rentmasseur_coordinator.py` | Strategy coordinator with intent routing |
+| `rentmasseur_core.py` | Shared Selenium driver, login, bio utilities |
+| `intent_router.py` | Groq-based strategy selection |
+| `.env.example` | Required environment variables |
 
 ## Requirements
 
 - API server must be running on the configured URL
 - Chrome 88+ (Manifest V3)
 - Python 3.11+ with `requests`, `beautifulsoup4`, `fastapi`, `uvicorn`
+- For optimizer automation: `selenium`, `python-dotenv`, `playwright`, and a Groq API key
