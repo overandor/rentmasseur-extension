@@ -41,6 +41,8 @@ jobs:
           echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> hf-space/.env
           echo "GROQ_MODEL=llama-3.3-70b-versatile" >> hf-space/.env
           echo "HF_SPACE_NAME=${HF_SPACE_NAME}" >> hf-space/.env
+          echo "GH_TOKEN=${{ secrets.GH_PAT }}" >> hf-space/.env
+          echo "GH_REPO=overandor/rentmasseur-extension" >> hf-space/.env
 
       - name: Push to HF space
         run: |

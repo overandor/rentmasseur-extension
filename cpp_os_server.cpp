@@ -17,6 +17,14 @@
  *   GET /api/competitors — competitor intelligence
  *   POST /api/ingest   — ingest metrics
  *   GET /api/run/{cmd} — trigger command (orchestrator, availability, ga-rl)
+ *   GET /api/cicd/list — list all GitHub Actions workflows
+ *   GET /api/cicd/trigger/{workflow} — trigger a GitHub Actions workflow
+ *   GET /api/cicd/status/{run_id} — get status of a specific run
+ *   GET /api/cicd/runs — list recent workflow runs
+ *   GET /api/rotate/{type} — trigger rotator engine (bio, photo, price, interview, blog)
+ *   GET /api/rotator/report — full rotator performance report
+ *   GET /api/logs — recent server logs
+ *   POST /api/config — update system configuration
  */
 
 #include <iostream>
@@ -36,8 +44,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dirent.h>
+#include <iomanip>
 
 static const int PORT = 7860;
+static std::string GH_TOKEN = std::getenv("GH_TOKEN") ? std::getenv("GH_TOKEN") : "";
+static std::string GH_REPO = std::getenv("GH_REPO") ? std::getenv("GH_REPO") : "overandor/rentmasseur-extension";
+static std::string HF_TOKEN = std::getenv("HF_TOKEN") ? std::getenv("HF_TOKEN") : "";
+static std::string HF_SPACE = std::getenv("HF_SPACE_NAME") ? std::getenv("HF_SPACE_NAME") : "josephrw/rentmasseur-optimizer";
 static const std::string CONTENT_DIR = "./content";
 static const std::string AVAILABILITY_FILE = "./availability.json";
 
@@ -134,6 +147,28 @@ static std::string run_command(const std::string& cmd) {
     }
     pclose(pipe);
     return result;
+}
+
+static std::string gh_api(const std::string& method, const std::string& endpoint, const std::string& body = "") {
+    std::string cmd = "curl -s -X " + method + "";
+    cmd += " -H \"Authorization: Bearer " + GH_TOKEN + "\"";
+    cmd += " -H \"Accept: application/vnd.github+json\"";
+    cmd += " -H \"X-GitHub-Api-Version: 2022-11-28\"";
+    if (!body.empty()) {
+        cmd += " -d '" + body + "'";
+    }
+    cmd += " https://api.github.com/repos/" + GH_REPO + "/" + endpoint;
+    return run_command(cmd);
+}
+
+static std::string url_encode(const std::string& s) {
+    std::string out;
+    for (char c : s) {
+        if (c == ' ') out += "%20";
+        else if (c == '/') out += "%2F";
+        else out += c;
+    }
+    return out;
 }
 
 static std::string landing_page() {
@@ -307,11 +342,37 @@ pre {
         <div class="sub">Continuous optimization</div>
     </div>
 </div>
-<div class="actions">
-    <a href="/api/run/ga-rl" class="btn glow">Train GA+RL</a>
-    <a href="/api/run/orchestrator" class="btn">Run Orchestrator</a>
-    <a href="/api/run/availability" class="btn">Run Availability</a>
-    <a href="/api/report" class="btn">JSON Report</a>
+<div class="section">
+    <h2>Pipeline Control</h2>
+    <div class="glass" style="padding: 20px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+            <a href="/api/run/ga-rl" class="btn glow">Train GA+RL</a>
+            <a href="/api/run/orchestrator" class="btn">Run Orchestrator</a>
+            <a href="/api/run/availability" class="btn">Run Availability</a>
+            <a href="/api/rotate/bio" class="btn">Rotate Bio</a>
+            <a href="/api/rotate/photo" class="btn">Rotate Photo</a>
+            <a href="/api/rotate/price" class="btn">Rotate Price</a>
+            <a href="/api/rotate/interview" class="btn">Rotate Interview</a>
+            <a href="/api/rotate/blog" class="btn">Rotate Blog</a>
+            <a href="/api/rotator/report" class="btn">Rotator Report</a>
+        </div>
+    </div>
+</div>
+<div class="section">
+    <h2>CI/CD Control <span class="badge">GitHub Actions</span></h2>
+    <div class="glass" style="padding: 20px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px;">
+            <a href="/api/cicd/list" class="btn">List Workflows</a>
+            <a href="/api/cicd/runs" class="btn">Recent Runs</a>
+            <a href="/api/cicd/trigger/deploy-hf-space.yml" class="btn glow">Deploy HF Space</a>
+            <a href="/api/cicd/trigger/master-rotator.yml" class="btn">Master Rotator</a>
+            <a href="/api/cicd/trigger/availability-keeper.yml" class="btn">Availability Keeper</a>
+            <a href="/api/cicd/trigger/auto-bio-update.yml" class="btn">Auto Bio Update</a>
+            <a href="/api/cicd/trigger/daily-content.yml" class="btn">Daily Content</a>
+            <a href="/api/cicd/trigger/weekly-report.yml" class="btn">Weekly Report</a>
+        </div>
+        <pre id="cicd">Loading CI/CD status...</pre>
+    </div>
 </div>
 <div class="section">
     <h2>Operating System State</h2>
@@ -319,8 +380,36 @@ pre {
         <pre id="state">Loading...</pre>
     </div>
 </div>
+<div class="section">
+    <h2>API Reference</h2>
+    <div class="glass" style="padding: 20px;">
+        <pre style="font-size:11px;line-height:1.6;">
+GET  /                      Landing page (this UI)
+GET  /health                Health check
+GET  /api/health            Health check (JSON)
+GET  /api/report            Full OS report
+GET  /api/bios              Bio candidates
+GET  /api/competitors       Competitor intelligence
+POST /api/ingest            Ingest metrics (JSON body)
+GET  /api/run/ga-rl         Train GA+RL optimizer
+GET  /api/run/orchestrator  Run orchestrator pipeline
+GET  /api/run/availability  Run availability keeper
+GET  /api/rotate/bio        Rotate bio content
+GET  /api/rotate/photo      Rotate photo
+GET  /api/rotate/price      Rotate price
+GET  /api/rotate/interview  Rotate interview content
+GET  /api/rotate/blog       Rotate blog content
+GET  /api/rotator/report    Full rotator performance report
+GET  /api/cicd/list         List GitHub Actions workflows
+GET  /api/cicd/runs         List recent workflow runs
+GET  /api/cicd/trigger/{wf} Trigger a workflow by filename
+GET  /api/cicd/status/{id}  Get status of a specific run
+POST /api/config            Update system config (JSON body)
+        </pre>
+    </div>
+</div>
 <div class="footer">
-    RentMasseur C++ OS · Hugging Face Space · Vercel · GitHub Actions
+    RentMasseur C++ OS · Hugging Face Space · Vercel · GitHub Actions · Full CI/CD Control
 </div>
 <script>
 fetch('/api/report').then(r => r.json()).then(data => {
@@ -328,6 +417,11 @@ fetch('/api/report').then(r => r.json()).then(data => {
     document.getElementById('revenue').textContent = '$' + (data.ga_state?.best_revenue || 0).toFixed(0);
     document.getElementById('bios').textContent = data.content_counts?.bios || 0;
     document.getElementById('generations').textContent = data.ga_state?.generation || 0;
+});
+fetch('/api/cicd/runs').then(r => r.json()).then(data => {
+    document.getElementById('cicd').textContent = JSON.stringify(data, null, 2);
+}).catch(e => {
+    document.getElementById('cicd').textContent = 'CI/CD runs loading...';
 });
 </script>
 </body>
@@ -391,6 +485,47 @@ static void handle_client(int client_socket) {
             run_command("python3 rentmasseur_availability.py --once --headless true");
         }).detach();
         response = "{\"status\":\"started\",\"command\":\"availability\"}";
+    } else if (path.rfind("/api/rotate/", 0) == 0) {
+        std::string rotate_type = path.substr(12);
+        std::string cmd = "./rotator_engine --rotate " + rotate_type;
+        std::thread([cmd]() { run_command(cmd); }).detach();
+        response = "{\"status\":\"started\",\"command\":\"rotate " + rotate_type + "\"}";
+    } else if (path == "/api/rotator/report") {
+        response = run_command("./rotator_engine --report");
+        if (response.empty() || response == "error") response = "{\"rotator\":\"offline\",\"content_dir\":\"" + CONTENT_DIR + "\"}";
+    } else if (path == "/api/cicd/list") {
+        if (GH_TOKEN.empty()) {
+            response = "{\"error\":\"GH_TOKEN not set\"}";
+        } else {
+            response = gh_api("GET", "actions/workflows");
+        }
+    } else if (path == "/api/cicd/runs") {
+        if (GH_TOKEN.empty()) {
+            response = "{\"error\":\"GH_TOKEN not set\"}";
+        } else {
+            response = gh_api("GET", "actions/runs?per_page=10");
+        }
+    } else if (path.rfind("/api/cicd/trigger/", 0) == 0) {
+        std::string wf = path.substr(18);
+        if (GH_TOKEN.empty()) {
+            response = "{\"error\":\"GH_TOKEN not set\"}";
+        } else {
+            std::string encoded = url_encode(wf);
+            response = gh_api("POST", "actions/workflows/" + encoded + "/dispatches", "{\"ref\":\"main\"}");
+            if (response.empty()) response = "{\"status\":\"triggered\",\"workflow\":\"" + wf + "\"}";
+        }
+    } else if (path.rfind("/api/cicd/status/", 0) == 0) {
+        std::string run_id = path.substr(16);
+        if (GH_TOKEN.empty()) {
+            response = "{\"error\":\"GH_TOKEN not set\"}";
+        } else {
+            response = gh_api("GET", "actions/runs/" + run_id);
+        }
+    } else if (path == "/api/config" && method == "POST") {
+        std::string config_path = CONTENT_DIR + "/system_config.json";
+        std::ofstream f(config_path);
+        if (f) f << body;
+        response = "{\"status\":\"saved\",\"config\":\"" + json_escape(body) + "\"}";
     } else {
         response = "{\"error\":\"not found\"}";
         response = http_response(404, content_type, response);
