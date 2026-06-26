@@ -86,10 +86,17 @@ jobs:
           git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" commit -m "Deploy receipt $(date -u +%Y-%m-%d-%H:%M)" || true
           git push || true
 
-      - name: Verify HF Space health
+      - name: Verify HF Space health (hard pass/fail)
         run: |
-          sleep 20
+          sleep 30
           echo "Checking HF Space runtime..."
-          curl -s https://huggingface.co/api/spaces/${HF_SPACE_NAME}/runtime || true
-          echo ""
-          curl -s https://josephrw-rentmasseur-optimizer.hf.space/api/health || true
+          RUNTIME=$(curl -s -o /dev/null -w "%{http_code}" https://huggingface.co/api/spaces/${HF_SPACE_NAME}/runtime)
+          echo "HF API status: $RUNTIME"
+          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" https://josephrw-rentmasseur-optimizer.hf.space/api/health)
+          echo "HF Space health endpoint: $HEALTH"
+          if [ "$HEALTH" != "200" ]; then
+            echo "FAIL: HF Space health endpoint returned $HEALTH, expected 200"
+            curl -s https://josephrw-rentmasseur-optimizer.hf.space/api/health || true
+            exit 1
+          fi
+          echo "PASS: HF Space is live and healthy"
