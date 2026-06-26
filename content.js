@@ -5,6 +5,7 @@
   let panel = null;
 
   const BOOKING_SERVER = 'http://localhost:3000';
+  const HF_SPACE_API = 'https://josephrw-rentmasseur-optimizer.hf.space/api/ingest';
 
   function getSlugFromPath() {
     const providerMatch = window.location.pathname.match(/\/provider\/([^/]+)/);
@@ -121,6 +122,29 @@
     return div.innerHTML;
   }
 
+  async function sendMetricsToHF(data) {
+    try {
+      const payload = {
+        url: window.location.href,
+        slug: data.slug,
+        name: data.name,
+        location: data.location,
+        rate: data.rate,
+        is_available: data.isAvailable,
+        timestamp: new Date().toISOString(),
+        source: 'chrome_extension'
+      };
+      await fetch(HF_SPACE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      console.log('[RM] Metrics sent to HF Space');
+    } catch (e) {
+      console.warn('[RM] Could not send metrics to HF Space:', e);
+    }
+  }
+
   async function init() {
     if (window.location.pathname === '/' || window.location.pathname === '/home') return;
 
@@ -129,6 +153,9 @@
 
     const slug = providerSlug(data);
     const availability = await fetchAvailability(slug);
+
+    // Send first-party metrics to HF Space (user is logged in, no automation)
+    sendMetricsToHF(data);
 
     setTimeout(() => {
       createPanel(data, availability);
