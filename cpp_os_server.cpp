@@ -354,7 +354,7 @@ static void handle_client(int client_socket) {
     if (path == "/" || path == "/index.html") {
         response = landing_page();
         content_type = "text/html";
-    } else if (path == "/api/health") {
+    } else if (path == "/health" || path == "/api/health") {
         response = "{\"status\":\"ok\",\"service\":\"rentmasseur-cpp-os\",\"timestamp\":\"" + iso_timestamp() + "\"}";
     } else if (path == "/api/report") {
         std::ostringstream ss;
