@@ -87,17 +87,31 @@ jobs:
           git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" commit -m "Deploy receipt $(date -u +%Y-%m-%d-%H:%M)" || true
           git push || true
 
-      - name: Verify HF Space health (hard pass/fail)
+      - name: Verify HF Space health (hard pass/fail with retries)
         run: |
-          sleep 30
-          echo "Checking HF Space runtime..."
-          RUNTIME=$(curl -s -o /dev/null -w "%{http_code}" https://huggingface.co/api/spaces/${HF_SPACE_NAME}/runtime)
-          echo "HF API status: $RUNTIME"
-          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" https://josephrw-rentmasseur-optimizer.hf.space/api/health)
-          echo "HF Space health endpoint: $HEALTH"
-          if [ "$HEALTH" != "200" ]; then
-            echo "FAIL: HF Space health endpoint returned $HEALTH, expected 200"
-            curl -s https://josephrw-rentmasseur-optimizer.hf.space/api/health || true
-            exit 1
-          fi
-          echo "PASS: HF Space is live and healthy"
+          # Derive public HF Space URL from HF_SPACE_NAME (owner/space -> owner-space.hf.space)
+          SPACE_URL=$(echo "${HF_SPACE_NAME}" | sed 's|/|-|g')
+          HEALTH_URL="https://${SPACE_URL}.hf.space/api/health"
+          echo "HF Space: ${HF_SPACE_NAME}"
+          echo "Health URL: ${HEALTH_URL}"
+
+          # Wait for HF Docker build + startup (can take 60-180s)
+          sleep 90
+
+          for i in 1 2 3 4 5; do
+            echo "Health check attempt $i..."
+            HEALTH=$(curl -s -o /tmp/health_response -w "%{http_code}" --max-time 30 "${HEALTH_URL}")
+            echo "HF Space health endpoint: $HEALTH"
+            if [ "$HEALTH" == "200" ]; then
+              echo "PASS: HF Space is live and healthy"
+              cat /tmp/health_response
+              exit 0
+            fi
+            echo "Response body:"
+            cat /tmp/health_response || true
+            echo "Waiting 60s before retry..."
+            sleep 60
+          done
+
+          echo "FAIL: HF Space health endpoint did not return 200 after 5 attempts"
+          exit 1
