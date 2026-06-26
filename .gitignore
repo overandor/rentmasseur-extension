@@ -34,3 +34,7 @@ bio_history.json
 bios/
 debug/
 .env
+
+# Content generator runtime (committed by CI/CD, not local)
+content/content_history.json
+content/daily_summary.json

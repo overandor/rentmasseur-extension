@@ -77,6 +77,26 @@ You can also run the keeper in a tight local loop:
 python3 rentmasseur_availability.py --interval 1
 ```
 
+## Daily content generation (bios, blog posts, interview questions)
+
+The repo includes `.github/workflows/daily-content.yml` which runs every day at 6:00 UTC and generates:
+
+- **30 bios** — one per strategy, optimized for conversion
+- **30 blog posts** — SEO-optimized, 500-800 words each
+- **30 interview question sets** — 10 Q&A per strategy for PR use
+- **Mass analysis report** — ranks the best versions across all strategies
+
+All content is committed to the `content/` directory automatically.
+
+Run locally:
+
+```bash
+python3 content_generator.py                    # everything
+python3 content_generator.py --bios-only        # bios only
+python3 content_generator.py --blogs-only       # blog posts only
+python3 content_generator.py --questions-only   # interview questions only
+```
+
 ## What it does
 
 - Detects when you view a masseur profile on `rentmasseur.com`
@@ -110,6 +130,7 @@ Click the extension icon in the toolbar → set your **Booking Server URL** (def
 | `rentmasseur_coordinator.py` | Strategy coordinator with intent routing |
 | `rentmasseur_core.py` | Shared Selenium driver, login, bio utilities |
 | `intent_router.py` | Groq-based strategy selection |
+| `content_generator.py` | Daily bios, blog posts, interview questions + mass analysis |
 | `.env.example` | Required environment variables |
 
 ## Requirements

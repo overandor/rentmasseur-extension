@@ -42,3 +42,11 @@ jobs:
       - name: Run 24/7 availability keeper
         run: |
           python3 rentmasseur_availability.py --once --headless true
+
+      - name: Upload debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: debug/
+          retention-days: 7

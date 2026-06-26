@@ -237,173 +237,243 @@ def scan_page(driver: webdriver.Chrome) -> None:
     logger.info("=== DOM SCAN END (%d elements) ===", len(elements))
 
 
-def brute_force_login(driver: webdriver.Chrome) -> bool:
-    """Log in using brute-force DOM discovery via JavaScript."""
+def _is_captcha_page(driver: webdriver.Chrome) -> bool:
+    """Check if the current page is a CrowdSec captcha or anti-bot challenge."""
+    try:
+        page_text = driver.execute_script("return document.body ? document.body.innerText.slice(0, 2000) : '';") or ""
+        page_src = driver.execute_script("return document.documentElement ? document.documentElement.outerHTML.slice(0, 3000) : '';") or ""
+        indicators = [
+            "crowdsec", "captcha", "checking your browser", "please wait",
+            "ddos protection", "access denied", "are you human", "verify you are",
+            "challenge", "cloudflare", "just a moment", "enable javascript",
+        ]
+        text_lower = page_text.lower() + page_src.lower()
+        return any(ind in text_lower for ind in indicators)
+    except Exception:
+        return False
+
+
+def brute_force_login(driver: webdriver.Chrome, max_retries: int = 5) -> bool:
+    """Log in using brute-force DOM discovery via JavaScript with retry logic."""
     if not RENTMASSEUR_USERNAME or not RENTMASSEUR_PASSWORD:
         logger.error("Missing credentials")
         return False
 
-    try:
-        logger.info("Navigating to login page: %s", LOGIN_URL)
-        driver.set_page_load_timeout(60)
-        driver.get(LOGIN_URL)
-        time.sleep(3)  # Wait for React/Next.js hydration
+    for attempt in range(1, max_retries + 1):
+        try:
+            logger.info("Login attempt %d/%d — navigating to %s", attempt, max_retries, LOGIN_URL)
+            driver.set_page_load_timeout(90)
+            driver.get(LOGIN_URL)
 
-        # Dismiss cookie/GPS banners and other popups
-        dismiss_popups(driver)
-        time.sleep(1)
+            # Wait for SPA hydration with increasing delays
+            wait_time = 5 + (attempt * 3)
+            logger.info("Waiting %ds for page to render...", wait_time)
+            time.sleep(wait_time)
 
-        # Brute-force: ask the browser to find login fields for us
-        result = driver.execute_script("""
-            const pwd = document.querySelector('input[type=\"password\"]');
-            if (!pwd) return {error: 'no_password'};
-            
-            // Scan ALL inputs on the page, then find text/email ones that precede the password
-            const allInputs = Array.from(document.querySelectorAll('input'));
-            const candidates = allInputs.filter(i => 
-                i !== pwd && (i.type === 'text' || i.type === 'email' || i.type === 'tel')
-            );
-            
-            // Prefer the candidate that is closest (preceding) in DOM order
-            let user = null;
-            let bestDist = Infinity;
-            for (const cand of candidates) {
-                const pos = pwd.compareDocumentPosition(cand);
-                if (pos & Node.DOCUMENT_POSITION_PRECEDING) {
-                    // Heuristic: measure "distance" by counting elements between them
-                    let dist = 0;
-                    let el = cand;
-                    while (el && el !== pwd) {
-                        el = el.nextElementSibling || el.parentElement;
-                        dist++;
-                        if (dist > 100) break;
-                    }
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        user = cand;
+            # Check for captcha / anti-bot page
+            if _is_captcha_page(driver):
+                logger.warning("Captcha/anti-bot page detected on attempt %d — refreshing", attempt)
+                if attempt < max_retries:
+                    time.sleep(10)
+                    driver.refresh()
+                    time.sleep(10)
+                    continue
+                else:
+                    logger.error("Captcha blocking login after %d attempts", max_retries)
+                    _dump_debug(driver, "login_captcha_final")
+                    return False
+
+            # Dismiss cookie/GPS banners and other popups
+            dismiss_popups(driver)
+            time.sleep(2)
+
+            # Wait for password field to appear (SPA may still be hydrating)
+            pwd_field = _find_element(driver, By.CSS_SELECTOR, 'input[type="password"]', timeout=15)
+            if not pwd_field:
+                logger.warning("No password field found on attempt %d — page may still be loading", attempt)
+                # Check if page has any inputs at all
+                input_count = driver.execute_script("return document.querySelectorAll('input').length;") or 0
+                logger.info("Page has %d input elements", input_count)
+                if input_count == 0:
+                    logger.warning("Page has 0 inputs — likely blocked or not rendered")
+                    _dump_debug(driver, f"login_no_inputs_attempt{attempt}")
+                    if attempt < max_retries:
+                        time.sleep(15)
+                        continue
+                else:
+                    _dump_debug(driver, f"login_no_password_attempt{attempt}")
+                    if attempt < max_retries:
+                        time.sleep(10)
+                        continue
+
+            # Brute-force: ask the browser to find login fields for us
+            result = driver.execute_script("""
+                const pwd = document.querySelector('input[type=\"password\"]');
+                if (!pwd) return {error: 'no_password'};
+                
+                // Scan ALL inputs on the page, then find text/email ones that precede the password
+                const allInputs = Array.from(document.querySelectorAll('input'));
+                const candidates = allInputs.filter(i => 
+                    i !== pwd && (i.type === 'text' || i.type === 'email' || i.type === 'tel')
+                );
+                
+                // Prefer the candidate that is closest (preceding) in DOM order
+                let user = null;
+                let bestDist = Infinity;
+                for (const cand of candidates) {
+                    const pos = pwd.compareDocumentPosition(cand);
+                    if (pos & Node.DOCUMENT_POSITION_PRECEDING) {
+                        // Heuristic: measure "distance" by counting elements between them
+                        let dist = 0;
+                        let el = cand;
+                        while (el && el !== pwd) {
+                            el = el.nextElementSibling || el.parentElement;
+                            dist++;
+                            if (dist > 100) break;
+                        }
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            user = cand;
+                        }
                     }
                 }
-            }
-            if (!user && candidates.length > 0) user = candidates[0];
-            if (!user) return {error: 'no_username'};
-            
-            // Find submit button: search form first, then ancestor chain, then whole doc
-            let btn = null;
-            const form = pwd.closest('form');
-            if (form) {
-                btn = form.querySelector('button[type=\"submit\"]') || form.querySelector('input[type=\"submit\"]');
+                if (!user && candidates.length > 0) user = candidates[0];
+                if (!user) return {error: 'no_username'};
+                
+                // Find submit button: search form first, then ancestor chain, then whole doc
+                let btn = null;
+                const form = pwd.closest('form');
+                if (form) {
+                    btn = form.querySelector('button[type=\"submit\"]') || form.querySelector('input[type=\"submit\"]');
+                    if (!btn) {
+                        const fb = Array.from(form.querySelectorAll('button'));
+                        btn = fb.find(b => /login|sign.in|submit/i.test(b.innerText)) || fb[0];
+                    }
+                }
                 if (!btn) {
-                    const fb = Array.from(form.querySelectorAll('button'));
-                    btn = fb.find(b => /login|sign.in|submit/i.test(b.innerText)) || fb[0];
+                    // Walk up ancestors looking for a button
+                    let ancestor = pwd.parentElement;
+                    for (let i = 0; i < 5 && ancestor && !btn; i++) {
+                        const ab = Array.from(ancestor.querySelectorAll('button'));
+                        btn = ab.find(b => /login|sign.in|submit/i.test(b.innerText)) || ab[0];
+                        ancestor = ancestor.parentElement;
+                    }
                 }
-            }
-            if (!btn) {
-                // Walk up ancestors looking for a button
-                let ancestor = pwd.parentElement;
-                for (let i = 0; i < 5 && ancestor && !btn; i++) {
-                    const ab = Array.from(ancestor.querySelectorAll('button'));
-                    btn = ab.find(b => /login|sign.in|submit/i.test(b.innerText)) || ab[0];
-                    ancestor = ancestor.parentElement;
+                if (!btn) {
+                    // Last resort: any button on page that looks like login
+                    const allBtns = Array.from(document.querySelectorAll('button, [role=\"button\"]'));
+                    btn = allBtns.find(b => /login|sign.in|submit/i.test(b.innerText));
                 }
-            }
-            if (!btn) {
-                // Last resort: any button on page that looks like login
-                const allBtns = Array.from(document.querySelectorAll('button, [role=\"button\"]'));
-                btn = allBtns.find(b => /login|sign.in|submit/i.test(b.innerText));
-            }
-            if (!btn) return {error: 'no_button'};
-            
-            // Return identifying attributes so Selenium can locate them
-            function attrs(el) {
-                const id = el.id ? '#' + el.id : '';
-                const cls = (el.className && typeof el.className === 'string')
-                    ? '.' + el.className.split(' ').filter(Boolean).join('.')
-                    : '';
-                const name = el.name ? '[name=' + el.name + ']' : '';
-                const type = el.type ? '[type=' + el.type + ']' : '';
+                if (!btn) return {error: 'no_button'};
+                
+                // Return identifying attributes so Selenium can locate them
+                function attrs(el) {
+                    const id = el.id ? '#' + el.id : '';
+                    const cls = (el.className && typeof el.className === 'string')
+                        ? '.' + el.className.split(' ').filter(Boolean).join('.')
+                        : '';
+                    const name = el.name ? '[name=' + el.name + ']' : '';
+                    const type = el.type ? '[type=' + el.type + ']' : '';
+                    return {
+                        tag: el.tagName.toLowerCase(),
+                        id: el.id || '',
+                        name: el.name || '',
+                        type: el.type || '',
+                        class: (el.className && typeof el.className === 'string') 
+                            ? el.className.split(' ').filter(Boolean).join(' ') 
+                            : '',
+                        placeholder: el.placeholder || '',
+                        selector: el.tagName.toLowerCase() + id + name + type + cls.split('.')[0],
+                    };
+                }
                 return {
-                    tag: el.tagName.toLowerCase(),
-                    id: el.id || '',
-                    name: el.name || '',
-                    type: el.type || '',
-                    class: (el.className && typeof el.className === 'string') 
-                        ? el.className.split(' ').filter(Boolean).join(' ') 
-                        : '',
-                    placeholder: el.placeholder || '',
-                    selector: el.tagName.toLowerCase() + id + name + type + cls.split('.')[0],
+                    user: attrs(user),
+                    pwd: attrs(pwd),
+                    btn: attrs(btn),
                 };
-            }
-            return {
-                user: attrs(user),
-                pwd: attrs(pwd),
-                btn: attrs(btn),
-            };
-        """)
-        
-        if isinstance(result, dict) and 'error' in result:
-            logger.error("Brute-force login discovery failed: %s", result['error'])
+            """)
+            
+            if isinstance(result, dict) and 'error' in result:
+                logger.warning("Login discovery failed on attempt %d: %s", attempt, result['error'])
+                scan_page(driver)
+                _dump_debug(driver, f"login_brute_force_{result['error']}_attempt{attempt}")
+                if attempt < max_retries:
+                    time.sleep(10)
+                    continue
+                return False
+            
+            logger.info("Discovered login form: user=%s, pwd=%s, btn=%s", 
+                        result['user']['selector'], result['pwd']['selector'], result['btn']['selector'])
+            
+            # Build Selenium selectors from discovered attributes
+            def build_selector(info: dict) -> str:
+                tag = info['tag']
+                if info['id']: return f"#{info['id']}"
+                if info['name']: return f"{tag}[name='{info['name']}']"
+                if info['placeholder']: return f"{tag}[placeholder='{info['placeholder']}']"
+                if info['class']: return f"{tag}.{info['class'].split()[0]}"
+                return tag
+            
+            user_sel = build_selector(result['user'])
+            pwd_sel  = build_selector(result['pwd'])
+            btn_sel  = build_selector(result['btn'])
+            
+            username_field = driver.find_element(By.CSS_SELECTOR, user_sel)
+            password_field = driver.find_element(By.CSS_SELECTOR, pwd_sel)
+            submit_btn     = driver.find_element(By.CSS_SELECTOR, btn_sel)
+            
+            username_field.clear()
+            username_field.send_keys(RENTMASSEUR_USERNAME)
+            password_field.clear()
+            password_field.send_keys(RENTMASSEUR_PASSWORD)
+            logger.info("Filled credentials into %s / %s", user_sel, pwd_sel)
+            
+            driver.execute_script("arguments[0].click();", submit_btn)
+            logger.info("Clicked submit: %s", btn_sel)
+            time.sleep(5)
+            
+            # Verify login success
+            dismiss_popups(driver)
+            current_url = driver.current_url
+            if LOGIN_URL not in current_url:
+                logger.info("Login successful (redirected to %s)", current_url)
+                return True
+            
+            # Check for error messages
+            error_text = driver.execute_script("""
+                const el = document.querySelector('[role=alert], .error, .form-error, .notification');
+                return el ? el.innerText : '';
+            """)
+            if error_text:
+                logger.error("Login page shows error: %s", error_text.strip())
+            
+            logger.warning("Still on login page after submit (attempt %d)", attempt)
             scan_page(driver)
-            _dump_debug(driver, f"login_brute_force_{result['error']}")
-            return False
-        
-        logger.info("Discovered login form: user=%s, pwd=%s, btn=%s", 
-                    result['user']['selector'], result['pwd']['selector'], result['btn']['selector'])
-        
-        # Build Selenium selectors from discovered attributes
-        def build_selector(info: dict) -> str:
-            tag = info['tag']
-            if info['id']: return f"#{info['id']}"
-            if info['name']: return f"{tag}[name='{info['name']}']"
-            if info['placeholder']: return f"{tag}[placeholder='{info['placeholder']}']"
-            if info['class']: return f"{tag}.{info['class'].split()[0]}"
-            return tag
-        
-        user_sel = build_selector(result['user'])
-        pwd_sel  = build_selector(result['pwd'])
-        btn_sel  = build_selector(result['btn'])
-        
-        username_field = driver.find_element(By.CSS_SELECTOR, user_sel)
-        password_field = driver.find_element(By.CSS_SELECTOR, pwd_sel)
-        submit_btn     = driver.find_element(By.CSS_SELECTOR, btn_sel)
-        
-        username_field.clear()
-        username_field.send_keys(RENTMASSEUR_USERNAME)
-        password_field.clear()
-        password_field.send_keys(RENTMASSEUR_PASSWORD)
-        logger.info("Filled credentials into %s / %s", user_sel, pwd_sel)
-        
-        driver.execute_script("arguments[0].click();", submit_btn)
-        logger.info("Clicked submit: %s", btn_sel)
-        time.sleep(3)
-        
-        # Verify login success
-        dismiss_popups(driver)
-        current_url = driver.current_url
-        if LOGIN_URL not in current_url:
-            logger.info("Login successful (redirected to %s)", current_url)
-            return True
-        
-        # Check for error messages
-        error_text = driver.execute_script("""
-            const el = document.querySelector('[role=alert], .error, .form-error, .notification');
-            return el ? el.innerText : '';
-        """)
-        if error_text:
-            logger.error("Login page shows error: %s", error_text.strip())
-        
-        logger.error("Still on login page after submit")
-        scan_page(driver)
-        _dump_debug(driver, "login_still_on_page")
-        return False
-        
-    except TimeoutException:
-        logger.error("Login page load timed out")
-        _dump_debug(driver, "login_timeout")
-        return False
-    except WebDriverException as e:
-        logger.error("WebDriver error during login: %s", e)
-        _dump_debug(driver, "login_webdriver_error")
-        return False
+            _dump_debug(driver, f"login_still_on_page_attempt{attempt}")
+            if attempt < max_retries:
+                time.sleep(10)
+                continue
+            
+        except TimeoutException:
+            logger.warning("Login page load timed out on attempt %d", attempt)
+            _dump_debug(driver, f"login_timeout_attempt{attempt}")
+            if attempt < max_retries:
+                time.sleep(15)
+                continue
+        except WebDriverException as e:
+            logger.warning("WebDriver error on attempt %d: %s", attempt, e)
+            _dump_debug(driver, f"login_webdriver_error_attempt{attempt}")
+            if attempt < max_retries:
+                time.sleep(15)
+                continue
+        except Exception as e:
+            logger.warning("Unexpected error on attempt %d: %s", attempt, e)
+            if attempt < max_retries:
+                time.sleep(15)
+                continue
+    
+    logger.error("Login failed after %d attempts", max_retries)
+    return False
 
 
 def login(driver: webdriver.Chrome) -> bool:
