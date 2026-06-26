@@ -1,0 +1,574 @@
+#!/usr/bin/env python3
+"""
+RentMasseur Production Pipeline — combines all real systems into one command.
+
+1. Live scrape: real competitor availability from rentmasseur.com (no mock)
+2. AGI train: C++ MLP trained on 2,723 real bios
+3. AGI generate: 100K candidates via C++ engine
+4. AGI score + evolve + select: GA optimization
+5. Groq intent router: pick top strategies based on time/season
+6. Groq LLM: generate bios for top strategies
+7. Merge pools: combine AGI + Groq candidates
+8. Selenium: login → set 24/7 availability → apply best bio to live profile
+9. Receipt ledger: SHA-256 chained proof for every action
+10. Save: all results, bios, stats, receipts
+
+Usage:
+    python3 production_pipeline.py
+    python3 production_pipeline.py --skip-scrape
+    python3 production_pipeline.py --skip-selenium
+    python3 production_pipeline.py --agi-only
+    python3 production_pipeline.py --groq-only
+"""
+
+import argparse
+import hashlib
+import json
+import logging
+import os
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, List, Optional
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
+
+# Paths
+SCRIPT_DIR = Path(__file__).resolve().parent
+WINDSURF_DIR = Path("/Users/alep/Downloads/windsurf-smoke")
+AGI_BINARY = WINDSURF_DIR / "rm_agi" / "rm_agi"
+REAL_BIOS = WINDSURF_DIR / "rm_traffic" / "data" / "real_bios.jsonl"
+AGI_DATA = WINDSURF_DIR / "rm_agi" / "data"
+CANDIDATES_DIR = AGI_DATA / "candidates"
+MODELS_DIR = AGI_DATA / "models"
+RECEIPTS_DIR = AGI_DATA / "receipts"
+PIPELINE_DIR = SCRIPT_DIR / "pipeline_output"
+PIPELINE_DIR.mkdir(exist_ok=True)
+
+for d in [CANDIDATES_DIR, MODELS_DIR, RECEIPTS_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
+
+
+# ─── Receipt Ledger ───
+
+class ReceiptLedger:
+    def __init__(self, path: Path):
+        self.path = path
+        self.entries: List[dict] = []
+        self._load()
+
+    def _load(self):
+        if self.path.exists():
+            for line in self.path.open():
+                if line.strip():
+                    self.entries.append(json.loads(line))
+
+    def add(self, action: str, description: str, data: dict) -> dict:
+        prev_hash = self.entries[-1]["hash"] if self.entries else "0" * 64
+        ts = datetime.now(timezone.utc).isoformat()
+        entry = {
+            "index": len(self.entries),
+            "timestamp": ts,
+            "action": action,
+            "description": description,
+            "data": data,
+            "prev_hash": prev_hash,
+        }
+        entry_str = json.dumps(entry, sort_keys=True)
+        entry["hash"] = hashlib.sha256(entry_str.encode()).hexdigest()
+        self.entries.append(entry)
+        with self.path.open("a") as f:
+            f.write(json.dumps(entry) + "\n")
+        return entry
+
+    def verify(self) -> bool:
+        for i, entry in enumerate(self.entries):
+            prev = self.entries[i - 1]["hash"] if i > 0 else "0" * 64
+            if entry["prev_hash"] != prev:
+                return False
+            check = {k: v for k, v in entry.items() if k != "hash"}
+            check_str = json.dumps(check, sort_keys=True)
+            expected = hashlib.sha256(check_str.encode()).hexdigest()
+            if entry["hash"] != expected:
+                return False
+        return True
+
+    def summary(self) -> dict:
+        return {
+            "total_receipts": len(self.entries),
+            "chain_valid": self.verify(),
+            "last_action": self.entries[-1]["action"] if self.entries else None,
+        }
+
+
+ledger = ReceiptLedger(PIPELINE_DIR / "pipeline_receipts.jsonl")
+
+
+def run_cmd(cmd: List[str], cwd: Optional[Path] = None, timeout: int = 300) -> tuple:
+    logger.info("RUN: %s (cwd=%s)", " ".join(cmd), cwd or ".")
+    try:
+        r = subprocess.run(
+            cmd, cwd=str(cwd) if cwd else None,
+            capture_output=True, text=True, timeout=timeout,
+        )
+        if r.returncode != 0:
+            logger.error("FAIL (%d): %s", r.returncode, r.stderr[:500])
+        return r.returncode, r.stdout, r.stderr
+    except subprocess.TimeoutExpired:
+        logger.error("TIMEOUT after %ds", timeout)
+        return -1, "", "timeout"
+    except Exception as e:
+        logger.error("EXCEPTION: %s", e)
+        return -1, "", str(e)
+
+
+# ─── Stage 1: Live Scrape ───
+
+def stage_live_scrape() -> dict:
+    logger.info("=" * 60)
+    logger.info("STAGE 1: Live competitor availability scrape")
+    logger.info("=" * 60)
+    rc, out, err = run_cmd(
+        ["python3", "checker.py", "--output", "availability.json"],
+        cwd=SCRIPT_DIR, timeout=120,
+    )
+    result = {"stage": "live_scrape", "exit_code": rc, "timestamp": datetime.now(timezone.utc).isoformat()}
+    if rc == 0:
+        data = json.loads((SCRIPT_DIR / "availability.json").read_text())
+        result["mode"] = data.get("mode")
+        result["providers_scraped"] = data.get("count", 0)
+        result["errors"] = len(data.get("errors", []))
+        result["providers"] = [
+            {"slug": p.get("slug"), "status": p.get("status"), "location": p.get("location"), "rate": p.get("rate")}
+            for p in data.get("providers", [])
+        ]
+        logger.info("Scraped %d providers, %d errors, mode=%s", result["providers_scraped"], result["errors"], result["mode"])
+    else:
+        result["error"] = err[:500]
+        logger.error("Live scrape failed: %s", err[:200])
+    ledger.add("live_scrape", "Scraped real competitor availability from rentmasseur.com", result)
+    return result
+
+
+# ─── Stage 2: AGI Train ───
+
+def stage_agi_train(label: str = "reviews", cv: int = 5, walk_forward: bool = True, epochs: int = 100) -> dict:
+    logger.info("=" * 60)
+    logger.info("STAGE 2: Train C++ MLP on 2,723 real bios")
+    logger.info("=" * 60)
+    cmd = [str(AGI_BINARY), "train", str(REAL_BIOS), "--label", label, "--cv", str(cv), "--epochs", str(epochs)]
+    if walk_forward:
+        cmd.append("--walk-forward")
+    rc, out, err = run_cmd(cmd, cwd=WINDSURF_DIR, timeout=600)
+    result = {
+        "stage": "agi_train", "exit_code": rc, "label": label,
+        "corpus": str(REAL_BIOS), "cv": cv, "walk_forward": walk_forward,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    if rc == 0:
+        result["output"] = out[:2000]
+        model_path = MODELS_DIR / "bio_model.bin"
+        result["model_path"] = str(model_path)
+        result["model_exists"] = model_path.exists()
+        if model_path.exists():
+            result["model_size_bytes"] = model_path.stat().st_size
+        logger.info("Training complete, model=%s", result.get("model_path"))
+    else:
+        result["error"] = err[:500]
+        logger.error("Training failed: %s", err[:200])
+    ledger.add("agi_train", "Trained MLP on real bio corpus", result)
+    return result
+
+
+# ─── Stage 3: AGI Generate + Score + Evolve + Select ───
+
+def stage_agi_pipeline(count: int = 100000, generations: int = 100, top: int = 25) -> dict:
+    logger.info("=" * 60)
+    logger.info("STAGE 3: AGI generate %d → score → evolve %d gen → select top %d", count, generations, top)
+    logger.info("=" * 60)
+    candidates_path = CANDIDATES_DIR / "pipeline_candidates.jsonl"
+    scored_path = CANDIDATES_DIR / "pipeline_scored.jsonl"
+    evolved_path = CANDIDATES_DIR / "pipeline_evolved.jsonl"
+    selected_path = CANDIDATES_DIR / f"pipeline_top_{top}.jsonl"
+    model_path = MODELS_DIR / "bio_model.bin"
+
+    # Generate
+    rc1, out1, err1 = run_cmd(
+        [str(AGI_BINARY), "generate", "--count", str(count), "--mode", "speech", "--out", str(candidates_path)],
+        cwd=WINDSURF_DIR, timeout=120,
+    )
+    gen_result = {"exit_code": rc1, "count": count}
+    if rc1 == 0 and candidates_path.exists():
+        gen_result["file_size"] = candidates_path.stat().st_size
+        logger.info("Generated %d candidates", count)
+    else:
+        gen_result["error"] = err1[:300]
+        logger.error("Generate failed")
+        result = {"stage": "agi_pipeline", "generate": gen_result, "exit_code": rc1}
+        ledger.add("agi_pipeline", "AGI generate/score/evolve/select", result)
+        return result
+
+    # Score
+    rc2, out2, err2 = run_cmd(
+        [str(AGI_BINARY), "score", str(candidates_path), "--model", str(model_path), "--out", str(scored_path)],
+        cwd=WINDSURF_DIR, timeout=300,
+    )
+    score_result = {"exit_code": rc2}
+    if rc2 == 0 and scored_path.exists():
+        score_result["file_size"] = scored_path.stat().st_size
+        logger.info("Scored candidates")
+    else:
+        score_result["error"] = err2[:300]
+        logger.error("Score failed")
+
+    # Evolve
+    rc3, out3, err3 = run_cmd(
+        [str(AGI_BINARY), "evolve", str(scored_path), "--population", "10000", "--generations", str(generations), "--elites", "50"],
+        cwd=WINDSURF_DIR, timeout=600,
+    )
+    evolve_result = {"exit_code": rc3, "generations": generations}
+    if rc3 == 0:
+        evolve_result["output"] = out3[:1000]
+        logger.info("Evolution complete")
+    else:
+        evolve_result["error"] = err3[:300]
+        logger.error("Evolve failed")
+
+    # Select
+    rc4, out4, err4 = run_cmd(
+        [str(AGI_BINARY), "select", str(evolved_path), "--top", str(top), "--diversity", "0.85", "--max-risk", "0.10"],
+        cwd=WINDSURF_DIR, timeout=120,
+    )
+    select_result = {"exit_code": rc4, "top": top}
+    agi_bios = []
+    if rc4 == 0 and selected_path.exists():
+        select_result["file_size"] = selected_path.stat().st_size
+        for line in selected_path.open():
+            if line.strip():
+                agi_bios.append(json.loads(line))
+        select_result["selected_count"] = len(agi_bios)
+        logger.info("Selected %d top bios", len(agi_bios))
+    else:
+        select_result["error"] = err4[:300]
+        logger.error("Select failed")
+
+    result = {
+        "stage": "agi_pipeline",
+        "generate": gen_result,
+        "score": score_result,
+        "evolve": evolve_result,
+        "select": select_result,
+        "agi_bios": agi_bios,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    ledger.add("agi_pipeline", "AGI generate→score→evolve→select on real corpus", result)
+    return result
+
+
+# ─── Stage 4: Groq Intent Router + LLM Bio Generation ───
+
+def stage_groq_bios(top_n: int = 5) -> dict:
+    logger.info("=" * 60)
+    logger.info("STAGE 4: Groq intent routing + LLM bio generation (top %d strategies)", top_n)
+    logger.info("=" * 60)
+
+    # Import from extension modules
+    sys.path.insert(0, str(SCRIPT_DIR))
+    from intent_router import route_intents
+    from rentmasseur_core import groq_generate_bio
+
+    # Route intents
+    top_strategies = route_intents(top_n)
+    logger.info("Intent router selected: %s", top_strategies)
+
+    # Strategy prompts (from coordinator)
+    from rentmasseur_coordinator import STRATEGIES
+
+    groq_bios = []
+    for strategy_name in top_strategies:
+        prompt = STRATEGIES.get(strategy_name)
+        if not prompt:
+            continue
+        bio = groq_generate_bio(strategy_name, prompt, current_bio=None)
+        if bio:
+            groq_bios.append({
+                "strategy": strategy_name,
+                "bio": bio,
+                "chars": len(bio),
+                "source": "groq_llm",
+            })
+            logger.info("Generated Groq bio: strategy=%s chars=%d", strategy_name, len(bio))
+        time.sleep(1)
+
+    result = {
+        "stage": "groq_bios",
+        "top_strategies": top_strategies,
+        "bios_generated": len(groq_bios),
+        "groq_bios": groq_bios,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    ledger.add("groq_bios", "Groq LLM generated bios for top strategies", result)
+    return result
+
+
+# ─── Stage 5: Merge + Rank ───
+
+def stage_merge_rank(agi_result: dict, groq_result: dict) -> dict:
+    logger.info("=" * 60)
+    logger.info("STAGE 5: Merge AGI + Groq candidate pools, rank by score")
+    logger.info("=" * 60)
+
+    all_candidates = []
+
+    # AGI bios
+    for bio in agi_result.get("agi_bios", []):
+        all_candidates.append({
+            "source": "agi_cpp",
+            "bio": bio.get("bio", bio.get("description", "")),
+            "headline": bio.get("headline", ""),
+            "score": bio.get("score", 0),
+            "risk": bio.get("risk", 0),
+            "rank": bio.get("rank", 0),
+            "strategy": "agi_evolved",
+        })
+
+    # Groq bios
+    for bio in groq_result.get("groq_bios", []):
+        all_candidates.append({
+            "source": "groq_llm",
+            "bio": bio["bio"],
+            "headline": "",
+            "score": 0,
+            "risk": 0,
+            "rank": 0,
+            "strategy": bio["strategy"],
+            "chars": bio["chars"],
+        })
+
+    # Sort: AGI bios by score (higher=better), Groq bios by chars (proxy for content richness)
+    # Then interleave: best AGI first, then best Groq
+    agi_sorted = sorted([c for c in all_candidates if c["source"] == "agi_cpp"], key=lambda x: x["score"], reverse=True)
+    groq_sorted = sorted([c for c in all_candidates if c["source"] == "groq_llm"], key=lambda x: x.get("chars", 0), reverse=True)
+
+    # Pick best overall: prefer AGI if available (trained on real data), else Groq
+    merged = agi_sorted + groq_sorted
+
+    best = merged[0] if merged else None
+
+    result = {
+        "stage": "merge_rank",
+        "total_candidates": len(all_candidates),
+        "agi_count": len(agi_sorted),
+        "groq_count": len(groq_sorted),
+        "best_source": best["source"] if best else None,
+        "best_strategy": best["strategy"] if best else None,
+        "best_score": best["score"] if best else 0,
+        "best_bio_preview": best["bio"][:200] if best else "",
+        "all_candidates": merged,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    logger.info("Merged %d candidates (AGI=%d, Groq=%d). Best: %s/%s",
+                result["total_candidates"], result["agi_count"], result["groq_count"],
+                result["best_source"], result["best_strategy"])
+    ledger.add("merge_rank", "Merged and ranked AGI + Groq candidate pools", result)
+    return result
+
+
+# ─── Stage 6: Selenium — Login, Availability, Apply Bio ───
+
+def stage_selenium(merge_result: dict, skip_availability: bool = False, skip_bio: bool = False) -> dict:
+    logger.info("=" * 60)
+    logger.info("STAGE 6: Selenium — login, set 24/7 availability, apply best bio")
+    logger.info("=" * 60)
+
+    sys.path.insert(0, str(SCRIPT_DIR))
+    from rentmasseur_core import setup_driver, login, set_availability_24_7, update_bio, save_bio_field
+
+    best = None
+    for c in merge_result.get("all_candidates", []):
+        if c.get("bio") and len(c["bio"]) > 50:
+            best = c
+            break
+
+    result = {
+        "stage": "selenium",
+        "login": False,
+        "availability": False,
+        "bio_applied": False,
+        "best_bio_source": best["source"] if best else None,
+        "best_bio_strategy": best["strategy"] if best else None,
+        "best_bio_chars": len(best["bio"]) if best else 0,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    driver = setup_driver(headless=True)
+    try:
+        if not login(driver):
+            result["error"] = "Login failed"
+            logger.error("Login failed — cannot proceed")
+            ledger.add("selenium", "Selenium automation (login failed)", result)
+            return result
+        result["login"] = True
+        logger.info("Login successful")
+
+        if not skip_availability:
+            result["availability"] = set_availability_24_7(driver)
+            logger.info("Availability 24/7: %s", result["availability"])
+
+        if not skip_bio and best:
+            bio_text = best["bio"]
+            bio_res = update_bio(driver, "")
+            if bio_res and not (isinstance(bio_res, dict) and bio_res.get("error")):
+                field_info, current_bio = bio_res
+                logger.info("Current bio: %d chars", len(current_bio))
+                result["previous_bio_chars"] = len(current_bio)
+                result["previous_bio_preview"] = current_bio[:200]
+                saved = save_bio_field(driver, field_info, bio_text)
+                result["bio_applied"] = saved
+                if saved:
+                    result["new_bio_preview"] = bio_text[:200]
+                    logger.info("Bio updated on live profile")
+                else:
+                    logger.error("Bio save failed")
+            else:
+                logger.error("Could not find bio field")
+                result["bio_error"] = "no_bio_field"
+        elif skip_bio:
+            result["bio_applied"] = "skipped"
+
+    finally:
+        driver.quit()
+
+    ledger.add("selenium", "Selenium: login + availability + bio update on live rentmasseur.com", result)
+    return result
+
+
+# ─── Stage 7: Save + Summary ───
+
+def stage_save(scrape_res, agi_train_res, agi_pipe_res, groq_res, merge_res, selenium_res) -> dict:
+    logger.info("=" * 60)
+    logger.info("STAGE 7: Save all results + receipt summary")
+    logger.info("=" * 60)
+
+    summary = {
+        "pipeline_run": datetime.now(timezone.utc).isoformat(),
+        "stages": {
+            "live_scrape": {"providers": scrape_res.get("providers_scraped", 0), "mode": scrape_res.get("mode")},
+            "agi_train": {"exit_code": agi_train_res.get("exit_code"), "model": agi_train_res.get("model_exists", False)},
+            "agi_pipeline": {
+                "generate": agi_pipe_res.get("generate", {}).get("exit_code"),
+                "score": agi_pipe_res.get("score", {}).get("exit_code"),
+                "evolve": agi_pipe_res.get("evolve", {}).get("exit_code"),
+                "select": agi_pipe_res.get("select", {}).get("exit_code"),
+                "selected_count": agi_pipe_res.get("select", {}).get("selected_count", 0),
+            },
+            "groq_bios": {"strategies": groq_res.get("top_strategies", []), "bios_generated": groq_res.get("bios_generated", 0)},
+            "merge": {"total": merge_res.get("total_candidates", 0), "best_source": merge_res.get("best_source")},
+            "selenium": {
+                "login": selenium_res.get("login", False),
+                "availability": selenium_res.get("availability", False),
+                "bio_applied": selenium_res.get("bio_applied", False),
+            },
+        },
+        "receipts": ledger.summary(),
+    }
+
+    summary_path = PIPELINE_DIR / "pipeline_summary.json"
+    summary_path.write_text(json.dumps(summary, indent=2, default=str))
+
+    # Save all candidates
+    candidates_path = PIPELINE_DIR / "all_candidates.json"
+    candidates_path.write_text(json.dumps(merge_res.get("all_candidates", []), indent=2, default=str))
+
+    # Save best bio
+    best_bio_path = PIPELINE_DIR / "best_bio.txt"
+    for c in merge_res.get("all_candidates", []):
+        if c.get("bio") and len(c["bio"]) > 50:
+            best_bio_path.write_text(c["bio"])
+            break
+
+    logger.info("Summary saved: %s", summary_path)
+    logger.info("Candidates saved: %s", candidates_path)
+    logger.info("Best bio saved: %s", best_bio_path)
+    logger.info("Receipts: %d total, chain valid: %s", ledger.summary()["total_receipts"], ledger.summary()["chain_valid"])
+
+    ledger.add("pipeline_complete", "Full production pipeline completed", summary)
+    return summary
+
+
+# ─── Main ───
+
+def main():
+    parser = argparse.ArgumentParser(description="RentMasseur Production Pipeline")
+    parser.add_argument("--skip-scrape", action="store_true", help="Skip live competitor scrape")
+    parser.add_argument("--skip-selenium", action="store_true", help="Skip Selenium automation (login/availability/bio)")
+    parser.add_argument("--skip-availability", action="store_true", help="Skip availability setting in Selenium")
+    parser.add_argument("--skip-bio", action="store_true", help="Skip bio update in Selenium")
+    parser.add_argument("--agi-only", action="store_true", help="Only run AGI pipeline (no Groq, no Selenium)")
+    parser.add_argument("--groq-only", action="store_true", help="Only run Groq bios (no AGI, no Selenium)")
+    parser.add_argument("--count", type=int, default=100000, help="AGI generate count")
+    parser.add_argument("--generations", type=int, default=100, help="GA generations")
+    parser.add_argument("--top", type=int, default=25, help="Top N to select")
+    parser.add_argument("--strategies", type=int, default=5, help="Top N strategies for Groq")
+    parser.add_argument("--label", default="reviews", choices=["reviews", "views_per_day", "rating"])
+    parser.add_argument("--epochs", type=int, default=100, help="MLP training epochs")
+    args = parser.parse_args()
+
+    start = time.time()
+    logger.info("=" * 60)
+    logger.info("RENTMASSEUR PRODUCTION PIPELINE — ALL REAL, NO MOCK")
+    logger.info("=" * 60)
+
+    # Check prerequisites
+    if not AGI_BINARY.exists():
+        logger.error("AGI binary not found at %s — compile with: g++ -O3 -std=c++17 rm_agi.cpp -o rm_agi", AGI_BINARY)
+        sys.exit(1)
+    if not REAL_BIOS.exists():
+        logger.error("Real bios corpus not found at %s", REAL_BIOS)
+        sys.exit(1)
+
+    # Stage 1: Live scrape
+    scrape_res = {"providers_scraped": 0}
+    if not args.skip_scrape:
+        scrape_res = stage_live_scrape()
+
+    # Stage 2: AGI train
+    agi_train_res = stage_agi_train(label=args.label, epochs=args.epochs)
+
+    # Stage 3: AGI pipeline
+    agi_pipe_res = stage_agi_pipeline(count=args.count, generations=args.generations, top=args.top)
+
+    # Stage 4: Groq bios
+    groq_res = {"groq_bios": [], "top_strategies": [], "bios_generated": 0}
+    if not args.agi_only:
+        groq_res = stage_groq_bios(top_n=args.strategies)
+
+    # Stage 5: Merge + rank
+    merge_res = stage_merge_rank(agi_pipe_res, groq_res)
+
+    # Stage 6: Selenium
+    selenium_res = {"login": False, "availability": False, "bio_applied": False}
+    if not args.skip_selenium and not args.agi_only and not args.groq_only:
+        selenium_res = stage_selenium(merge_res, skip_availability=args.skip_availability, skip_bio=args.skip_bio)
+
+    # Stage 7: Save
+    summary = stage_save(scrape_res, agi_train_res, agi_pipe_res, groq_res, merge_res, selenium_res)
+
+    elapsed = time.time() - start
+    logger.info("=" * 60)
+    logger.info("PIPELINE COMPLETE in %.1fs", elapsed)
+    logger.info("=" * 60)
+    logger.info("Receipts: %d (chain valid: %s)", ledger.summary()["total_receipts"], ledger.summary()["chain_valid"])
+    logger.info("Output: %s", PIPELINE_DIR)
+    print(json.dumps(summary, indent=2, default=str))
+
+
+if __name__ == "__main__":
+    main()
