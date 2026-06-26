@@ -1,0 +1,44 @@
+{
+  "pipeline_run": "2026-06-26T06:09:23.502412+00:00",
+  "stages": {
+    "live_scrape": {
+      "providers": 4,
+      "mode": "live"
+    },
+    "agi_train": {
+      "exit_code": 0,
+      "model": true
+    },
+    "agi_pipeline": {
+      "generate": 0,
+      "score": 0,
+      "evolve": 0,
+      "select": 0,
+      "selected_count": 3
+    },
+    "groq_bios": {
+      "strategies": [
+        "sensory_luxury",
+        "therapeutic_expert",
+        "mystery_desire",
+        "local_hustle",
+        "transformation_story"
+      ],
+      "bios_generated": 0
+    },
+    "merge": {
+      "total": 3,
+      "best_source": "agi_cpp"
+    },
+    "selenium": {
+      "login": true,
+      "availability": true,
+      "bio_applied": true
+    }
+  },
+  "receipts": {
+    "total_receipts": 11,
+    "chain_valid": true,
+    "last_action": "selenium"
+  }
+}

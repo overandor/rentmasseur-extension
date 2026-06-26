@@ -25,6 +25,7 @@
 static const int PORT = 7860;
 static std::string GH_TOKEN = std::getenv("GH_TOKEN") ? std::getenv("GH_TOKEN") : "";
 static std::string GH_REPO = std::getenv("GH_REPO") ? std::getenv("GH_REPO") : "overandor/rentmasseur-extension";
+static std::string ADMIN_TOKEN = std::getenv("ADMIN_TOKEN") ? std::getenv("ADMIN_TOKEN") : "";
 static const std::string CONTENT_DIR = "./content";
 static const std::string RECEIPTS_DIR = "./receipts";
 static const std::string AVAILABILITY_FILE = "./availability.json";
@@ -215,9 +216,10 @@ static std::string url_encode_workflow(const std::string& s) {
 static std::string action_response(const std::string& action, const std::string& cmd) {
     CommandResult r = run_command_evidence(cmd);
     std::string status = r.exit_code == 0 ? "success" : "failed";
+    std::string label = r.exit_code == 0 ? (!r.output.empty() ? "GREEN_REAL" : "GRAY_NO_DATA") : "RED_FAILED";
     std::string receipt = write_receipt(action, status, r.exit_code, r.output, "\"command\": \"" + json_escape(cmd) + "\"");
     std::ostringstream ss;
-    ss << "{\"status\":\"" << status << "\",\"action\":\"" << json_escape(action) << "\",\"exit_code\":" << r.exit_code;
+    ss << "{\"status\":\"" << status << "\",\"label\":\"" << label << "\",\"action\":\"" << json_escape(action) << "\",\"exit_code\":" << r.exit_code;
     ss << ",\"receipt\":\"" << json_escape(receipt) << "\",\"stdout_stderr_tail\":\"" << json_escape(r.output) << "\"}";
     return ss.str();
 }
@@ -225,6 +227,28 @@ static std::string action_response(const std::string& action, const std::string&
 static std::string blocked_response(const std::string& action, const std::string& reason) {
     std::string receipt = write_receipt(action, "blocked", 0, reason);
     return "{\"status\":\"blocked\",\"action\":\"" + json_escape(action) + "\",\"reason\":\"" + json_escape(reason) + "\",\"receipt\":\"" + json_escape(receipt) + "\"}";
+}
+
+static bool is_mutation(const std::string& m, const std::string& p) {
+    if (m == "POST") return true;
+    if (p.rfind("/api/cicd/trigger/", 0) == 0) return true;
+    if (p.rfind("/api/rotate/", 0) == 0) return true;
+    if (p == "/api/run/ga-rl" || p == "/api/run/orchestrator" || p == "/api/run/availability" || p == "/api/rotator/report") return true;
+    return false;
+}
+
+static std::string check_admin(const std::string& req, const std::string& path, const std::string& method) {
+    if (!is_mutation(method, path)) return "";
+    if (ADMIN_TOKEN.empty()) return "";
+    size_t ap = req.find("Authorization: Bearer ");
+    if (ap != std::string::npos) {
+        size_t vs = ap + 21;
+        size_t ve = req.find("\r\n", vs);
+        if (req.substr(vs, ve - vs) == ADMIN_TOKEN) return "";
+    }
+    size_t qp = path.find("?token=");
+    if (qp != std::string::npos && path.substr(qp + 7) == ADMIN_TOKEN) return "";
+    return blocked_response("auth", "Admin token required for mutation endpoints. Set ADMIN_TOKEN env var.");
 }
 
 static std::string landing_page() {
@@ -263,6 +287,16 @@ static void handle_client(int client_socket) {
 
     ensure_dir(CONTENT_DIR);
     ensure_dir(RECEIPTS_DIR);
+
+    std::string auth_err = check_admin(request, path, method);
+    if (!auth_err.empty()) {
+        code = 403;
+        response = auth_err;
+        std::string w = http_response(code, content_type, response);
+        send(client_socket, w.c_str(), w.size(), 0);
+        close(client_socket);
+        return;
+    }
 
     if (method == "OPTIONS") {
         response = "{}";
