@@ -107,31 +107,39 @@ def _content_hash(text: str) -> str:
     return hashlib.md5(text.strip().lower().encode()).hexdigest()[:12]
 
 
-def _groq_chat(system_prompt: str, user_prompt: str, temperature: float = 0.9, max_tokens: int = 800) -> Optional[str]:
+def _groq_chat(system_prompt: str, user_prompt: str, temperature: float = 0.9, max_tokens: int = 800, retries: int = 3) -> Optional[str]:
     if not GROQ_API_KEY:
         logger.error("No GROQ_API_KEY")
         return None
-    try:
-        resp = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": GROQ_MODEL,
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                "temperature": temperature,
-                "max_tokens": max_tokens,
-            },
-            timeout=90,
-        )
-        resp.raise_for_status()
-        content = resp.json()["choices"][0]["message"]["content"].strip().strip('"').strip("'")
-        return content
-    except Exception as e:
-        logger.error("Groq API error: %s", e)
-        return None
+    for attempt in range(retries):
+        try:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": GROQ_MODEL,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                },
+                timeout=90,
+            )
+            if resp.status_code == 429:
+                wait = 5 * (attempt + 1)
+                logger.warning("Groq rate limited, waiting %ds (attempt %d/%d)", wait, attempt + 1, retries)
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            content = resp.json()["choices"][0]["message"]["content"].strip().strip('"').strip("'")
+            return content
+        except Exception as e:
+            logger.error("Groq API error: %s", e)
+            if attempt < retries - 1:
+                time.sleep(5 * (attempt + 1))
+    return None
 
 
 def _save_content(directory: str, strategy_name: str, content: str, ext: str = "md") -> str:
@@ -150,7 +158,11 @@ def generate_bios(history: list, used_hashes: set) -> list:
         "You are an elite copywriter for massage therapy profiles on RentMasseur. "
         "Each bio must be under 300 words, magnetic, SEO-friendly, and conversion-optimized. "
         "Avoid explicit content. Include keywords: massage, therapeutic, deep tissue, relaxation, session, Manhattan. "
-        "Always end with a subtle call-to-action. Write ONLY the bio text."
+        "CRITICAL: Every bio MUST end with a strong phone-call call-to-action like "
+        "'Call now to book your session' or 'Pick up the phone and call me today'. "
+        "The goal is MAXIMUM PHONE CALLS. Make the reader want to call immediately. "
+        "Include urgency words: today, now, available, waiting, ready. "
+        "Write ONLY the bio text."
     )
     results = []
     for strategy_name, strategy_desc in STRATEGIES:
@@ -158,7 +170,8 @@ def generate_bios(history: list, used_hashes: set) -> list:
             f"Strategy: {strategy_name}\n"
             f"Description: {strategy_desc}\n"
             f"Write a compelling profile bio for a male masseur in Manhattan, NYC. "
-            f"No labels, no quotes, no explanation. Just the bio."
+            f"The bio MUST drive phone calls. End with a direct call-to-action "
+            f"telling the reader to CALL NOW to book. No labels, no quotes, no explanation. Just the bio."
         )
         bio = _groq_chat(system_prompt, user_prompt)
         if bio:
