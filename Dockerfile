@@ -32,4 +32,6 @@ ENV PORT=7860
 
 EXPOSE 7860
 
-CMD ["./cpp_os_server", "7860"]
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]
