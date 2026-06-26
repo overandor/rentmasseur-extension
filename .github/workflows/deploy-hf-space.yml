@@ -46,6 +46,7 @@ jobs:
         run: |
           cd hf-space
           git init
+          git checkout -b main
           git add -A
           git commit -m "Auto-deploy from GitHub Actions with latest data $(date -u +%Y-%m-%d-%H:%M:%S)"
           git push https://hf_user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_NAME} main --force
