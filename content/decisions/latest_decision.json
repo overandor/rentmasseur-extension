@@ -1,7 +1,7 @@
 {
-  "status": "NO_SIGNAL",
-  "reason": "candidate_pool_seeded_but_no_post_deployment_metrics_yet",
-  "experiment_id": "exp_001_targeted_wolf",
-  "next_action": "post_baseline_metrics_then_run_24_48h_bio_only_test",
-  "live_profile_update_allowed": false
+  "status": "blocked_missing_real_inputs",
+  "reason": "Real first-party metrics and candidate TSV are required before a live profile decision.",
+  "live_update_allowed": false,
+  "dry_run": "true",
+  "run_id": "28223565773"
 }
