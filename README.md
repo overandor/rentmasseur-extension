@@ -1,6 +1,16 @@
-# RentMasseur Booker Extension + Availability CI/CD
+---
+title: RentMasseur Optimizer
+emoji: 🚀
+colorFrom: purple
+colorTo: blue
+sdk: docker
+pinned: false
+---
 
-Chrome extension that adds a booking panel to RentMasseur.com profile pages, backed by a scheduled CI/CD availability checker.
+# RentMasseur Operating System
+
+C++ native HF Space + Python automation pipelines for RentMasseur profile optimization.
+Chrome extension that adds a booking panel to RentMasseur.com profile pages, backed by scheduled CI/CD availability checker, bio/photo/price rotation, and GA+RL revenue optimization.
 
 ## Architecture
 
