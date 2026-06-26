@@ -1,0 +1,29 @@
+{
+  "profile_url": "https://www.rentmasseur.com/karpathianwolf",
+  "username": "karpathianwolf",
+  "name": "KARPATHIAN WOLF",
+  "real_name": "Joseph",
+  "location": "Manhattan, NYC",
+  "experience_years": 7,
+  "profile_views": "74,000+",
+  "specialties": ["deep tissue massage", "sports recovery"],
+  "booking_link": "rebrand.ly/carpathianwolf",
+  "prices": {"incall": "$199", "outcall": "$269"},
+  "reviews": [
+    {
+      "author": "Drimosh",
+      "text": "I expected a good massage. Got something way more precise. Joseph doesn't guess—he knows where the tension is and actually fixes it. Left feeling looser than I have in a long time."
+    },
+    {
+      "author": "japurich",
+      "text": "I consider myself strong. I lift. I do cardio. I handle my own. But whatever Joseph did? Different league. His technique was like a high-stakes action movie—except instead of explosions, it was knots."
+    },
+    {
+      "author": "alexisom",
+      "text": "Didn't even get to settle in before my body started unraveling. I thought I was tense from today—turns out, this was tension from years ago. Pressure hit just right."
+    }
+  ],
+  "bio_voice": "witty, confident, specific, anti-woo-woo, Ukrainian, professional but funny",
+  "bio_themes": ["desk goblins", "gym animals", "frequent flyers", "startup founders", "shoulders as earrings", "find the knot / negotiate / defeat", "no crystals / no energy portals / no mercury retrograde", "large Ukrainian guy", "body keeps score / Wolf audits the books"],
+  "issue": "Generic LLM bio was pasted AFTER the real bio on the live profile, diluting the strong original voice"
+}

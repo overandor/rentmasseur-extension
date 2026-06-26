@@ -25,6 +25,13 @@ from typing import Optional
 import requests
 from dotenv import load_dotenv
 
+LIVE_BIO=""
+try:
+    with open("content/reference/live_bio.md","r") as _f:
+        LIVE_BIO=_f.read().strip()
+except FileNotFoundError:
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",

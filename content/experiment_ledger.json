@@ -1,0 +1,57 @@
+{
+  "experiment_id": "exp_20260626_bio_ab_test",
+  "status": "staged",
+  "start_date": "2026-06-26",
+  "description": "Bio A/B test — 4 archetypes, 1 deployed at a time, 6h minimum exposure",
+  "variants": [
+    {
+      "bio_id": "bio_A_clinical_recovery",
+      "label": "Clinical Recovery",
+      "file": "content/bios/bio_A_clinical_recovery.md",
+      "archetype": "therapeutic_expert"
+    },
+    {
+      "bio_id": "bio_B_karpathian_wolf",
+      "label": "Karpathian Wolf (controlled brand)",
+      "file": "content/bios/bio_B_karpathian_wolf.md",
+      "archetype": "dominant_identity_clean"
+    },
+    {
+      "bio_id": "bio_C_luxury_concierge",
+      "label": "Luxury Concierge",
+      "file": "content/bios/bio_C_luxury_concierge.md",
+      "archetype": "luxury_hotel_outcall"
+    },
+    {
+      "bio_id": "bio_D_funny_direct_cta",
+      "label": "Funny Direct CTA",
+      "file": "content/bios/bio_D_funny_direct_cta.md",
+      "archetype": "humor_conversion"
+    }
+  ],
+  "rules": {
+    "min_exposure_hours": 6,
+    "min_profile_views": 25,
+    "requires_downstream_signal": true,
+    "downstream_signals": ["contact_click", "email_click", "phone_click", "message_received", "booking_request", "confirmed_booking"],
+    "reward_weights": {
+      "profile_view": 1,
+      "contact_click": 5,
+      "email_click": 5,
+      "phone_click": 8,
+      "message_received": 10,
+      "booking_request": 25,
+      "confirmed_booking": 100
+    },
+    "decision_options": ["KEEP_CURRENT", "TEST_NEXT_VARIANT", "ROLLBACK", "NO_SIGNAL_WAIT"],
+    "freeze_other_variables": true,
+    "freeze_note": "Photos, price, interview, blog must NOT change during bio test. One variable at a time for attribution."
+  },
+  "schedule": {
+    "day_1_2": "Bio test only. Freeze everything else.",
+    "day_3_4": "Photo test only. Keep winning bio.",
+    "day_5": "Price test only. Keep winning bio + photo.",
+    "day_6": "Interview/blog credibility test.",
+    "day_7": "Weekly decision with evidence."
+  }
+}

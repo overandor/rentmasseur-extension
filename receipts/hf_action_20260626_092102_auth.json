@@ -1,0 +1,7 @@
+{
+  "action": "auth",
+  "status": "blocked",
+  "exit_code": 0,
+  "timestamp": "2026-06-26T09:21:02Z",
+  "stdout_stderr_tail": "ADMIN_TOKEN required; mutation endpoints disabled until ADMIN_TOKEN is set."
+}

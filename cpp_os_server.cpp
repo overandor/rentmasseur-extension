@@ -229,7 +229,7 @@ static std::string blocked_response(const std::string& action, const std::string
 }
 
 static bool is_mutation(const std::string& m, const std::string& p) {
-    if (m == "POST") return true;
+    if (m == "POST" && p != "/api/metrics/ingest") return true;
     if (p.rfind("/api/cicd/trigger/", 0) == 0) return true;
     if (p.rfind("/api/rotate/", 0) == 0) return true;
     if (p == "/api/run/ga-rl" || p == "/api/run/orchestrator" || p == "/api/run/availability" || p == "/api/rotator/report") return true;
@@ -238,16 +238,14 @@ static bool is_mutation(const std::string& m, const std::string& p) {
 
 static std::string check_admin(const std::string& req, const std::string& path, const std::string& method) {
     if (!is_mutation(method, path)) return "";
-    if (ADMIN_TOKEN.empty()) return "";
+    if (ADMIN_TOKEN.empty()) return blocked_response("auth", "ADMIN_TOKEN required; mutation endpoints disabled until ADMIN_TOKEN is set.");
     size_t ap = req.find("Authorization: Bearer ");
     if (ap != std::string::npos) {
         size_t vs = ap + 21;
         size_t ve = req.find("\r\n", vs);
-        if (req.substr(vs, ve - vs) == ADMIN_TOKEN) return "";
+        if (ve != std::string::npos && req.substr(vs, ve - vs) == ADMIN_TOKEN) return "";
     }
-    size_t qp = path.find("?token=");
-    if (qp != std::string::npos && path.substr(qp + 7) == ADMIN_TOKEN) return "";
-    return blocked_response("auth", "Admin token required for mutation endpoints. Set ADMIN_TOKEN env var.");
+    return blocked_response("auth", "Admin token required for mutation endpoints. Use Authorization: Bearer <ADMIN_TOKEN> header.");
 }
 
 static std::string landing_page() {
@@ -621,11 +619,37 @@ static void handle_client(int client_socket) {
     } else if (path == "/api/funnel/daily") {
         std::string metrics = read_file(CONTENT_DIR + "/metrics_ingest.jsonl");
         int metric_count = 0;
+        long total_views = 0, total_clicks = 0, total_emails = 0, total_visits = 0;
         if (!metrics.empty()) {
-            for (size_t i = 0; i < metrics.size(); i++) if (metrics[i] == '\n') metric_count++;
+            std::istringstream ms(metrics);
+            std::string line;
+            while (std::getline(ms, line)) {
+                if (line.empty()) continue;
+                metric_count++;
+                size_t vp = line.find("\"profile_views\"");
+                if (vp != std::string::npos) { size_t vn = line.find(":", vp); if (vn != std::string::npos) total_views += std::atol(line.c_str() + vn + 1); }
+                size_t cp = line.find("\"contact_clicks\"");
+                if (cp != std::string::npos) { size_t cn = line.find(":", cp); if (cn != std::string::npos) total_clicks += std::atol(line.c_str() + cn + 1); }
+                size_t ep = line.find("\"new_emails\"");
+                if (ep != std::string::npos) { size_t en = line.find(":", ep); if (en != std::string::npos) total_emails += std::atol(line.c_str() + en + 1); }
+                size_t np = line.find("\"new_visits\"");
+                if (np != std::string::npos) { size_t nn = line.find(":", np); if (nn != std::string::npos) total_visits += std::atol(line.c_str() + nn + 1); }
+            }
         }
+        double ctr = total_views > 0 ? (double)total_clicks / total_views : 0.0;
+        char ctr_buf[16]; std::snprintf(ctr_buf, sizeof(ctr_buf), "%.4f", ctr);
+        const char* status = metric_count == 0 ? "gray_no_data" : (total_views < 100 ? "no_signal" : "real_data");
         std::ostringstream ss;
-        ss << "{\"status\":\"" << (metric_count > 0 ? "real_data" : "gray_no_data") << "\",\"metric_entries\":" << metric_count << ",\"profile_views\":0,\"contact_clicks\":0,\"email_clicks\":0,\"phone_clicks\":0,\"booking_requests\":0,\"confirmed_bookings\":0,\"gross_revenue\":0,\"client_target\":1,\"client_probability\":\"unverified_no_real_metrics\",\"note\":\"Funnel requires first-party metrics from extension or manual dashboard capture\",\"timestamp\":\"" << iso_timestamp() << "\"}";
+        ss << "{\"status\":\"" << status << "\",\"metric_entries\":" << metric_count
+           << ",\"profile_views\":" << total_views
+           << ",\"contact_clicks\":" << total_clicks
+           << ",\"new_visits\":" << total_visits
+           << ",\"new_emails\":" << total_emails
+           << ",\"contact_click_rate\":" << ctr_buf
+           << ",\"email_clicks\":0,\"phone_clicks\":0,\"booking_requests\":0,\"confirmed_bookings\":0,\"gross_revenue\":0"
+           << ",\"client_target\":1,\"client_probability\":\"unverified_no_real_metrics\""
+           << ",\"note\":\"Funnel requires first-party metrics from extension or manual dashboard capture\""
+           << ",\"timestamp\":\"" << iso_timestamp() << "\"}";
         response = ss.str();
     } else if (path == "/api/leads") {
         std::string leads = read_file(CONTENT_DIR + "/leads.jsonl");
@@ -654,14 +678,37 @@ static void handle_client(int client_socket) {
         ss << "}}";
         response = ss.str();
     } else if (path == "/api/metrics/ingest" && method == "POST") {
-        std::string ingest_path = CONTENT_DIR + "/metrics_ingest.jsonl";
-        std::ofstream f(ingest_path, std::ios::app);
-        if (!f) { code = 500; response = "{\"status\":\"failed\",\"reason\":\"could not write metrics file\"}"; }
-        else {
-            f << "{\"timestamp\":\"" << iso_timestamp() << "\",\"body\":\"" << json_escape(body) << "\"}\n";
-            std::string receipt = write_receipt("metrics_ingest", "success", 0, "first-party metrics accepted",
-                "\"output_file\": \"" + ingest_path + "\"");
-            response = "{\"status\":\"success\",\"output_file\":\"" + ingest_path + "\",\"receipt\":\"" + json_escape(receipt) + "\",\"note\":\"first-party metrics only, no automated login\"}";
+        std::string lower_body = body;
+        for (char& c : lower_body) c = (char)tolower(c);
+        const char* secret_keys[] = {"cookie", "cookies", "token", "accesstoken", "refreshtoken", "authorization", "password", "session", "bearer", nullptr};
+        bool has_secret = false;
+        std::string secret_found = "";
+        for (int i = 0; secret_keys[i]; i++) {
+            if (lower_body.find(secret_keys[i]) != std::string::npos) {
+                has_secret = true;
+                secret_found = secret_keys[i];
+                break;
+            }
+        }
+        if (has_secret) {
+            code = 400;
+            std::string receipt = write_receipt("metrics_ingest_rejected", "rejected", 0, "payload contains secret-bearing key", "\"rejected_key\": \"" + secret_found + "\"");
+            response = "{\"status\":\"rejected\",\"reason\":\"payload contains secret-bearing field\",\"field\":\"" + secret_found + "\",\"receipt\":\"" + json_escape(receipt) + "\"}";
+        } else {
+            std::string ingest_path = CONTENT_DIR + "/metrics_ingest.jsonl";
+            std::ofstream f(ingest_path, std::ios::app);
+            if (!f) { code = 500; response = "{\"status\":\"failed\",\"reason\":\"could not write metrics file\"}"; }
+            else {
+                f << body << "\n";
+                f.close();
+                std::string latest_path = CONTENT_DIR + "/metrics/latest_metrics.json";
+                ensure_dir(CONTENT_DIR + "/metrics");
+                std::ofstream lf(latest_path);
+                if (lf) { lf << body; lf.close(); }
+                std::string receipt = write_receipt("metrics_ingest", "success", 0, "first-party metrics accepted",
+                    "\"output_file\": \"" + ingest_path + "\", \"latest_file\": \"" + latest_path + "\"");
+                response = "{\"status\":\"success\",\"output_file\":\"" + ingest_path + "\",\"latest_file\":\"" + latest_path + "\",\"receipt\":\"" + json_escape(receipt) + "\",\"note\":\"first-party metrics only, no automated login\"}";
+            }
         }
     } else if (path == "/api/config" && method == "POST") {
         std::string config_path = CONTENT_DIR + "/system_config.json";

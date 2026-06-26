@@ -1,0 +1,37 @@
+{
+  "experiment_id": "exp_001_targeted_wolf",
+  "variable": "bio_only",
+  "control_bio_id": "current_live_wolf_appended",
+  "candidate_bio_id": "controlled_wolf_v1",
+  "photos_frozen": true,
+  "price_frozen": true,
+  "services_frozen": true,
+  "availability_frozen": true,
+  "status": "TEST_READY",
+  "minimum_exposure": {
+    "new_profile_views": 100,
+    "minimum_hours": 24,
+    "maximum_hours_initial": 48
+  },
+  "primary_metric": "contact_click_rate",
+  "baseline": {
+    "profile_views": 2802,
+    "contact_clicks": 135,
+    "contact_click_rate": 0.0482
+  },
+  "public_benchmark": {
+    "lifetime_visits": 78062,
+    "days_online": 964,
+    "views_per_day": 81.0
+  },
+  "win_condition": {
+    "relative_lift_required": 0.15,
+    "after_ctr_threshold": 0.0554,
+    "minimum_new_views": 100
+  },
+  "safety": {
+    "contains_secret": false,
+    "uses_session_token": false,
+    "manual_approval_required": true
+  }
+}
