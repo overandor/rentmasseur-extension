@@ -1,0 +1,49 @@
+{
+  "endpoints": [
+    {
+      "name": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/account/dashboard",
+      "auth": "required",
+      "safe_for_runtime": true
+    },
+    {
+      "name": "availability",
+      "method": "PUT",
+      "path": "/api/v1/account/dashboard/availability",
+      "auth": "required",
+      "safe_for_runtime": "manual_approved_only"
+    },
+    {
+      "name": "settings_about",
+      "method": "PUT",
+      "path": "/api/v1/settings/about",
+      "auth": "required",
+      "safe_for_runtime": "approved_profile_edit_only"
+    },
+    {
+      "name": "settings_blog",
+      "method": "GET",
+      "path": "/api/v1/settings/blog",
+      "auth": "required",
+      "safe_for_runtime": true
+    },
+    {
+      "name": "settings_interview",
+      "method": "GET",
+      "path": "/api/v1/settings/interview",
+      "auth": "required",
+      "safe_for_runtime": true
+    },
+    {
+      "name": "whosawme",
+      "method": "GET",
+      "path": "/api/v1/settings/whosawme",
+      "auth": "required",
+      "safe_for_runtime": true
+    }
+  ],
+  "headers": "redacted",
+  "cookies": "redacted",
+  "tokens": "redacted"
+}
