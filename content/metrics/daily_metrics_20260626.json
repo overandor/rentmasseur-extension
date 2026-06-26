@@ -1,0 +1,33 @@
+{
+  "packet_type": "rm_daily_metrics",
+  "date": "2026-06-26",
+  "bio_id": "current_live_wolf_appended",
+  "public_profile": {
+    "username": "Karpathianwolf",
+    "public_visits": 78062,
+    "days_online": 964,
+    "views_per_day": 81.0,
+    "public_rank_by_views_day_enriched_subset": 45,
+    "enriched_subset_size": 125
+  },
+  "dashboard": {
+    "profile_views": 2802,
+    "contact_clicks": 135,
+    "new_visits": 31,
+    "new_emails": 0,
+    "online_bookmarks": 1,
+    "profile_visible": true,
+    "available": true
+  },
+  "derived": {
+    "contact_click_rate": 0.0482
+  },
+  "security": {
+    "contains_secrets": false,
+    "source_files_excluded": [
+      "session.json",
+      "api_map.raw.json",
+      ".env"
+    ]
+  }
+}

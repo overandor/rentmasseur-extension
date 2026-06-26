@@ -1,0 +1,41 @@
+{
+  "id": "kpi_1782499992",
+  "timestamp": "2026-06-26T18:53:12.838593+00:00",
+  "action": "hourly_kpi_computation",
+  "data": {
+    "packet_type": "rm_hourly_kpis",
+    "timestamp": "2026-06-26T18:53:12.838170+00:00",
+    "immortality": {
+      "score": 0.475,
+      "grade": "STABLE",
+      "components": {
+        "days_online": 0,
+        "views_per_day": 0,
+        "profile_age_score": 0,
+        "views_per_day_trend": 0.5,
+        "visibility_persistence": 1.0,
+        "availability_stability": 1.0,
+        "retention_score": 0
+      }
+    },
+    "virality": {
+      "score": 0.1072,
+      "grade": "STAGNANT",
+      "components": {
+        "profile_views": 2802,
+        "views_velocity": 0,
+        "views_acceleration": 0,
+        "contact_clicks": 135,
+        "contact_click_velocity": 0,
+        "new_visits": 31,
+        "new_visitor_rate": 0.0111,
+        "online_bookmarks": 1,
+        "bookmark_rate": 0.0004,
+        "new_emails": 0,
+        "email_rate": 0.0,
+        "contact_click_rate": 0.0482
+      }
+    },
+    "metrics_snapshots_used": 1
+  }
+}
