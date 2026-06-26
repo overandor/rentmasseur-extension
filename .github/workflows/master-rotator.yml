@@ -52,6 +52,14 @@ jobs:
           sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
 
+      - name: Build production control loop (C++)
+        run: |
+          g++ -O3 -std=c++17 -Wall -Wextra -pedantic production_control_loop.cpp -o production_control_loop
+
+      - name: Preflight gate — production control loop
+        run: |
+          ./production_control_loop --preflight
+
       - name: Collect RL stats
         run: |
           python3 rl_feedback.py
@@ -70,18 +78,52 @@ jobs:
             python3 orchestrator.py --all
           fi
 
+      - name: Production gate — evaluate candidates before any profile change
+        run: |
+          mkdir -p content/decisions
+          ./production_control_loop \
+            --evaluate \
+            --metrics content/live_metrics.json \
+            --candidates content/candidates.tsv \
+            --ledger content/experiment_ledger.jsonl \
+            --decision content/decisions/latest_decision.json
+          echo "=== Production gate decision ==="
+          cat content/decisions/latest_decision.json || echo "No decision produced"
+
       - name: Run availability keeper
         run: |
           python3 rentmasseur_availability.py --once --headless true
 
-      - name: Commit and push state + content
+      - name: Write proof file (what it saw, chose, changed, won/lost)
+        run: |
+          mkdir -p receipts
+          cat > receipts/rotation_$(date -u +%Y%m%d_%H%M%S).json <<PROOF
+          {
+            "action": "master-rotator",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "run_id": "${{ github.run_id }}",
+            "dry_run": "${{ github.event.inputs.dry_run }}",
+            "components": "${{ github.event.inputs.components }}",
+            "preflight_passed": true,
+            "gate_decision": "$(cat content/decisions/latest_decision.json 2>/dev/null || echo '{}')",
+            "rl_state": "$(cat content/rl_state.json 2>/dev/null || echo '{}')",
+            "availability": "$(cat availability.json 2>/dev/null || echo '{}')",
+            "content_changed": "$(git diff --name-only HEAD~1 2>/dev/null || echo 'initial')",
+            "status": "completed"
+          }
+          PROOF
+          echo "=== Proof file written ==="
+          cat receipts/rotation_*.json | tail -20
+
+      - name: Commit and push state + content + proof
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/ || true
           git add availability.json || true
+          git add receipts/ || true
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Autonomous rotation: bio/photo/price/interview/blog + RL state $(date -u +%Y-%m-%d-%H:%M)"
+            git commit -m "Autonomous rotation + proof: bio/photo/price/interview/blog + gate $(date -u +%Y-%m-%d-%H:%M)"
             git push
           else
             echo "No changes to commit"

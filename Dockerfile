@@ -25,13 +25,12 @@ COPY . .
 # Compile C++ native OS server and engines
 RUN g++ -O3 -std=c++17 -pthread cpp_os_server.cpp -o cpp_os_server && \
     g++ -O3 -std=c++17 -pthread rotator_engine.cpp -o rotator_engine && \
-    g++ -O3 -std=c++17 -pthread ga_rl_optimizer.cpp -o ga_rl_optimizer
+    g++ -O3 -std=c++17 -pthread ga_rl_optimizer.cpp -o ga_rl_optimizer && \
+    g++ -O3 -std=c++17 -Wall -Wextra -pedantic production_control_loop.cpp -o production_control_loop
 
 ENV PYTHONUNBUFFERED=1
 ENV PORT=7860
 
 EXPOSE 7860
 
-RUN chmod +x start.sh
-
-CMD ["./start.sh"]
+CMD ["./cpp_os_server", "7860"]

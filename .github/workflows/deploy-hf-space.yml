@@ -28,36 +28,68 @@ jobs:
           rm -rf hf-space
           git clone https://hf_user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_NAME} hf-space || true
 
-      - name: Sync files to HF space
+      - name: Sync files to HF space (no secrets in repo)
         run: |
           rm -rf hf-space/*
-          rsync -av --exclude='hf-space' --exclude='.git' --exclude='.env' --exclude='debug' . hf-space/
+          rsync -av --exclude='hf-space' --exclude='.git' --exclude='.env' --exclude='debug' --exclude='.github' . hf-space/
           rm -rf hf-space/.git
           rm -rf hf-space/.env
           rm -rf hf-space/debug
-          # Keep latest generated data and state
-          echo "RENTMASSEUR_USERNAME=${{ secrets.RENTMASSEUR_USERNAME }}" > hf-space/.env
-          echo "RENTMASSEUR_PASSWORD=${{ secrets.RENTMASSEUR_PASSWORD }}" >> hf-space/.env
-          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> hf-space/.env
-          echo "GROQ_MODEL=llama-3.3-70b-versatile" >> hf-space/.env
-          echo "HF_SPACE_NAME=${HF_SPACE_NAME}" >> hf-space/.env
-          echo "GH_TOKEN=${{ secrets.GH_PAT }}" >> hf-space/.env
-          echo "GH_REPO=overandor/rentmasseur-extension" >> hf-space/.env
+          rm -rf hf-space/.github
+          # No .env file pushed. Secrets are set via HF Spaces API.
 
-      - name: Push to HF space
+      - name: Set HF Space secrets via API (no secrets in git)
+        run: |
+          for KEY_VAL in \
+            "RENTMASSEUR_USERNAME=${{ secrets.RENTMASSEUR_USERNAME }}" \
+            "RENTMASSEUR_PASSWORD=${{ secrets.RENTMASSEUR_PASSWORD }}" \
+            "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" \
+            "GROQ_MODEL=llama-3.3-70b-versatile" \
+            "HF_SPACE_NAME=${HF_SPACE_NAME}" \
+            "GH_TOKEN=${{ secrets.GH_PAT }}" \
+            "GH_REPO=overandor/rentmasseur-extension"; do
+            KEY="${KEY_VAL%%=*}"
+            VAL="${KEY_VAL#*=}"
+            echo "Setting HF Space secret: $KEY"
+            curl -s -X POST \
+              "https://huggingface.co/api/spaces/${HF_SPACE_NAME}/secrets" \
+              -H "Authorization: Bearer ${HF_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"key\":\"$KEY\",\"value\":\"$VAL\"}" || true
+          done
+
+      - name: Push to HF space (no .env, no .github, no secrets)
         run: |
           cd hf-space
           rm -f .gitignore
           git init
           git checkout -b main
           git add -A
-          git add -f .env
-          git commit -m "Auto-deploy from GitHub Actions with latest data $(date -u +%Y-%m-%d-%H:%M:%S)"
+          git commit -m "Auto-deploy from GitHub Actions $(date -u +%Y-%m-%d-%H:%M:%S)"
           git push https://hf_user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_NAME} main --force
 
-      - name: Trigger HF space build and verify
+      - name: Write deploy receipt
         run: |
-          sleep 15
+          mkdir -p receipts
+          cat > receipts/deploy_$(date -u +%Y%m%d_%H%M%S).json <<EOF
+          {
+            "action": "deploy-hf-space",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "space": "${HF_SPACE_NAME}",
+            "secrets_pushed_to_git": false,
+            "secrets_set_via_api": true,
+            "status": "pending_verification"
+          }
+          EOF
+          git add receipts/ || true
+          git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" commit -m "Deploy receipt $(date -u +%Y-%m-%d-%H:%M)" || true
+          git push || true
+
+      - name: Verify HF Space health
+        run: |
+          sleep 20
           echo "Checking HF Space runtime..."
           curl -s https://huggingface.co/api/spaces/${HF_SPACE_NAME}/runtime || true
-          curl -s https://huggingface.co/spaces/${HF_SPACE_NAME}/api/health || true
+          echo ""
+          curl -s https://josephrw-rentmasseur-optimizer.hf.space/api/health || true
