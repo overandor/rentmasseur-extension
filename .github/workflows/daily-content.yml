@@ -29,19 +29,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Generate daily content (bios, blog posts, interview questions + mass analysis)
+      - name: Generate daily evidence packet
         run: |
-          python3 content_generator.py
+          python3 daily_evidence.py
 
       - name: Generate social media posts
+        continue-on-error: true
         run: |
           python3 social_media_generator.py
 
       - name: Generate email templates
+        continue-on-error: true
         run: |
           python3 email_templates.py
 
       - name: Generate SEO keywords
+        continue-on-error: true
         run: |
           python3 seo_keywords.py
 

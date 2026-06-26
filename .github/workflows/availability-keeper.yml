@@ -53,11 +53,38 @@ jobs:
         run: |
           timeout 240 python3 rentmasseur_availability.py --headless true || echo "Availability keeper failed - will retry next run"
 
-      - name: Visit back recent visitors
+      - name: Visit back recent clients via direct API
         continue-on-error: true
         timeout-minutes: 5
         run: |
-          timeout 240 python3 visit_back.py --limit 30 || echo "Visit-back failed - will retry next run"
+          pip install requests
+          python3 -c "
+          import sys; sys.path.insert(0, '.')
+          from rm_traffic.api_client import RentMasseurAPI
+          import requests, time
+          from concurrent.futures import ThreadPoolExecutor
+          api = RentMasseurAPI(min_request_interval=0.3)
+          api.login('${RENTMASSEUR_USERNAME}', '${RENTMASSEUR_PASSWORD}')
+          api.set_track_actions(True)
+          usernames = set()
+          for page in range(1, 4):
+              mail = api.get_mailbox(page=page, folder=1)
+              for e in mail.get('emails', []):
+                  u = e.get('userCard', {}).get('username', '')
+                  if u: usernames.add(u)
+          usernames = sorted(usernames)[:30]
+          token = api.session.headers.get('Authorization', '')
+          cookies = {c.name: c.value for c in api.session.cookies}
+          def visit(u):
+              try:
+                  r = requests.get(f'https://rentmasseur.com/{u}', headers={'User-Agent': 'Mozilla/5.0', 'Authorization': token}, cookies=cookies, timeout=15)
+                  return r.status_code
+              except: return 'error'
+          with ThreadPoolExecutor(max_workers=33) as pool:
+              results = list(pool.map(visit, usernames))
+          ok = sum(1 for r in results if r == 200)
+          print(f'Visit-back: {ok}/{len(usernames)} OK')
+          " || echo "Visit-back failed - will retry next run"
 
       - name: Ingest manual metrics if provided
         if: ${{ github.event.inputs.manual_metrics != '' }}

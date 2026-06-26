@@ -28,26 +28,36 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Chrome and ChromeDriver
+      - name: Push approved bio via direct API
         run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
-          DRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_VERSION%%.*}")
-          wget -q "https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
-          unzip -q chromedriver-linux64.zip
-          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
-          sudo chmod +x /usr/local/bin/chromedriver
+          python3 push_bio.py --bio-id controlled_wolf_v1 --no-rebrandly
+        env:
+          RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME }}
+          RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD }}
 
-      - name: Generate fresh content
+      - name: Write receipt
         run: |
-          python3 content_generator.py --bios-only
+          mkdir -p receipts
+          cat > receipts/bio_update_$(date -u +%Y%m%d_%H%M%S).json <<EOF
+          {
+            "action": "auto-bio-update",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "bio_id": "controlled_wolf_v1",
+            "method": "direct_api",
+            "selenium": false,
+            "status": "completed"
+          }
+          EOF
 
-      - name: Update profile bio
+      - name: Commit receipt
         run: |
-          python3 auto_bio_updater.py --headless true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add receipts/ || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Bio update receipt $(date -u +%Y-%m-%d-%H:%M)"
+            git push
+          fi
 
       - name: Upload debug artifacts on failure
         if: failure()
