@@ -13,8 +13,14 @@ from typing import Optional
 import os
 
 from dotenv import load_dotenv
+try:
+    import undetected_chromedriver as uc
+    HAS_UC = True
+except ImportError:
+    HAS_UC = False
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
@@ -49,27 +55,44 @@ CHECK_INTERVAL_MINUTES = 5
 
 def setup_driver(headless: bool = True) -> webdriver.Chrome:
     """Configure and return a Chrome WebDriver instance with stealth options."""
-    chrome_options = Options()
-    if headless:
-        chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-    chrome_options.add_argument("--disable-extensions")
-    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    chrome_options.add_experimental_option("useAutomationExtension", False)
-    chrome_options.add_argument(
-        "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-    )
-
-    # Attempt to use chromedriver from PATH; Selenium Manager handles it automatically.
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-    driver.implicitly_wait(IMPLICIT_WAIT)
-    driver.set_page_load_timeout(PAGE_TIMEOUT)
-    return driver
+    if HAS_UC:
+        chrome_options = uc.ChromeOptions()
+        if headless:
+            chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        try:
+            import subprocess, re
+            chrome_ver_out = subprocess.check_output(["google-chrome", "--version"], stderr=subprocess.DEVNULL).decode().strip()
+            chrome_major = int(re.search(r'(\d+)\.', chrome_ver_out).group(1))
+            driver = uc.Chrome(options=chrome_options, version_main=chrome_major)
+        except Exception:
+            driver = uc.Chrome(options=chrome_options)
+        driver.implicitly_wait(IMPLICIT_WAIT)
+        driver.set_page_load_timeout(PAGE_TIMEOUT)
+        return driver
+    else:
+        chrome_options = Options()
+        if headless:
+            chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option("useAutomationExtension", False)
+        chrome_options.add_argument(
+            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+        )
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        driver.implicitly_wait(IMPLICIT_WAIT)
+        driver.set_page_load_timeout(PAGE_TIMEOUT)
+        return driver
 
 
 POPUP_DISMISS_SELECTORS = [
@@ -477,8 +500,88 @@ def brute_force_login(driver: webdriver.Chrome, max_retries: int = 5) -> bool:
 
 
 def login(driver: webdriver.Chrome) -> bool:
-    """Entry point: try brute-force discovery first."""
-    return brute_force_login(driver)
+    """Login using native input setter + Enter key (works with Next.js/React SPAs)."""
+    if not RENTMASSEUR_USERNAME or not RENTMASSEUR_PASSWORD:
+        logger.error("Missing credentials")
+        return False
+
+    for attempt in range(1, 4):
+        logger.info("Login attempt %d/3 — navigating to %s", attempt, LOGIN_URL)
+        driver.set_page_load_timeout(90)
+        driver.get(LOGIN_URL)
+        time.sleep(6)
+
+        # Check for CAPTCHA
+        captcha = driver.execute_script("""
+            return !!document.querySelector('.g-recaptcha, #captcha, iframe[src*="recaptcha"]');
+        """)
+        if captcha:
+            logger.warning("CAPTCHA detected on attempt %d — waiting", attempt)
+            time.sleep(10)
+            captcha = driver.execute_script("""
+                return !!document.querySelector('.g-recaptcha, #captcha, iframe[src*="recaptcha"]');
+            """)
+            if captcha:
+                logger.error("CAPTCHA still present after wait")
+                _dump_debug(driver, f"login_captcha_attempt{attempt}")
+                if attempt < 3:
+                    time.sleep(10)
+                    continue
+                return False
+
+        # Dismiss popups
+        dismiss_popups(driver)
+        time.sleep(2)
+
+        # Fill login form using native setter
+        result = driver.execute_script("""
+            const pwd = document.querySelector('input[type="password"]');
+            const user = document.querySelector('input[type="text"], input[type="email"]');
+            if (!pwd) return {error: 'no_password'};
+            if (!user) return {error: 'no_username'};
+            const ns = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+            ns.call(user, arguments[0]);
+            user.dispatchEvent(new Event('input', {bubbles: true}));
+            ns.call(pwd, arguments[1]);
+            pwd.dispatchEvent(new Event('input', {bubbles: true}));
+            return {ok: true, user_id: user.id, pwd_id: pwd.id};
+        """, RENTMASSEUR_USERNAME, RENTMASSEUR_PASSWORD)
+
+        if isinstance(result, dict) and 'error' in result:
+            logger.warning("Login form error on attempt %d: %s", attempt, result['error'])
+            _dump_debug(driver, f"login_{result['error']}_attempt{attempt}")
+            if attempt < 3:
+                time.sleep(10)
+                continue
+            return False
+
+        time.sleep(1)
+
+        # Submit via Enter key on password field
+        try:
+            pwd_el = driver.find_element(By.CSS_SELECTOR, 'input[type="password"]')
+            pwd_el.send_keys(Keys.ENTER)
+        except Exception:
+            driver.execute_script("""
+                const btn = document.querySelector('button[type="submit"]') ||
+                            Array.from(document.querySelectorAll('button')).find(b => /login|sign|submit/i.test(b.innerText));
+                if (btn) btn.click();
+            """)
+
+        time.sleep(5)
+
+        if LOGIN_URL not in driver.current_url:
+            logger.info("Login successful (redirected to %s)", driver.current_url)
+            return True
+
+        logger.warning("Still on login page after submit (attempt %d)", attempt)
+        _dump_debug(driver, f"login_still_on_page_attempt{attempt}")
+        if attempt < 3:
+            time.sleep(10)
+            continue
+
+    logger.error("Login failed after 3 attempts")
+    return False
 
 
 def _dump_debug(driver: webdriver.Chrome, label: str) -> None:
