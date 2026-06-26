@@ -1,0 +1,48 @@
+name: RentMasseur Availability Check
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      mock:
+        description: 'Use mock data instead of live scrape'
+        required: false
+        default: 'false'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Run availability checker
+        run: |
+          if [ "${{ github.event.inputs.mock }}" == "true" ]; then
+            python3 checker.py --mock --output availability.json
+          else
+            python3 checker.py --output availability.json
+          fi
+
+      - name: Commit and push updated availability
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain availability.json)" ]; then
+            git add availability.json
+            git commit -m "Update availability.json [skip ci]"
+            git push
+          else
+            echo "No availability changes to commit"
+          fi

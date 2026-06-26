@@ -1,0 +1,1 @@
+NEXT:open browser preview to http://127.0.0.1:8000/demo.html to see the injected panel. If Check Availability fails, it is because the booking server at localhost:3000 is not running; that is expected in this demo.
