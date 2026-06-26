@@ -4,6 +4,7 @@ Used by all 30 strategy scripts and the coordinator.
 """
 
 import os
+import re
 import sys
 import time
 import json
@@ -14,8 +15,14 @@ from datetime import datetime
 from typing import Optional
 
 from dotenv import load_dotenv
+try:
+    import undetected_chromedriver as uc
+    HAS_UC = True
+except ImportError:
+    HAS_UC = False
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 
@@ -45,20 +52,39 @@ os.makedirs(BIOS_DIR, exist_ok=True)
 
 
 def setup_driver(headless: bool = True) -> webdriver.Chrome:
-    opts = Options()
-    if headless:
-        opts.add_argument("--headless=new")
-    opts.add_argument("--no-sandbox")
-    opts.add_argument("--disable-dev-shm-usage")
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--window-size=1920,1080")
-    opts.add_argument(
-        "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-    )
-    driver = webdriver.Chrome(options=opts)
-    driver.implicitly_wait(IMPLICIT_WAIT)
-    driver.set_page_load_timeout(PAGE_TIMEOUT)
-    return driver
+    if HAS_UC:
+        opts = uc.ChromeOptions()
+        if headless:
+            opts.add_argument("--headless=new")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        opts.add_argument("--window-size=1920,1080")
+        opts.add_argument("--disable-blink-features=AutomationControlled")
+        try:
+            import subprocess
+            chrome_ver_out = subprocess.check_output(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"], stderr=subprocess.DEVNULL).decode().strip()
+            chrome_major = int(re.search(r'(\d+)\.', chrome_ver_out).group(1))
+            driver = uc.Chrome(options=opts, version_main=chrome_major)
+        except Exception:
+            driver = uc.Chrome(options=opts)
+        driver.implicitly_wait(IMPLICIT_WAIT)
+        driver.set_page_load_timeout(PAGE_TIMEOUT)
+        return driver
+    else:
+        opts = Options()
+        if headless:
+            opts.add_argument("--headless=new")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        opts.add_argument("--disable-gpu")
+        opts.add_argument("--window-size=1920,1080")
+        opts.add_argument(
+            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+        )
+        driver = webdriver.Chrome(options=opts)
+        driver.implicitly_wait(IMPLICIT_WAIT)
+        driver.set_page_load_timeout(PAGE_TIMEOUT)
+        return driver
 
 
 def _dump_debug(driver: webdriver.Chrome, label: str) -> None:
@@ -173,12 +199,25 @@ def login(driver: webdriver.Chrome) -> bool:
         user_sel = build_selector(result['user'])
         pwd_sel = build_selector(result['pwd'])
         btn_sel = build_selector(result['btn'])
-        driver.find_element(By.CSS_SELECTOR, user_sel).clear()
-        driver.find_element(By.CSS_SELECTOR, user_sel).send_keys(RENTMASSEUR_USERNAME)
-        driver.find_element(By.CSS_SELECTOR, pwd_sel).clear()
-        driver.find_element(By.CSS_SELECTOR, pwd_sel).send_keys(RENTMASSEUR_PASSWORD)
-        submit_btn = driver.find_element(By.CSS_SELECTOR, btn_sel)
-        driver.execute_script("arguments[0].click();", submit_btn)
+        # Use native setter for React/Next.js compatibility
+        driver.execute_script("""
+            const pwd = document.querySelector('input[type="password"]');
+            const user = document.querySelector('input[type="text"], input[type="email"]');
+            const ns = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+            if (user) { ns.call(user, arguments[0]); user.dispatchEvent(new Event('input', {bubbles: true})); }
+            if (pwd) { ns.call(pwd, arguments[1]); pwd.dispatchEvent(new Event('input', {bubbles: true})); }
+        """, RENTMASSEUR_USERNAME, RENTMASSEUR_PASSWORD)
+        time.sleep(1)
+        # Submit via Enter key on password field
+        try:
+            pwd_el = driver.find_element(By.CSS_SELECTOR, 'input[type="password"]')
+            pwd_el.send_keys(Keys.ENTER)
+        except Exception:
+            driver.execute_script("""
+                const btn = document.querySelector('button[type="submit"]') ||
+                            Array.from(document.querySelectorAll('button')).find(b => /login|sign|submit/i.test(b.innerText));
+                if (btn) btn.click();
+            """)
         time.sleep(5)
         if LOGIN_URL not in driver.current_url:
             logger.info("Login successful -> %s", driver.current_url)
