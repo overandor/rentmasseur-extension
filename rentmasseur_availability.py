@@ -4,6 +4,7 @@ Selenium automation script to keep rentmasseur.com availability set to 24/7.
 Credentials are loaded from a .env file or environment variables.
 """
 
+import argparse
 import sys
 import time
 import logging
@@ -21,6 +22,7 @@ from selenium.common.exceptions import (
     TimeoutException,
     NoSuchElementException,
     WebDriverException,
+    ElementClickInterceptedException,
 )
 logging.basicConfig(
     level=logging.INFO,
@@ -46,7 +48,7 @@ CHECK_INTERVAL_MINUTES = 5
 
 
 def setup_driver(headless: bool = True) -> webdriver.Chrome:
-    """Configure and return a Chrome WebDriver instance."""
+    """Configure and return a Chrome WebDriver instance with stealth options."""
     chrome_options = Options()
     if headless:
         chrome_options.add_argument("--headless=new")
@@ -54,15 +56,110 @@ def setup_driver(headless: bool = True) -> webdriver.Chrome:
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option("useAutomationExtension", False)
     chrome_options.add_argument(
         "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
     )
 
     # Attempt to use chromedriver from PATH; Selenium Manager handles it automatically.
     driver = webdriver.Chrome(options=chrome_options)
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     driver.implicitly_wait(IMPLICIT_WAIT)
     driver.set_page_load_timeout(PAGE_TIMEOUT)
     return driver
+
+
+POPUP_DISMISS_SELECTORS = [
+    # Cookie / GDPR consent
+    "button[id*='cookie']",
+    "button[class*='cookie']",
+    "button[aria-label*='cookie']",
+    "button[aria-label*='Cookie']",
+    "button[aria-label*='Accept']",
+    "button[aria-label*='accept']",
+    "button[data-testid*='cookie']",
+    "button[data-testid*='close']",
+    "a[href*='cookie']",
+    "[class*='cookie-banner'] button",
+    "[class*='cookieConsent'] button",
+    "[class*='gdpr'] button",
+    "[class*='consent'] button",
+    "[id*='onetrust'] button",
+    "[id*='CybotCookiebotDialogBodyButton']",
+    "[class*='banner'] button[aria-label*='close']",
+    "[class*='modal'] button[aria-label*='close']",
+    "[class*='dialog'] button[aria-label*='close']",
+    "[role='dialog'] button",
+    "[role='alert'] button",
+    # Text-based common buttons
+    "//button[contains(text(),'Accept')]",
+    "//button[contains(text(),'OK')]",
+    "//button[contains(text(),'Got it')]",
+    "//button[contains(text(),'Dismiss')]",
+    "//button[contains(text(),'Agree')]",
+    "//button[contains(text(),'Continue')]",
+    "//button[contains(text(),'I understand')]",
+    "//button[contains(text(),'Allow')]",
+    "//button[contains(text(),'Enable')]",
+    "//button[contains(text(),'Maybe later')]",
+    "//button[contains(text(),'Not now')]",
+    "//button[contains(text(),'Close')]",
+    "//button[contains(text(),'×')]",
+    "//a[contains(text(),'Accept')]",
+    "//a[contains(text(),'Dismiss')]",
+]
+
+
+def dismiss_popups(driver: webdriver.Chrome) -> None:
+    """Dismiss cookie banners, GDPR dialogs, and other popups that block interaction."""
+    clicked = 0
+    # Try CSS selectors first via JS (fastest)
+    for selector in POPUP_DISMISS_SELECTORS:
+        if not selector.startswith("//"):
+            try:
+                elements = driver.execute_script(
+                    "return Array.from(document.querySelectorAll(arguments[0])).filter(el => el.offsetParent !== null);",
+                    selector,
+                )
+                for el in elements:
+                    try:
+                        driver.execute_script("arguments[0].scrollIntoView({block: 'center'}); arguments[0].click();", el)
+                        clicked += 1
+                        time.sleep(0.3)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+    # Try XPath selectors
+    for xpath in POPUP_DISMISS_SELECTORS:
+        if xpath.startswith("//"):
+            try:
+                elements = driver.find_elements(By.XPATH, xpath)
+                for el in elements:
+                    try:
+                        if el.is_displayed():
+                            driver.execute_script("arguments[0].scrollIntoView({block: 'center'}); arguments[0].click();", el)
+                            clicked += 1
+                            time.sleep(0.3)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+    # Generic overlay / modal close via JS: try to click anything with 'close' or 'dismiss' aria-label
+    try:
+        driver.execute_script("""
+            const closeBtns = Array.from(document.querySelectorAll('button, a, [role="button"]'))
+                .filter(b => b.offsetParent !== null &&
+                    (/close|dismiss|reject|deny|skip|cancel/i.test((b.getAttribute('aria-label')||'') + ' ' + (b.innerText||''))));
+            closeBtns.forEach(b => { try { b.click(); } catch(e) {} });
+        """)
+    except Exception:
+        pass
+    if clicked:
+        logger.info("Dismissed %d popup/banner elements", clicked)
 
 
 def _find_element(driver, by, value, timeout=5):
@@ -152,21 +249,9 @@ def brute_force_login(driver: webdriver.Chrome) -> bool:
         driver.get(LOGIN_URL)
         time.sleep(3)  # Wait for React/Next.js hydration
 
-        # Dismiss cookie/GPS banners
-        for banner_xpath in [
-            "/html/body/div/div/main/div/div[4]/footer/div",
-            "//button[contains(text(),'Accept')]",
-            "//button[contains(text(),'OK')]",
-            "//button[contains(text(),'Got it')]",
-            "//button[contains(text(),'Dismiss')]",
-        ]:
-            try:
-                el = driver.find_element(By.XPATH, banner_xpath)
-                driver.execute_script("arguments[0].click();", el)
-                logger.info("Dismissed banner: %s", banner_xpath)
-                time.sleep(0.5)
-            except NoSuchElementException:
-                pass
+        # Dismiss cookie/GPS banners and other popups
+        dismiss_popups(driver)
+        time.sleep(1)
 
         # Brute-force: ask the browser to find login fields for us
         result = driver.execute_script("""
@@ -292,6 +377,7 @@ def brute_force_login(driver: webdriver.Chrome) -> bool:
         time.sleep(3)
         
         # Verify login success
+        dismiss_popups(driver)
         current_url = driver.current_url
         if LOGIN_URL not in current_url:
             logger.info("Login successful (redirected to %s)", current_url)
@@ -350,6 +436,9 @@ def set_availability_24_7(driver: webdriver.Chrome) -> bool:
         logger.info("Navigating to availability settings: %s", AVAILABILITY_URL)
         driver.get(AVAILABILITY_URL)
         time.sleep(3)  # Let page render
+
+        # Dismiss any popups that could block the availability controls
+        dismiss_popups(driver)
 
         # Do everything in JS since the two selects share identical classes
         ok = driver.execute_script("""
@@ -432,12 +521,23 @@ def run_once(headless: bool = True) -> bool:
 
 
 def main() -> None:
-    """Run the availability keeper in a loop."""
-    headless = True
-    run_count = 0
+    """Run the availability keeper in a loop or once for CI/CD."""
+    parser = argparse.ArgumentParser(description="Keep RentMasseur availability set to 24/7")
+    parser.add_argument("--once", action="store_true", help="Run a single check and exit (for CI/CD)")
+    parser.add_argument("--headless", default="true", help="Run headless (true/false)")
+    parser.add_argument("--interval", type=int, default=CHECK_INTERVAL_MINUTES, help="Loop interval in minutes")
+    args = parser.parse_args()
 
+    headless = args.headless.lower() != "false"
+
+    if args.once:
+        logger.info("Running single availability check")
+        success = run_once(headless=headless)
+        sys.exit(0 if success else 1)
+
+    run_count = 0
     logger.info("Starting RentMasseur 24/7 availability keeper")
-    logger.info("Check interval: %d minutes", CHECK_INTERVAL_MINUTES)
+    logger.info("Check interval: %d minutes", args.interval)
 
     while True:
         run_count += 1
@@ -448,8 +548,8 @@ def main() -> None:
         else:
             logger.error("Run #%d failed", run_count)
 
-        sleep_seconds = CHECK_INTERVAL_MINUTES * 60
-        logger.info("Sleeping for %d minutes...", CHECK_INTERVAL_MINUTES)
+        sleep_seconds = args.interval * 60
+        logger.info("Sleeping for %d minutes...", args.interval)
         time.sleep(sleep_seconds)
 
 

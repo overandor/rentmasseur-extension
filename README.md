@@ -62,6 +62,21 @@ Run the coordinator with intent routing to pick top bio strategies:
 python3 rentmasseur_coordinator.py --pick-best --top-n 5
 ```
 
+## Autonomous CI/CD 24/7 availability keeper
+
+The repo includes `.github/workflows/availability-keeper.yml` which runs every 5 minutes (GitHub's fastest schedule) and logs into your RentMasseur account to keep availability set to 24/7. No mock data, no simulation — it uses real Selenium automation against the live site.
+
+Required GitHub secrets (Settings → Secrets and variables → Actions):
+
+- `RENTMASSEUR_USERNAME`
+- `RENTMASSEUR_PASSWORD`
+
+You can also run the keeper in a tight local loop:
+
+```bash
+python3 rentmasseur_availability.py --interval 1
+```
+
 ## What it does
 
 - Detects when you view a masseur profile on `rentmasseur.com`
