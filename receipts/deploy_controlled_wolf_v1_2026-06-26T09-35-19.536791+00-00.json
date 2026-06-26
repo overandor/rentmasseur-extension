@@ -1,0 +1,8 @@
+{
+  "action": "bio_deploy",
+  "bio_id": "controlled_wolf_v1",
+  "experiment_id": "exp_001_targeted_wolf",
+  "success": false,
+  "timestamp": "2026-06-26T09:35:19.536791+00:00",
+  "notes": "dry_run_only"
+}

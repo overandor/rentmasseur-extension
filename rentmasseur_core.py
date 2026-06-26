@@ -85,7 +85,7 @@ def login(driver: webdriver.Chrome) -> bool:
         logger.info("Navigating to login: %s", LOGIN_URL)
         driver.set_page_load_timeout(90)
         driver.get(LOGIN_URL)
-        time.sleep(5)
+        time.sleep(8)
         for xpath in [
             "//button[contains(text(),'Accept')]",
             "//button[contains(text(),'OK')]",
@@ -101,10 +101,25 @@ def login(driver: webdriver.Chrome) -> bool:
             except NoSuchElementException:
                 pass
 
-        for attempt in range(1, 4):
-            logger.info("Login discovery attempt %d/3", attempt)
+        for attempt in range(1, 5):
+            logger.info("Login discovery attempt %d/5", attempt)
+            time.sleep(3)
             result = driver.execute_script("""
-                const pwd = document.querySelector('input[type=\"password\"]');
+                let pwd = document.querySelector('input[type=\"password\"]');
+                if (!pwd) {
+                    pwd = document.querySelector('input[name*=\"pass\" i]') ||
+                          document.querySelector('input[id*=\"pass\" i]') ||
+                          document.querySelector('input[placeholder*=\"pass\" i]') ||
+                          document.querySelector('input[class*=\"pass\" i]');
+                    if (pwd) { pwd.type = 'password'; }
+                }
+                if (!pwd) {
+                    const allInputs = Array.from(document.querySelectorAll('input'));
+                    for (const inp of allInputs) {
+                        const ctx = (inp.name||'') + ' ' + (inp.id||'') + ' ' + (inp.placeholder||'') + ' ' + (inp.className||'');
+                        if (/pass/i.test(ctx)) { pwd = inp; break; }
+                    }
+                }
                 if (!pwd) return {error: 'no_password'};
                 const allInputs = Array.from(document.querySelectorAll('input'));
                 const candidates = allInputs.filter(i => i !== pwd && (i.type === 'text' || i.type === 'email'));
@@ -141,10 +156,10 @@ def login(driver: webdriver.Chrome) -> bool:
             if isinstance(result, dict) and 'error' not in result:
                 break
             logger.warning("Login attempt %d failed: %s", attempt, result.get('error'))
-            if attempt < 3:
+            if attempt < 5:
                 time.sleep(5)
             else:
-                logger.error("Login failed after 3 attempts")
+                logger.error("Login failed after 5 attempts")
                 _dump_debug(driver, f"login_{result.get('error','unknown')}")
                 return False
 
