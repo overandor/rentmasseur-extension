@@ -383,12 +383,12 @@ static void handle_client(int client_socket) {
         response = "{\"status\":\"started\",\"command\":\"ga+rl\"}";
     } else if (path == "/api/run/orchestrator") {
         std::thread([]() {
-            run_command("./orchestrator");
+            run_command("python3 orchestrator.py");
         }).detach();
         response = "{\"status\":\"started\",\"command\":\"orchestrator\"}";
     } else if (path == "/api/run/availability") {
         std::thread([]() {
-            run_command("./rentmasseur_availability --once --headless true");
+            run_command("python3 rentmasseur_availability.py --once --headless true");
         }).detach();
         response = "{\"status\":\"started\",\"command\":\"availability\"}";
     } else {
