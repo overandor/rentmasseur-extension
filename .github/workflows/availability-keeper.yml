@@ -1,6 +1,8 @@
 name: RentMasseur Metrics & Availability Keeper
 
 on:
+  schedule:
+    - cron: '*/30 * * * *'
   workflow_dispatch:
     inputs:
       manual_metrics:
@@ -13,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,6 +32,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install Chrome and ChromeDriver
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
+          DRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_VERSION%%.*}")
+          wget -q "https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
+          unzip -q chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+
+      - name: Keep availability 24/7
+        continue-on-error: true
+        run: |
+          python3 rentmasseur_availability.py --headless true || echo "Availability keeper failed (possibly CAPTCHA) - will retry next run"
+
       - name: Ingest manual metrics if provided
         if: ${{ github.event.inputs.manual_metrics != '' }}
         run: |
@@ -34,7 +57,7 @@ jobs:
           echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"source\":\"manual_upload\",\"body\":${{ github.event.inputs.manual_metrics }}}" >> content/metrics_ingest.jsonl
           echo "Manual metrics ingested."
 
-      - name: Fetch metrics from HF Space ingest endpoint
+      - name: Fetch metrics from HF Space
         run: |
           mkdir -p content
           curl -s "https://josephrw-rentmasseur-optimizer.hf.space/api/report" -o content/hf_report.json || true
@@ -56,7 +79,7 @@ jobs:
           git add availability.json || true
           git add receipts/ || true
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Metrics collection + proof: first-party data $(date -u +%Y-%m-%d-%H:%M)"
+            git commit -m "Metrics + availability keeper: $(date -u +%Y-%m-%d-%H:%M)"
             git push
           else
             echo "No changes to commit"
