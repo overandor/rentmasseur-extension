@@ -1,0 +1,59 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Hugging Face CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install huggingface-hub
+
+      - name: Configure HF credentials
+        run: |
+          git config --global credential.helper store
+          echo "https://hf_user:${HF_TOKEN}@huggingface.co" > ~/.git-credentials
+          huggingface-cli login --token ${HF_TOKEN}
+
+      - name: Clone existing HF space
+        run: |
+          git clone https://huggingface.co/spaces/${HF_SPACE_NAME} hf-space || true
+
+      - name: Sync files to HF space
+        run: |
+          rm -rf hf-space/*
+          cp -r . hf-space/
+          rm -rf hf-space/.git
+          rm -rf hf-space/.env
+          rm -rf hf-space/debug
+          rm -rf hf-space/content/*.json
+          rm -rf hf-space/content/*.md
+          echo "RENTMASSEUR_USERNAME=${{ secrets.RENTMASSEUR_USERNAME }}" > hf-space/.env
+          echo "RENTMASSEUR_PASSWORD=${{ secrets.RENTMASSEUR_PASSWORD }}" >> hf-space/.env
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> hf-space/.env
+          echo "GROQ_MODEL=llama-3.3-70b-versatile" >> hf-space/.env
+
+      - name: Push to HF space
+        run: |
+          cd hf-space
+          git init
+          git add -A
+          git commit -m "Deploy from GitHub Actions $(date -u +%Y-%m-%d-%H:%M:%S)"
+          git push https://hf_user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_NAME} main --force
+
+      - name: Trigger HF space build
+        run: |
+          sleep 10
+          curl -s https://huggingface.co/spaces/${HF_SPACE_NAME}/api/health || true

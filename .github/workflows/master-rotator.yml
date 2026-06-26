@@ -1,0 +1,96 @@
+name: RentMasseur Master Rotator
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no profile changes)'
+        required: false
+        default: 'false'
+      components:
+        description: 'Comma-separated: bio,photo,price,interview,blog,all'
+        required: false
+        default: 'all'
+
+jobs:
+  rotate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_MODEL: llama-3.3-70b-versatile
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Install Chrome and ChromeDriver
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
+          DRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_VERSION%%.*}")
+          wget -q "https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
+          unzip -q chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+
+      - name: Collect RL stats
+        run: |
+          python3 rl_feedback.py
+
+      - name: Generate fresh content
+        run: |
+          python3 content_generator.py
+          python3 interview_rotator.py
+          python3 blog_rotator.py
+
+      - name: Run full rotation
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            python3 orchestrator.py --all --dry-run
+          else
+            python3 orchestrator.py --all
+          fi
+
+      - name: Run availability keeper
+        run: |
+          python3 rentmasseur_availability.py --once --headless true
+
+      - name: Commit and push state + content
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/ || true
+          git add availability.json || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Autonomous rotation: bio/photo/price/interview/blog + RL state $(date -u +%Y-%m-%d-%H:%M)"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rotation-debug
+          path: debug/
+          retention-days: 7
