@@ -131,6 +131,13 @@ Click the extension icon in the toolbar → set your **Booking Server URL** (def
 | `rentmasseur_core.py` | Shared Selenium driver, login, bio utilities |
 | `intent_router.py` | Groq-based strategy selection |
 | `content_generator.py` | Daily bios, blog posts, interview questions + mass analysis |
+| `auto_bio_updater.py` | Auto-selects best bio and updates profile via Selenium |
+| `competitor_scraper.py` | Scrapes competitor profiles for analysis |
+| `social_media_generator.py` | Generates posts for Twitter, Instagram, Facebook, LinkedIn |
+| `email_templates.py` | Generates booking/follow-up/promotional email templates |
+| `seo_keywords.py` | Generates SEO keyword research for each strategy |
+| `dashboard.py` | FastAPI dashboard for browsing all generated content |
+| `weekly_report.py` | Compiles weekly performance and content report |
 | `.env.example` | Required environment variables |
 
 ## Requirements
