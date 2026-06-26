@@ -32,4 +32,4 @@ ENV PORT=7860
 
 EXPOSE 7860
 
-CMD ["sh", "-c", "set -a && . .env 2>/dev/null; exec ./cpp_os_server 7860"]
+CMD ["./cpp_os_server", "7860"]
