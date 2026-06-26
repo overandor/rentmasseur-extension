@@ -32,22 +32,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Chrome
+      - name: Install Chrome and ChromeDriver
         run: |
           wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
+          DRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_VERSION%%.*}")
+          wget -q "https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
+          unzip -q chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+          echo "Chrome: $(google-chrome --version)"
+          echo "ChromeDriver: $(chromedriver --version)"
 
       - name: Keep availability 24/7
         continue-on-error: true
+        timeout-minutes: 5
         run: |
-          python3 rentmasseur_availability.py --headless true || echo "Availability keeper failed - will retry next run"
+          timeout 240 python3 rentmasseur_availability.py --headless true || echo "Availability keeper failed - will retry next run"
 
       - name: Visit back recent visitors
         continue-on-error: true
+        timeout-minutes: 5
         run: |
-          python3 visit_back.py --limit 30 || echo "Visit-back failed - will retry next run"
+          timeout 240 python3 visit_back.py --limit 30 || echo "Visit-back failed - will retry next run"
 
       - name: Ingest manual metrics if provided
         if: ${{ github.event.inputs.manual_metrics != '' }}
