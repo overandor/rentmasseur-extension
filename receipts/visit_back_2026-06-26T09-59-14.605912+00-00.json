@@ -1,0 +1,74 @@
+{
+  "action": "visit_back",
+  "success": true,
+  "timestamp": "2026-06-26T09:59:14.605912+00:00",
+  "visitors_found": 13,
+  "dry_run": true,
+  "visitor_list": [
+    {
+      "name": "jetflight",
+      "url": "https://rentmasseur.com/jetflight",
+      "username": "jetflight"
+    },
+    {
+      "name": "Jerbolt",
+      "url": "https://rentmasseur.com/Jerbolt",
+      "username": "Jerbolt"
+    },
+    {
+      "name": "Mcmark",
+      "url": "https://rentmasseur.com/Mcmark",
+      "username": "Mcmark"
+    },
+    {
+      "name": "Gingerman",
+      "url": "https://rentmasseur.com/Gingerman",
+      "username": "Gingerman"
+    },
+    {
+      "name": "GAZITT",
+      "url": "https://rentmasseur.com/GAZITT",
+      "username": "GAZITT"
+    },
+    {
+      "name": "pierrejms",
+      "url": "https://rentmasseur.com/pierrejms",
+      "username": "pierrejms"
+    },
+    {
+      "name": "BeauLaid",
+      "url": "https://rentmasseur.com/BeauLaid",
+      "username": "BeauLaid"
+    },
+    {
+      "name": "JohnJChristopher",
+      "url": "https://rentmasseur.com/JohnJChristopher",
+      "username": "JohnJChristopher"
+    },
+    {
+      "name": "lemmesee",
+      "url": "https://rentmasseur.com/lemmesee",
+      "username": "lemmesee"
+    },
+    {
+      "name": "Benyou",
+      "url": "https://rentmasseur.com/Benyou",
+      "username": "Benyou"
+    },
+    {
+      "name": "Karpathianwolf",
+      "url": "https://rentmasseur.com/Karpathianwolf",
+      "username": "Karpathianwolf"
+    },
+    {
+      "name": "sitemap",
+      "url": "https://rentmasseur.com/sitemap",
+      "username": "sitemap"
+    },
+    {
+      "name": "topics",
+      "url": "https://rentmasseur.com/topics",
+      "username": "topics"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "action": "visit_back",
+  "success": true,
+  "timestamp": "2026-06-26T10:02:07.796458+00:00",
+  "visitors_found": 13,
+  "visited_count": 13,
+  "visited": [
+    {
+      "username": "jetflight",
+      "url": "https://rentmasseur.com/jetflight",
+      "visited_at": "2026-06-26T10:00:56.335040+00:00"
+    },
+    {
+      "username": "Jerbolt",
+      "url": "https://rentmasseur.com/Jerbolt",
+      "visited_at": "2026-06-26T10:01:02.000029+00:00"
+    },
+    {
+      "username": "Mcmark",
+      "url": "https://rentmasseur.com/Mcmark",
+      "visited_at": "2026-06-26T10:01:07.863235+00:00"
+    },
+    {
+      "username": "Gingerman",
+      "url": "https://rentmasseur.com/Gingerman",
+      "visited_at": "2026-06-26T10:01:13.808062+00:00"
+    },
+    {
+      "username": "GAZITT",
+      "url": "https://rentmasseur.com/GAZITT",
+      "visited_at": "2026-06-26T10:01:19.464129+00:00"
+    },
+    {
+      "username": "pierrejms",
+      "url": "https://rentmasseur.com/pierrejms",
+      "visited_at": "2026-06-26T10:01:25.341241+00:00"
+    },
+    {
+      "username": "BeauLaid",
+      "url": "https://rentmasseur.com/BeauLaid",
+      "visited_at": "2026-06-26T10:01:30.965049+00:00"
+    },
+    {
+      "username": "JohnJChristopher",
+      "url": "https://rentmasseur.com/JohnJChristopher",
+      "visited_at": "2026-06-26T10:01:36.604610+00:00"
+    },
+    {
+      "username": "lemmesee",
+      "url": "https://rentmasseur.com/lemmesee",
+      "visited_at": "2026-06-26T10:01:42.299634+00:00"
+    },
+    {
+      "username": "Benyou",
+      "url": "https://rentmasseur.com/Benyou",
+      "visited_at": "2026-06-26T10:01:48.636577+00:00"
+    },
+    {
+      "username": "Karpathianwolf",
+      "url": "https://rentmasseur.com/Karpathianwolf",
+      "visited_at": "2026-06-26T10:01:54.591970+00:00"
+    },
+    {
+      "username": "sitemap",
+      "url": "https://rentmasseur.com/sitemap",
+      "visited_at": "2026-06-26T10:02:00.146030+00:00"
+    },
+    {
+      "username": "topics",
+      "url": "https://rentmasseur.com/topics",
+      "visited_at": "2026-06-26T10:02:05.793277+00:00"
+    }
+  ]
+}

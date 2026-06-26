@@ -47,43 +47,42 @@ def scrape_visitors(driver):
 
     visitors = driver.execute_script("""
         const result = [];
-        // Look for visitor links/profiles
-        const links = Array.from(document.querySelectorAll('a'));
-        for (const a of links) {
-            const href = a.href || '';
-            const text = a.innerText.trim();
-            // Visitor profile links look like /username
-            if (href.startsWith('https://rentmasseur.com/') && 
-                !href.includes('/settings/') && 
-                !href.includes('/gay-massage/') &&
-                !href.includes('/login') &&
-                !href.includes('/about/') &&
-                !href.includes('/stream') &&
-                !href.includes('/masseurcams') &&
-                !href.includes('/advertise') &&
-                text && text.length > 1 && text.length < 50 &&
-                !['Home','FIND MASSAGE','AVAILABLE NOW','BLOG','LIVE CAMS',
-                  'ACCEPT ALL','NOT NOW','YES','SEARCH','Dashboard','Mailbox',
-                  'About Me','Photos','Location & Travels','Massages & Rates',
-                  'My Blog','My Interview','Reviews','Certificate','Profile',
-                  'Account','Contacts & Login info','Visits','Favorites',
-                  'Blocked','Statistics','Privacy','Homepage Banner',
-                  'Masseur of the Day','RentMasseur Sponsor'].includes(text)) {
-                const path = new URL(href).pathname;
-                if (path && path !== '/' && !path.includes('/')) {
-                    result.push({username: path.replace('/',''), url: href, name: text});
-                } else if (path && path.split('/').length === 2 && path.split('/')[0] !== '') {
-                    result.push({username: path.replace('/',''), url: href, name: text});
+        const seen = new Set();
+        
+        // Method 1: Find profile photo links (img alt="Profile photo" inside <a>)
+        const profileImgs = document.querySelectorAll('img[alt="Profile photo"], img[alt="profile-picture"]');
+        for (const img of profileImgs) {
+            const a = img.closest('a');
+            if (a && a.href) {
+                const path = new URL(a.href).pathname;
+                const username = path.replace('/', '');
+                if (username && !seen.has(username) && !username.includes('settings') && !username.includes('gay-massage')) {
+                    seen.add(username);
+                    result.push({username: username, url: a.href, name: username});
                 }
             }
         }
-        // Deduplicate by username
-        const seen = new Set();
-        return result.filter(v => {
-            if (seen.has(v.username)) return false;
-            seen.add(v.username);
-            return true;
-        });
+        
+        // Method 2: Find links to /username patterns (not settings/gay-massage/etc)
+        const links = Array.from(document.querySelectorAll('a[href]'));
+        for (const a of links) {
+            const href = a.href;
+            if (!href.startsWith('https://rentmasseur.com/')) continue;
+            const path = new URL(href).pathname;
+            // Single-segment paths = usernames (e.g. /Jerbolt)
+            if (path && path !== '/' && path.split('/').length === 2 && path.split('/')[1] !== '') {
+                const username = path.replace('/', '');
+                if (!seen.has(username) && 
+                    !['settings','gay-massage','stream','masseurcams','advertise','about','login','sitemap','topics','robots','api'].includes(username) &&
+                    !username.startsWith('_') &&
+                    username.length > 2) {
+                    seen.add(username);
+                    result.push({username: username, url: href, name: username});
+                }
+            }
+        }
+        
+        return result;
     """)
     return visitors
 
