@@ -29,6 +29,8 @@ static std::string ADMIN_TOKEN = std::getenv("ADMIN_TOKEN") ? std::getenv("ADMIN
 static const std::string CONTENT_DIR = "./content";
 static const std::string RECEIPTS_DIR = "./receipts";
 static const std::string AVAILABILITY_FILE = "./availability.json";
+static const std::string KPI_DIR = "./content/kpis";
+static const std::string KPI_PATH = "./content/kpis/hourly_kpis.jsonl";
 
 static void ensure_dir(const std::string& path) {
     mkdir(path.c_str(), 0755);
@@ -223,6 +225,195 @@ static std::string action_response(const std::string& action, const std::string&
     return ss.str();
 }
 
+// ─── War-Grade KPI Engine ───
+
+struct MetricSnapshot {
+    long profile_views = 0;
+    long contact_clicks = 0;
+    long new_visits = 0;
+    long new_emails = 0;
+    long online_bookmarks = 0;
+    bool profile_visible = false;
+    bool available = false;
+    long public_visits = 0;
+    long days_online = 0;
+    double views_per_day = 0.0;
+};
+
+static long extract_long(const std::string& json, const std::string& key) {
+    std::string needle = "\"" + key + "\"";
+    size_t pos = json.find(needle);
+    if (pos == std::string::npos) return 0;
+    pos = json.find(":", pos);
+    if (pos == std::string::npos) return 0;
+    pos++;
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t')) pos++;
+    return std::atol(json.c_str() + pos);
+}
+
+static double extract_double(const std::string& json, const std::string& key) {
+    std::string needle = "\"" + key + "\"";
+    size_t pos = json.find(needle);
+    if (pos == std::string::npos) return 0.0;
+    pos = json.find(":", pos);
+    if (pos == std::string::npos) return 0.0;
+    pos++;
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t')) pos++;
+    return std::atof(json.c_str() + pos);
+}
+
+static bool extract_bool(const std::string& json, const std::string& key) {
+    std::string needle = "\"" + key + "\"";
+    size_t pos = json.find(needle);
+    if (pos == std::string::npos) return false;
+    pos = json.find(":", pos);
+    if (pos == std::string::npos) return false;
+    pos++;
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t')) pos++;
+    return json.substr(pos, 4) == "true";
+}
+
+static std::vector<MetricSnapshot> load_metric_snapshots() {
+    std::vector<MetricSnapshot> snaps;
+    std::string content = read_file(CONTENT_DIR + "/metrics_ingest.jsonl");
+    if (content.empty()) return snaps;
+    std::istringstream stream(content);
+    std::string line;
+    while (std::getline(stream, line)) {
+        if (line.empty()) continue;
+        MetricSnapshot s;
+        // Try dashboard fields
+        s.profile_views = extract_long(line, "profile_views");
+        s.contact_clicks = extract_long(line, "contact_clicks");
+        s.new_visits = extract_long(line, "new_visits");
+        s.new_emails = extract_long(line, "new_emails");
+        s.online_bookmarks = extract_long(line, "online_bookmarks");
+        s.profile_visible = extract_bool(line, "profile_visible");
+        s.available = extract_bool(line, "available");
+        // Try public_profile fields
+        s.public_visits = extract_long(line, "public_visits");
+        s.days_online = extract_long(line, "days_online");
+        s.views_per_day = extract_double(line, "views_per_day");
+        // Only add if we got something real
+        if (s.profile_views > 0 || s.public_visits > 0 || s.days_online > 0) {
+            snaps.push_back(s);
+        }
+    }
+    return snaps;
+}
+
+static std::string compute_immortality(const std::vector<MetricSnapshot>& snaps) {
+    if (snaps.empty()) {
+        return "{\"score\":0.0,\"grade\":\"NO_DATA\",\"components\":{}}";
+    }
+    const auto& latest = snaps.back();
+    double days_online = (double)latest.days_online;
+    double vpd = latest.views_per_day;
+
+    double profile_age_score = std::min(days_online / 1000.0, 1.0);
+
+    // Views/day trend
+    double vpd_trend = 0.5;
+    if (snaps.size() >= 2) {
+        double recent = 0, older = 0; int rc = 0, oc = 0;
+        for (size_t i = 0; i < snaps.size(); i++) {
+            if (i >= snaps.size() - 2) { recent += snaps[i].views_per_day; rc++; }
+            else { older += snaps[i].views_per_day; oc++; }
+        }
+        if (oc > 0 && older > 0) vpd_trend = std::min((recent / rc) / (older / oc), 2.0) / 2.0;
+        else if (rc > 0 && recent > 0) vpd_trend = 0.6;
+    }
+
+    double vis_count = 0, avail_count = 0;
+    for (const auto& s : snaps) { if (s.profile_visible) vis_count++; if (s.available) avail_count++; }
+    double vis_persist = vis_count / (double)snaps.size();
+    double avail_stab = avail_count / (double)snaps.size();
+    double retention = vpd > 0 ? std::min(vpd / 100.0, 1.0) : 0.0;
+
+    double score = profile_age_score * 0.25 + vpd_trend * 0.25 + vis_persist * 0.20 + avail_stab * 0.15 + retention * 0.15;
+
+    const char* grade = score >= 0.80 ? "IMMORTAL" : score >= 0.60 ? "RESILIENT" : score >= 0.40 ? "STABLE" : score >= 0.20 ? "FRAGILE" : "DECLINING";
+
+    char buf[512];
+    std::snprintf(buf, sizeof(buf),
+        "{\"score\":%.4f,\"grade\":\"%s\",\"components\":{"
+        "\"days_online\":%ld,\"views_per_day\":%.1f,\"profile_age_score\":%.4f,"
+        "\"views_per_day_trend\":%.4f,\"visibility_persistence\":%.4f,"
+        "\"availability_stability\":%.4f,\"retention_score\":%.4f}}",
+        score, grade, latest.days_online, vpd, profile_age_score, vpd_trend, vis_persist, avail_stab, retention);
+    return std::string(buf);
+}
+
+static std::string compute_virality(const std::vector<MetricSnapshot>& snaps) {
+    if (snaps.empty()) {
+        return "{\"score\":0.0,\"grade\":\"NO_DATA\",\"components\":{}}";
+    }
+    const auto& latest = snaps.back();
+    long pv = latest.profile_views;
+    long cc = latest.contact_clicks;
+    long nv = latest.new_visits;
+    long ne = latest.new_emails;
+    long ob = latest.online_bookmarks;
+
+    long views_velocity = 0, contact_velocity = 0;
+    double views_accel = 0.0;
+    if (snaps.size() >= 2) {
+        views_velocity = std::max(pv - snaps[snaps.size()-2].profile_views, 0L);
+        contact_velocity = std::max(cc - snaps[snaps.size()-2].contact_clicks, 0L);
+    }
+    if (snaps.size() >= 3) {
+        long v1 = std::max(snaps[snaps.size()-2].profile_views - snaps[snaps.size()-3].profile_views, 0L);
+        long v2 = views_velocity;
+        if (v1 > 0) views_accel = (double)(v2 - v1) / (double)v1;
+        else if (v2 > 0) views_accel = 1.0;
+    }
+
+    double new_visitor_rate = pv > 0 ? (double)nv / pv : 0;
+    double bookmark_rate = pv > 0 ? (double)ob / pv : 0;
+    double email_rate = pv > 0 ? (double)ne / pv : 0;
+    double ctr = pv > 0 ? (double)cc / pv : 0;
+
+    double vv_norm = std::min(views_velocity / 50.0, 1.0);
+    double va_norm = std::min(std::max(views_accel, 0.0) / 0.5, 1.0);
+    double cv_norm = std::min(contact_velocity / 10.0, 1.0);
+    double nv_norm = std::min(new_visitor_rate / 0.05, 1.0);
+    double bm_norm = std::min(bookmark_rate / 0.01, 1.0);
+    double em_norm = std::min(email_rate / 0.01, 1.0);
+    double ctr_norm = std::min(ctr / 0.10, 1.0);
+
+    double score = vv_norm*0.25 + va_norm*0.15 + cv_norm*0.20 + nv_norm*0.15 + bm_norm*0.05 + em_norm*0.05 + ctr_norm*0.15;
+
+    const char* grade = score >= 0.70 ? "VIRAL" : score >= 0.50 ? "ACCELERATING" : score >= 0.30 ? "STEADY" : score >= 0.15 ? "SLOW" : "STAGNANT";
+
+    char buf[800];
+    std::snprintf(buf, sizeof(buf),
+        "{\"score\":%.4f,\"grade\":\"%s\",\"components\":{"
+        "\"profile_views\":%ld,\"views_velocity\":%ld,\"views_acceleration\":%.4f,"
+        "\"contact_clicks\":%ld,\"contact_click_velocity\":%ld,"
+        "\"new_visits\":%ld,\"new_visitor_rate\":%.4f,"
+        "\"online_bookmarks\":%ld,\"bookmark_rate\":%.4f,"
+        "\"new_emails\":%ld,\"email_rate\":%.4f,"
+        "\"contact_click_rate\":%.4f}}",
+        score, grade, pv, views_velocity, views_accel, cc, contact_velocity,
+        nv, new_visitor_rate, ob, bookmark_rate, ne, email_rate, ctr);
+    return std::string(buf);
+}
+
+static std::string kpi_response() {
+    auto snaps = load_metric_snapshots();
+    std::string imm = compute_immortality(snaps);
+    std::string vir = compute_virality(snaps);
+    std::ostringstream ss;
+    ss << "{\"packet_type\":\"rm_wargrade_kpis\",\"timestamp\":\"" << iso_timestamp() << "\","
+       << "\"snapshots_analyzed\":" << snaps.size() << ","
+       << "\"immortality\":" << imm << ","
+       << "\"virality\":" << vir << "}";
+    // Write receipt
+    write_receipt("kpi_computation", "success", 0, "war-grade KPI computed in C++",
+        "\"snapshots\":" + std::to_string(snaps.size()));
+    return ss.str();
+}
+
 static std::string blocked_response(const std::string& action, const std::string& reason) {
     std::string receipt = write_receipt(action, "blocked", 0, reason);
     return "{\"status\":\"blocked\",\"action\":\"" + json_escape(action) + "\",\"reason\":\"" + json_escape(reason) + "\",\"receipt\":\"" + json_escape(receipt) + "\"}";
@@ -301,6 +492,8 @@ h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;marg
     <span class="tag tag-gray" id="tag-metrics">METRICS: checking...</span>
     <span class="tag tag-gray" id="tag-candidates">CANDIDATES: checking...</span>
     <span class="tag tag-gray" id="tag-decision">DECISION: checking...</span>
+    <span class="tag tag-gray" id="tag-immortality">IMMORTALITY: checking...</span>
+    <span class="tag tag-gray" id="tag-virality">VIRALITY: checking...</span>
     <span class="tag tag-black">AVAILABILITY: BLACK_DISABLED</span>
   </div>
 </div>
@@ -368,6 +561,37 @@ h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;marg
 </div>
 
 <div class="grid">
+  <div class="panel" style="border-color:#1a3a2a">
+    <h2 style="color:#39ff88">IMMORTALITY SCORE</h2>
+    <div class="metric-row"><span class="metric-label">Score</span><span class="metric-value" id="imm-score" style="font-size:18px">--</span></div>
+    <div class="metric-row"><span class="metric-label">Grade</span><span class="metric-value" id="imm-grade" style="font-size:16px">--</span></div>
+    <div class="metric-row"><span class="metric-label">Days online</span><span class="metric-value" id="imm-days">--</span></div>
+    <div class="metric-row"><span class="metric-label">Views/day</span><span class="metric-value" id="imm-vpd">--</span></div>
+    <div class="metric-row"><span class="metric-label">Profile age score</span><span class="metric-value" id="imm-age">--</span></div>
+    <div class="metric-row"><span class="metric-label">VPD trend</span><span class="metric-value" id="imm-trend">--</span></div>
+    <div class="metric-row"><span class="metric-label">Visibility persistence</span><span class="metric-value" id="imm-vis">--</span></div>
+    <div class="metric-row"><span class="metric-label">Availability stability</span><span class="metric-value" id="imm-avail">--</span></div>
+    <div class="metric-row"><span class="metric-label">Retention score</span><span class="metric-value" id="imm-retention">--</span></div>
+    <div class="actions"><a class="btn btn-ok" href="/api/kpis">Raw KPI JSON</a></div>
+  </div>
+
+  <div class="panel" style="border-color:#3a1a1a">
+    <h2 style="color:#ff5370">VIRALITY SCORE</h2>
+    <div class="metric-row"><span class="metric-label">Score</span><span class="metric-value" id="vir-score" style="font-size:18px">--</span></div>
+    <div class="metric-row"><span class="metric-label">Grade</span><span class="metric-value" id="vir-grade" style="font-size:16px">--</span></div>
+    <div class="metric-row"><span class="metric-label">Profile views</span><span class="metric-value" id="vir-views">--</span></div>
+    <div class="metric-row"><span class="metric-label">Views velocity</span><span class="metric-value" id="vir-velocity">--</span></div>
+    <div class="metric-row"><span class="metric-label">Views acceleration</span><span class="metric-value" id="vir-accel">--</span></div>
+    <div class="metric-row"><span class="metric-label">Contact clicks</span><span class="metric-value" id="vir-clicks">--</span></div>
+    <div class="metric-row"><span class="metric-label">Click velocity</span><span class="metric-value" id="vir-clickvel">--</span></div>
+    <div class="metric-row"><span class="metric-label">New visitor rate</span><span class="metric-value" id="vir-newvisitor">--</span></div>
+    <div class="metric-row"><span class="metric-label">Contact click rate</span><span class="metric-value" id="vir-ctr">--</span></div>
+    <div class="metric-row"><span class="metric-label">Snapshots analyzed</span><span class="metric-value" id="vir-snapshots">--</span></div>
+    <div class="actions"><a class="btn" href="/api/kpis/history">KPI History</a></div>
+  </div>
+</div>
+
+<div class="grid">
   <div class="panel" style="min-height:auto">
     <h2>Daily Revenue Proof</h2>
     <div id="daily-proof">
@@ -415,7 +639,7 @@ function setTag(id, text, cls) {
 }
 
 fetch('/api/health').then(r=>r.json()).then(j=>{
-  setTag('tag-health', 'HEALTH: ' + (j.status||'?'), j.status==='ok' ? 'tag-green' : 'tag-red');
+  setTag('tag-health', 'HEALTH: ' + (j.status||'?'), j.status==='GREEN_REAL' ? 'tag-green' : 'tag-red');
 }).catch(()=>setTag('tag-health','HEALTH: OFFLINE','tag-red'));
 
 fetch('/api/report').then(r=>r.json()).then(j=>{
@@ -472,6 +696,48 @@ fetch('/api/cicd/runs').then(r=>r.json()).then(j=>{
   const runs = j.workflow_runs||[];
   cicdPanel.textContent = runs.slice(0,5).map(r=>r.name+': '+(r.conclusion||r.status)+' ('+r.created_at+')').join('\n');
 }).catch(e=>cicdPanel.textContent=String(e));
+
+// War-grade KPI fetch
+fetch('/api/kpis').then(r=>r.json()).then(j=>{
+  const imm = j.immortality||{};
+  const vir = j.virality||{};
+  const ic = imm.components||{};
+  const vc = vir.components||{};
+
+  // Immortality tags + panel
+  const immGrade = imm.grade||'NO_DATA';
+  const immCls = immGrade==='IMMORTAL'?'tag-green':immGrade==='RESILIENT'?'tag-green':immGrade==='STABLE'?'tag-yellow':immGrade==='FRAGILE'?'tag-red':'tag-gray';
+  setTag('tag-immortality','IMMORTALITY: '+(imm.score||0).toFixed(2)+' '+immGrade, immCls);
+
+  document.getElementById('imm-score').textContent = (imm.score||0).toFixed(4);
+  document.getElementById('imm-grade').textContent = immGrade;
+  document.getElementById('imm-days').textContent = ic.days_online||0;
+  document.getElementById('imm-vpd').textContent = (ic.views_per_day||0).toFixed(1);
+  document.getElementById('imm-age').textContent = (ic.profile_age_score||0).toFixed(4);
+  document.getElementById('imm-trend').textContent = (ic.views_per_day_trend||0).toFixed(4);
+  document.getElementById('imm-vis').textContent = (ic.visibility_persistence||0).toFixed(4);
+  document.getElementById('imm-avail').textContent = (ic.availability_stability||0).toFixed(4);
+  document.getElementById('imm-retention').textContent = (ic.retention_score||0).toFixed(4);
+
+  // Virality tags + panel
+  const virGrade = vir.grade||'NO_DATA';
+  const virCls = virGrade==='VIRAL'?'tag-green':virGrade==='ACCELERATING'?'tag-green':virGrade==='STEADY'?'tag-yellow':virGrade==='SLOW'?'tag-red':'tag-gray';
+  setTag('tag-virality','VIRALITY: '+(vir.score||0).toFixed(2)+' '+virGrade, virCls);
+
+  document.getElementById('vir-score').textContent = (vir.score||0).toFixed(4);
+  document.getElementById('vir-grade').textContent = virGrade;
+  document.getElementById('vir-views').textContent = vc.profile_views||0;
+  document.getElementById('vir-velocity').textContent = vc.views_velocity||0;
+  document.getElementById('vir-accel').textContent = (vc.views_acceleration||0).toFixed(4);
+  document.getElementById('vir-clicks').textContent = vc.contact_clicks||0;
+  document.getElementById('vir-clickvel').textContent = vc.contact_click_velocity||0;
+  document.getElementById('vir-newvisitor').textContent = ((vc.new_visitor_rate||0)*100).toFixed(2)+'%';
+  document.getElementById('vir-ctr').textContent = ((vc.contact_click_rate||0)*100).toFixed(2)+'%';
+  document.getElementById('vir-snapshots').textContent = j.snapshots_analyzed||0;
+}).catch(e=>{
+  setTag('tag-immortality','IMMORTALITY: OFFLINE','tag-red');
+  setTag('tag-virality','VIRALITY: OFFLINE','tag-red');
+});
 </script>
 </body></html>)HTML";
 }
@@ -506,7 +772,7 @@ static void handle_client(int client_socket) {
     } else if (path == "/" || path == "/index.html") {
         response = landing_page(); content_type = "text/html";
     } else if (path == "/health" || path == "/api/health") {
-        response = "{\"status\":\"ok\",\"service\":\"rentmasseur-cpp-os\",\"mode\":\"evidence_only\",\"timestamp\":\"" + iso_timestamp() + "\"}";
+        response = "{\"status\":\"GREEN_REAL\",\"service\":\"rentmasseur-cpp-os\",\"mode\":\"evidence_only\",\"grade\":\"MILITARY\",\"timestamp\":\"" + iso_timestamp() + "\"}";
     } else if (path == "/api/report") {
         int bios_count = count_files(CONTENT_DIR + "/bios");
         bool metrics = file_exists(CONTENT_DIR + "/live_metrics.json") || file_exists(CONTENT_DIR + "/metrics_ingest.jsonl");
@@ -658,6 +924,11 @@ static void handle_client(int client_socket) {
             for (size_t i = 0; i < leads.size(); i++) if (leads[i] == '\n') lead_count++;
         }
         response = "{\"status\":\"" + std::string(lead_count > 0 ? "ok" : "gray_no_data") + "\",\"lead_count\":" + std::to_string(lead_count) + ",\"note\":\"Leads are tracked from first-party contact events only\"}";
+    } else if (path == "/api/kpis") {
+        response = kpi_response();
+    } else if (path == "/api/kpis/history") {
+        response = read_file(KPI_PATH);
+        if (response.empty()) { response = "{\"status\":\"no_kpi_history\"}"; }
     } else if (path == "/api/decision/latest") {
         std::string decision = read_file(CONTENT_DIR + "/decisions/latest_decision.json");
         if (decision.empty()) {
