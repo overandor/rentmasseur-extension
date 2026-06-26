@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '0 */12 * * *'  # Redeploy every 12 hours with new data
   workflow_dispatch:
 
 jobs:
@@ -29,6 +31,7 @@ jobs:
 
       - name: Clone existing HF space
         run: |
+          rm -rf hf-space
           git clone https://huggingface.co/spaces/${HF_SPACE_NAME} hf-space || true
 
       - name: Sync files to HF space
@@ -38,22 +41,24 @@ jobs:
           rm -rf hf-space/.git
           rm -rf hf-space/.env
           rm -rf hf-space/debug
-          rm -rf hf-space/content/*.json
-          rm -rf hf-space/content/*.md
+          # Keep latest generated data and state
           echo "RENTMASSEUR_USERNAME=${{ secrets.RENTMASSEUR_USERNAME }}" > hf-space/.env
           echo "RENTMASSEUR_PASSWORD=${{ secrets.RENTMASSEUR_PASSWORD }}" >> hf-space/.env
           echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> hf-space/.env
           echo "GROQ_MODEL=llama-3.3-70b-versatile" >> hf-space/.env
+          echo "HF_SPACE_NAME=${HF_SPACE_NAME}" >> hf-space/.env
 
       - name: Push to HF space
         run: |
           cd hf-space
           git init
           git add -A
-          git commit -m "Deploy from GitHub Actions $(date -u +%Y-%m-%d-%H:%M:%S)"
+          git commit -m "Auto-deploy from GitHub Actions with latest data $(date -u +%Y-%m-%d-%H:%M:%S)"
           git push https://hf_user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_NAME} main --force
 
-      - name: Trigger HF space build
+      - name: Trigger HF space build and verify
         run: |
-          sleep 10
+          sleep 15
+          echo "Checking HF Space runtime..."
+          curl -s https://huggingface.co/api/spaces/${HF_SPACE_NAME}/runtime || true
           curl -s https://huggingface.co/spaces/${HF_SPACE_NAME}/api/health || true
