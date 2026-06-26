@@ -21,7 +21,12 @@ from datetime import datetime, timezone
 from urllib.parse import urljoin
 
 import requests
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+try:
+    from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+    HAS_PLAYWRIGHT = True
+except ImportError:
+    HAS_PLAYWRIGHT = False
+    PlaywrightTimeoutError = TimeoutError
 
 DEFAULT_PROVIDERS = "providers.json"
 DEFAULT_OUTPUT = "availability.json"

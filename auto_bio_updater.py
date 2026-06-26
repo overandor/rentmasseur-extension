@@ -72,7 +72,7 @@ def find_best_bio(preferred_strategy: Optional[str] = None) -> Optional[str]:
     for filepath in bio_files:
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read().strip()
-        if len(content) > best_len and len(content) <= 300:
+        if len(content) > best_len:
             best_len = len(content)
             best_bio = content
             logger.info("Candidate: %s (%d chars)", os.path.basename(filepath), len(content))

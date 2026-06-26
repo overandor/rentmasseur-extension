@@ -11,7 +11,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 
 APP_DIR = Path(__file__).resolve().parent
 AVAILABILITY_FILE = APP_DIR / "availability.json"
@@ -146,9 +146,21 @@ def verify():
     return VERIFY_HTML
 
 
+@app.get("/demo.html", response_class=HTMLResponse)
+def demo():
+    return (APP_DIR / "demo.html").read_text()
+
+@app.get("/content.js")
+def content_js():
+    return FileResponse(APP_DIR / "content.js", media_type="application/javascript")
+
+@app.get("/content.css")
+def content_css():
+    return FileResponse(APP_DIR / "content.css", media_type="text/css")
+
 @app.get("/")
 def root():
-    return {"service": "RentMasseur Availability API", "endpoints": ["/api/availability", "/api/refresh"]}
+    return {"service": "RentMasseur Availability API", "endpoints": ["/api/availability", "/api/refresh", "/demo.html"]}
 
 
 if __name__ == "__main__":
