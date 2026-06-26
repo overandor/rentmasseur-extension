@@ -1,158 +1,182 @@
 ---
-title: RentMasseur Optimizer
-emoji: 🚀
+title: RentMasseur RevenueOps Control Plane
+emoji: 🧾
 colorFrom: purple
 colorTo: blue
 sdk: docker
 pinned: false
 ---
 
-# RentMasseur Operating System
+# RentMasseur RevenueOps Control Plane
 
-C++ native HF Space + Python automation pipelines for RentMasseur profile optimization.
-Chrome extension that adds a booking panel to RentMasseur.com profile pages, backed by scheduled CI/CD availability checker, bio/photo/price rotation, and GA+RL revenue optimization.
+Production-control HF Docker Space for first-party RentMasseur profile experimentation.
 
-## Architecture
+Mission: **one paying client per day, or prove exactly why it failed today.**
 
-1. **CI/CD checker** (`checker.py` + `.github/workflows/availability.yml`) runs on a schedule and scrapes the configured provider list, recording observed availability in `availability.json`.
-2. **API server** (`server.py`) serves `availability.json` over `/api/availability/{slug}` and hosts `widget.html` / `verify.html` landing pages.
-3. **Chrome extension** (`content.js`) injects the booking panel, reads the slug from the RentMasseur URL, and fetches the latest availability from the API server.
-4. **Optimizer automation** (`rentmasseur_optimizer.py`, `rentmasseur_core.py`, `rentmasseur_coordinator.py`, `rentmasseur_availability.py`, `intent_router.py`) uses Selenium to log in, keep your own availability set to 24/7, and generate/update your profile bio via Groq LLM.
+This repo is not an automated login bot, CAPTCHA bypass tool, or fake-success dashboard. The runtime is evidence-only: no metric, no optimization; no receipt, no reality; no lead, no client claim.
 
-## Install the extension
+## Production safety rules
 
-1. Open Chrome → `chrome://extensions/`
-2. Enable **Developer mode** (toggle top-right)
-3. Click **Load unpacked**
-4. Select this folder (`rentmasseur-extension`)
+- No automated platform login.
+- No CAPTCHA fighting.
+- No fake availability.
+- No unattended profile mutation.
+- No cookies, bearer tokens, passwords, sessions, or `.env` files in git or HF runtime.
+- Only first-party/manual metric capture.
+- Only approved bio experiments.
+- Only receipt-backed actions.
+- Live profile changes require human approval and a platform-compliant path.
 
-## Run the API server locally
+## Runtime
 
-```bash
-python3 -m uvicorn server:app --host 127.0.0.1 --port 3000
-```
+The Docker Space builds the native C++ control plane:
 
-To seed mock data for testing:
+- `cpp_os_server.cpp` → C++ HTTP RevenueOps server
+- `rotator_engine.cpp` → candidate rotation engine
+- `ga_rl_optimizer.cpp` → offline candidate optimizer
+- `production_control_loop.cpp` → production decision gate
 
-```bash
-python3 checker.py --mock --output availability.json
-```
-
-## Run the availability checker
+The Dockerfile compiles the native binaries and starts:
 
 ```bash
-python3 checker.py --output availability.json
+./cpp_os_server 7860
 ```
 
-For CI/CD mock mode:
+## Core API
 
-```bash
-python3 checker.py --mock --output availability.json
+Read-only endpoints:
+
+```text
+GET  /api/health
+GET  /api/report
+GET  /api/bios
+GET  /api/candidates
+GET  /api/funnel/daily
+GET  /api/leads
+GET  /api/decision/latest
+GET  /api/jobs
+GET  /api/receipts
+GET  /api/audit/files
+GET  /api/cicd/list
+GET  /api/cicd/runs
 ```
 
-## Run the optimizer (logged-in profile automation)
+Mutation endpoints require `ADMIN_TOKEN` and `Authorization: Bearer <ADMIN_TOKEN>`:
 
-Requires a `.env` file with your RentMasseur and Groq credentials (see `.env.example`).
-
-```bash
-cp .env.example .env
-# edit .env with your credentials
-python3 rentmasseur_optimizer.py
+```text
+POST /api/metrics/ingest
+POST /api/config
+GET  /api/rotate/{type}
+GET  /api/run/ga-rl
+GET  /api/run/orchestrator
+GET  /api/rotator/report
+GET  /api/cicd/trigger/{workflow}
 ```
 
-Keep availability 24/7 only:
+`/api/run/availability` is intentionally blocked. The old live-login availability keeper is legacy/quarantined and must not be used as the production path.
 
-```bash
-python3 rentmasseur_availability.py
+## Metrics ingest
+
+Only submit sanitized first-party/manual dashboard metrics. Do not submit cookies, tokens, passwords, sessions, raw API headers, or browser storage.
+
+Example:
+
+```json
+{
+  "date": "2026-06-26",
+  "bio_id": "current_live_wolf_appended",
+  "profile_views": 2802,
+  "contact_clicks": 135,
+  "new_visits": 31,
+  "new_emails": 0,
+  "online_bookmarks": 1,
+  "public_visits": 78062,
+  "days_online": 964,
+  "views_per_day": 81.0,
+  "profile_visible": true,
+  "available": true
+}
 ```
 
-Run the coordinator with intent routing to pick top bio strategies:
+The server normalizes accepted metrics, writes `content/metrics_ingest.jsonl`, updates `content/metrics_latest.json`, and writes a receipt.
 
-```bash
-python3 rentmasseur_coordinator.py --pick-best --top-n 5
+## Candidate workflow
+
+Production should keep a small candidate pool, not a content firehose.
+
+Initial approved archetypes:
+
+1. Controlled Wolf
+2. Clinical Recovery
+3. Luxury Concierge
+4. Direct Same-Day CTA
+
+Run one live experiment at a time. Freeze photos, price, services, interview, blog, and availability while testing a bio.
+
+Decision order:
+
+```text
+confirmed booking > booking request > phone click > email click > contact click > profile view
 ```
 
-## Autonomous CI/CD 24/7 availability keeper
+Views alone do not win. A bio that gets views but no contact actions loses.
 
-The repo includes `.github/workflows/availability-keeper.yml` which runs every 5 minutes (GitHub's fastest schedule) and logs into your RentMasseur account to keep availability set to 24/7. No mock data, no simulation — it uses real Selenium automation against the live site.
+## Repository layout
 
-Required GitHub secrets (Settings → Secrets and variables → Actions):
+```text
+/
+  Dockerfile
+  README.md
+  .dockerignore
 
-- `RENTMASSEUR_USERNAME`
-- `RENTMASSEUR_PASSWORD`
+/src target currently lives at repo root for HF compatibility:
+  cpp_os_server.cpp
+  production_control_loop.cpp
+  rotator_engine.cpp
+  ga_rl_optimizer.cpp
 
-You can also run the keeper in a tight local loop:
+/content
+  bios/current_candidates.json
+  metrics_ingest.jsonl     # runtime-generated; do not commit secrets
+  metrics_latest.json      # runtime-generated
+  decisions/latest_decision.json
 
-```bash
-python3 rentmasseur_availability.py --interval 1
+/extension
+  manifest.json
+  content.js
+  content.css
+  popup.html
+  popup.js
+
+/legacy or quarantine candidates
+  server.py
+  checker.py
+  rentmasseur_availability.py
+  Selenium login scripts
 ```
 
-## Daily content generation (bios, blog posts, interview questions)
+## Extension role
 
-The repo includes `.github/workflows/daily-content.yml` which runs every day at 6:00 UTC and generates:
+The browser extension should be a first-party/manual capture tool only:
 
-- **30 bios** — one per strategy, optimized for conversion
-- **30 blog posts** — SEO-optimized, 500-800 words each
-- **30 interview question sets** — 10 Q&A per strategy for PR use
-- **Mass analysis report** — ranks the best versions across all strategies
+- capture dashboard stats while the operator is logged in
+- capture active bio/version metadata
+- export sanitized metrics
+- send approved metrics to `/api/metrics/ingest`
 
-All content is committed to the `content/` directory automatically.
+It should not bypass platform controls or run unattended account mutation.
 
-Run locally:
+## Secret handling
 
-```bash
-python3 content_generator.py                    # everything
-python3 content_generator.py --bios-only        # bios only
-python3 content_generator.py --blogs-only       # blog posts only
-python3 content_generator.py --questions-only   # interview questions only
-```
+Never commit or deploy:
 
-## What it does
+- `.env`
+- `session.json`
+- cookies
+- bearer tokens
+- API headers
+- browser storage dumps
+- raw API maps containing auth material
+- large raw traffic corpora
 
-- Detects when you view a masseur profile on `rentmasseur.com`
-- Shows a floating panel with:
-  - Provider name & location (auto-extracted from page)
-  - Availability status from the CI/CD API (`live` or `mock` badge)
-  - **"Book Now"** button → opens `widget.html` with provider info pre-filled
-  - **"Verify Video Call"** button → opens `verify.html`
-  - **"Check Availability"** button → fetches latest availability from the API
-- Works with SPA navigation (Next.js / React Router)
-
-## Configuration
-
-Click the extension icon in the toolbar → set your **Booking Server URL** (default: `http://localhost:3000`)
-
-## Files
-
-| File | Purpose |
-|---|---|
-| `manifest.json` | Extension manifest (MV3) |
-| `content.js` | Injects booking panel and fetches availability API |
-| `content.css` | Panel styling |
-| `popup.html` / `popup.js` | Extension popup settings |
-| `checker.py` | Scheduled availability scraper |
-| `providers.json` | Provider list to monitor |
-| `availability.json` | Latest observed availability |
-| `server.py` | FastAPI availability + booking landing server |
-| `.github/workflows/availability.yml` | GitHub Actions CI/CD workflow |
-| `rentmasseur_optimizer.py` | Full optimizer: availability + bio update |
-| `rentmasseur_availability.py` | Standalone 24/7 availability keeper |
-| `rentmasseur_coordinator.py` | Strategy coordinator with intent routing |
-| `rentmasseur_core.py` | Shared Selenium driver, login, bio utilities |
-| `intent_router.py` | Groq-based strategy selection |
-| `content_generator.py` | Daily bios, blog posts, interview questions + mass analysis |
-| `auto_bio_updater.py` | Auto-selects best bio and updates profile via Selenium |
-| `competitor_scraper.py` | Scrapes competitor profiles for analysis |
-| `social_media_generator.py` | Generates posts for Twitter, Instagram, Facebook, LinkedIn |
-| `email_templates.py` | Generates booking/follow-up/promotional email templates |
-| `seo_keywords.py` | Generates SEO keyword research for each strategy |
-| `dashboard.py` | FastAPI dashboard for browsing all generated content |
-| `weekly_report.py` | Compiles weekly performance and content report |
-| `.env.example` | Required environment variables |
-
-## Requirements
-
-- API server must be running on the configured URL
-- Chrome 88+ (Manifest V3)
-- Python 3.11+ with `requests`, `beautifulsoup4`, `fastapi`, `uvicorn`
-- For optimizer automation: `selenium`, `python-dotenv`, `playwright`, and a Groq API key
+If a token or session file was pasted or uploaded into a chat/log/repo, treat it as burned and rotate/log out.
