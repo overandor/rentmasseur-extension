@@ -1,0 +1,18 @@
+{
+  "action": "master-rotator",
+  "timestamp": "2026-06-29T19:37:59Z",
+  "run_id": "28397316556",
+  "dry_run": "true",
+  "components": "all",
+  "preflight_passed": true,
+  "gate_decision": {
+  "status": "blocked_missing_real_inputs",
+  "reason": "Real first-party metrics and candidate TSV are required before a live profile decision.",
+  "live_update_allowed": false,
+  "dry_run": "true",
+  "run_id": "28397316556"
+},
+  "availability_step": "skipped_in_dry_run_or_disabled_for_platform_safety",
+  "content_changed": " M content/decisions/latest_decision.json  M content/interview_questions/20260629_travel_adventure.md ?? content/blog_posts/20260629_massage_myths_busted.md ?? production_control_loop ?? receipts/rotation_20260629_193759.json ",
+  "status": "completed"
+}
