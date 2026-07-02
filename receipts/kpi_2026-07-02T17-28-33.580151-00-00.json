@@ -1,0 +1,20 @@
+{
+  "id": "kpi_1783013313",
+  "timestamp": "2026-07-02T17:28:33.580151+00:00",
+  "action": "hourly_kpi_computation",
+  "data": {
+    "packet_type": "rm_hourly_kpis",
+    "timestamp": "2026-07-02T17:28:33.580071+00:00",
+    "immortality": {
+      "score": 0,
+      "grade": "NO_DATA",
+      "components": {}
+    },
+    "virality": {
+      "score": 0,
+      "grade": "NO_DATA",
+      "components": {}
+    },
+    "metrics_snapshots_used": 0
+  }
+}
