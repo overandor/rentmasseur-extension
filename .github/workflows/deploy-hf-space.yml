@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 */12 * * *'  # Redeploy every 12 hours with new data
+    - cron: '0 */6 * * *'  # Redeploy every 6 hours with fresh data
   workflow_dispatch:
 
 jobs:

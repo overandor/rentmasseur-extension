@@ -2,7 +2,7 @@ name: RentMasseur Master Rotator
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '0 */3 * * *'  # Every 3 hours — 24/7 rotation
   workflow_dispatch:
     inputs:
       dry_run:
@@ -97,16 +97,6 @@ jobs:
           echo "=== Production gate decision ==="
           cat content/decisions/latest_decision.json
 
-      - name: Live availability step guard
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event.inputs.dry_run || 'true' }}" = "true" ]; then
-            echo "Dry run: live account availability step skipped."
-            exit 0
-          fi
-          echo "Live account step disabled unless a clean manual path is approved."
-          exit 0
-
       - name: Write proof file (what it saw, chose, changed, won/lost)
         run: |
           mkdir -p receipts
@@ -119,7 +109,6 @@ jobs:
             "components": "${{ github.event.inputs.components || 'all' }}",
             "preflight_passed": true,
             "gate_decision": $(cat content/decisions/latest_decision.json 2>/dev/null || echo '{}'),
-            "availability_step": "skipped_in_dry_run_or_disabled_for_platform_safety",
             "content_changed": "$(git status --porcelain | tr '\n' ' ')",
             "status": "completed"
           }

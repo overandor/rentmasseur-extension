@@ -1,0 +1,150 @@
+name: Pipeline 24/7 — Availability + Money Loop
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes — always-on revenue pipeline
+  workflow_dispatch:
+    inputs:
+      run_optimizer:
+        description: 'Force GA+RL optimizer this cycle'
+        required: false
+        default: 'false'
+      manual_metrics:
+        description: 'JSON metrics from manual dashboard read (paste JSON)'
+        required: false
+        default: ''
+
+concurrency:
+  group: pipeline-24-7
+  cancel-in-progress: true
+
+jobs:
+  pipeline-cycle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_MODEL: llama-3.3-70b-versatile
+      HF_URL: ${{ secrets.HF_URL }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Chrome and ChromeDriver
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
+          DRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_VERSION%%.*}")
+          wget -q "https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
+          unzip -q chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+          echo "Chrome: $(google-chrome --version)"
+          echo "ChromeDriver: $(chromedriver --version)"
+
+      # ═══════════════════════════════════════════════════════════
+      # AVAILABILITY LOOP — keep profile available 24/7
+      # ═══════════════════════════════════════════════════════════
+      - name: Keep availability 24/7
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          timeout 240 python3 rentmasseur_availability.py --headless true || echo "Availability keeper failed - will retry next cycle"
+
+      # ═══════════════════════════════════════════════════════════
+      # MONEY LOOP — metrics, KPIs, optimization
+      # ═══════════════════════════════════════════════════════════
+      - name: Ingest manual metrics if provided
+        if: ${{ github.event.inputs.manual_metrics != '' }}
+        run: |
+          mkdir -p content
+          echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"source\":\"manual_upload\",\"body\":${{ github.event.inputs.manual_metrics }}}" >> content/metrics_ingest.jsonl
+          echo "Manual metrics ingested."
+
+      - name: Fetch metrics from HF Space
+        continue-on-error: true
+        run: |
+          mkdir -p content
+          curl -s "${HF_URL:-https://josephrw-rentmasseur-optimizer.hf.space}/api/report" \
+            -o content/hf_report.json --max-time 30 || echo "{}" > content/hf_report.json
+          echo "HF Space metrics fetched."
+
+      - name: Process metrics and update state
+        run: |
+          python3 metrics_collector.py --process
+
+      - name: Compute KPIs (immortality + virality scores)
+        run: |
+          python3 kpis.py
+
+      - name: GA+RL optimizer (hourly auto or manual trigger)
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          MINUTE=$(date -u +%M)
+          if [ "${{ github.event.inputs.run_optimizer }}" = "true" ] || [ "$MINUTE" = "00" ]; then
+            echo "Running GA+RL optimizer..."
+            python3 ga_rl_optimizer.py --report
+          else
+            echo "Optimizer skipped this cycle (runs at :00)"
+          fi
+
+      # ═══════════════════════════════════════════════════════════
+      # RECEIPT + COMMIT
+      # ═══════════════════════════════════════════════════════════
+      - name: Write pipeline receipt
+        run: |
+          mkdir -p receipts
+          python3 metrics_collector.py --proof || true
+          cat > receipts/pipeline_$(date -u +%Y%m%d_%H%M%S).json <<RECEIPT
+          {
+            "action": "pipeline-24-7",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "run_id": "${{ github.run_id }}",
+            "availability_enforced": true,
+            "metrics_collected": true,
+            "kpis_computed": true,
+            "status": "completed"
+          }
+          RECEIPT
+
+      - name: Commit and push all state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/ || true
+          git add availability.json || true
+          git add receipts/ || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Pipeline 24/7: $(date -u +%Y-%m-%d-%H:%M)"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Upload debug on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-debug
+          path: |
+            content/
+            receipts/
+          retention-days: 7

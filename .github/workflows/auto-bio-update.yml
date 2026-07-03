@@ -1,6 +1,8 @@
 name: Auto Bio Updater
 
 on:
+  schedule:
+    - cron: '30 */12 * * *'  # Twice daily bio refresh + manual trigger
   workflow_dispatch:
 
 permissions:
