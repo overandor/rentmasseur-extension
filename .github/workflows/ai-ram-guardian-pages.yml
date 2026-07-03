@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - ai-ram-guardian-launch-kit
+      - main
     paths:
       - 'ai-ram-guardian/landing/**'
       - '.github/workflows/ai-ram-guardian-pages.yml'
