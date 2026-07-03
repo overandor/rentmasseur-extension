@@ -23,6 +23,7 @@ AI coding tools leak RAM, spawn helpers, keep language servers alive, and heat l
 - RECLAIM: post-trim memory recheck receipts.
 - Online Kalman forecast with visible uncertainty.
 - Per-app RSS anomaly learning from the user’s own machine.
+- Experimental read-only SMC thermal core for CPU/GPU/SoC/ambient/battery/fan-RPM probes.
 - Shareable receipt card concept for viral proof.
 
 ## What it must never fake
@@ -32,12 +33,14 @@ AI coding tools leak RAM, spawn helpers, keep language servers alive, and heat l
 - No claimed time savings without labeling assumptions.
 - No killing or relaunching whole apps.
 - No App Store claim for the full intervention engine unless the sandbox limitations are redesigned around read-only mode.
+- No SMC writes, fan override, thermal-policy bypass, or unsafe fan-control claims.
 
 ## Repo structure
 
 ```text
 ai-ram-guardian/
   guardian.mm                  # native app source; commit your current production file here
+  thermal_core.h               # optional read-only SMC thermal probe backend
   Makefile                     # local build/install target
   Info.plist                   # app metadata
   LaunchAgent.plist            # optional launchd agent
