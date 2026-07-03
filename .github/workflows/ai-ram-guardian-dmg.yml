@@ -1,0 +1,47 @@
+name: AI RAM Guardian DMG
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ai-ram-guardian-launch-kit
+    paths:
+      - 'ai-ram-guardian/**'
+      - '.github/workflows/ai-ram-guardian-dmg.yml'
+
+jobs:
+  build-dmg:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify source exists
+        run: |
+          test -f ai-ram-guardian/guardian.mm || {
+            echo 'guardian.mm is missing. Commit the production source before building the DMG.' >&2
+            exit 2
+          }
+
+      - name: Build DMG
+        env:
+          DEVELOPER_ID_APP: ${{ secrets.DEVELOPER_ID_APP }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          chmod +x ai-ram-guardian/scripts/create_dmg.sh
+          cd ai-ram-guardian
+          ./scripts/create_dmg.sh
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-RAM-Guardian-DMG
+          path: |
+            ai-ram-guardian/dist/AI-RAM-Guardian.dmg
+            ai-ram-guardian/dist/AI-RAM-Guardian.dmg.sha256
+          if-no-files-found: error

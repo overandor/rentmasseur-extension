@@ -1,0 +1,95 @@
+name: AI RAM Guardian Local Mac Metal CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      collect_telemetry:
+        description: 'Collect local hardware and build telemetry receipt on the self-hosted Mac'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      build_dmg:
+        description: 'Build local DMG on the self-hosted Mac'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  local-metal-ci:
+    name: Local native Mac build + Metal telemetry receipt
+    runs-on: [self-hosted, macOS, ARM64, metal]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify this is an Apple Silicon Mac
+        run: |
+          set -euo pipefail
+          uname -a
+          arch
+          system_profiler SPHardwareDataType | tee ai-ram-guardian-hardware.txt
+          if ! uname -m | grep -q 'arm64'; then
+            echo 'This workflow is intended for Apple Silicon ARM64 self-hosted runners.' >&2
+            exit 2
+          fi
+
+      - name: Verify Guardian source exists
+        run: |
+          test -f ai-ram-guardian/guardian.mm || {
+            echo 'guardian.mm is missing. Commit the production source before local DMG/Metal CI can run.' >&2
+            exit 2
+          }
+
+      - name: Collect local Metal capability receipt
+        if: ${{ inputs.collect_telemetry == 'true' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ai-ram-guardian/receipts/local-metal
+          RECEIPT="ai-ram-guardian/receipts/local-metal/metal-ci-$(date -u +%Y%m%dT%H%M%SZ).json"
+          GPU_LINE=$(system_profiler SPDisplaysDataType | awk '/Chipset Model|Metal Support|Total Number of Cores/ {gsub(/^ +/, ""); printf "%s | ", $0}')
+          MEM_LINE=$(system_profiler SPHardwareDataType | awk '/Memory:/ {gsub(/^ +/, ""); print $0}')
+          OS_LINE=$(sw_vers | tr '\n' ' ' | sed 's/[[:space:]]\+/ /g')
+          cat > "$RECEIPT" <<JSON
+          {
+            "kind": "local_metal_ci_receipt",
+            "created_at_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "runner": "self-hosted macOS ARM64",
+            "hardware": {
+              "machine": "$(sysctl -n hw.model)",
+              "cpu_brand": "$(sysctl -n machdep.cpu.brand_string 2>/dev/null || echo Apple-Silicon)",
+              "memory": "$MEM_LINE",
+              "gpu_summary": "$GPU_LINE",
+              "os": "$OS_LINE"
+            },
+            "purpose": "local-first telemetry for native macOS utility build and future on-device Metal/MLX training experiments",
+            "privacy": "hardware telemetry only; no user documents, prompts, chats, secrets, or app content collected"
+          }
+          JSON
+          cat "$RECEIPT"
+
+      - name: Build local DMG
+        if: ${{ inputs.build_dmg == 'true' }}
+        run: |
+          set -euo pipefail
+          chmod +x ai-ram-guardian/scripts/create_dmg.sh
+          cd ai-ram-guardian
+          ./scripts/create_dmg.sh
+
+      - name: Upload local CI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-mac-metal-ci-artifacts
+          path: |
+            ai-ram-guardian-hardware.txt
+            ai-ram-guardian/receipts/local-metal/*.json
+            ai-ram-guardian/dist/*.dmg
+            ai-ram-guardian/dist/*.sha256
+          if-no-files-found: warn
