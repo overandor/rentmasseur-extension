@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 """
-RentMasseur Production Pipeline — combines all real systems into one command.
+RentMasseur Production Pipeline — money loop automation.
 
-1. Live scrape: real competitor availability from rentmasseur.com (no mock)
-2. AGI train: C++ MLP trained on 2,723 real bios
-3. AGI generate: 100K candidates via C++ engine
-4. AGI score + evolve + select: GA optimization
-5. Groq intent router: pick top strategies based on time/season
-6. Groq LLM: generate bios for top strategies
-7. Merge pools: combine AGI + Groq candidates
-8. Selenium: login → set 24/7 availability → apply best bio to live profile
-9. Receipt ledger: SHA-256 chained proof for every action
-10. Save: all results, bios, stats, receipts
+1. AGI train: C++ MLP trained on 2,723 real bios
+2. AGI generate: 100K candidates via C++ engine
+3. AGI score + evolve + select: GA optimization
+4. Groq intent router: pick top strategies based on time/season
+5. Groq LLM: generate bios for top strategies
+6. Merge pools: combine AGI + Groq candidates
+7. Selenium: login → apply best bio to live profile
+8. Receipt ledger: SHA-256 chained proof for every action
+9. Save: all results, bios, stats, receipts
 
 Usage:
     python3 production_pipeline.py
-    python3 production_pipeline.py --skip-scrape
     python3 production_pipeline.py --skip-selenium
     python3 production_pipeline.py --agi-only
     python3 production_pipeline.py --groq-only
@@ -128,33 +126,6 @@ def run_cmd(cmd: List[str], cwd: Optional[Path] = None, timeout: int = 300) -> t
         logger.error("EXCEPTION: %s", e)
         return -1, "", str(e)
 
-
-# ─── Stage 1: Live Scrape ───
-
-def stage_live_scrape() -> dict:
-    logger.info("=" * 60)
-    logger.info("STAGE 1: Live competitor availability scrape")
-    logger.info("=" * 60)
-    rc, out, err = run_cmd(
-        ["python3", "checker.py", "--output", "availability.json"],
-        cwd=SCRIPT_DIR, timeout=120,
-    )
-    result = {"stage": "live_scrape", "exit_code": rc, "timestamp": datetime.now(timezone.utc).isoformat()}
-    if rc == 0:
-        data = json.loads((SCRIPT_DIR / "availability.json").read_text())
-        result["mode"] = data.get("mode")
-        result["providers_scraped"] = data.get("count", 0)
-        result["errors"] = len(data.get("errors", []))
-        result["providers"] = [
-            {"slug": p.get("slug"), "status": p.get("status"), "location": p.get("location"), "rate": p.get("rate")}
-            for p in data.get("providers", [])
-        ]
-        logger.info("Scraped %d providers, %d errors, mode=%s", result["providers_scraped"], result["errors"], result["mode"])
-    else:
-        result["error"] = err[:500]
-        logger.error("Live scrape failed: %s", err[:200])
-    ledger.add("live_scrape", "Scraped real competitor availability from rentmasseur.com", result)
-    return result
 
 
 # ─── Stage 2: AGI Train ───
@@ -385,7 +356,7 @@ def stage_merge_rank(agi_result: dict, groq_result: dict) -> dict:
 
 def stage_selenium(merge_result: dict, skip_availability: bool = False, skip_bio: bool = False) -> dict:
     logger.info("=" * 60)
-    logger.info("STAGE 6: Selenium — login, set 24/7 availability, apply best bio")
+    logger.info("STAGE 6: Selenium — login, set availability, apply best bio")
     logger.info("=" * 60)
 
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -460,7 +431,7 @@ def stage_save(scrape_res, agi_train_res, agi_pipe_res, groq_res, merge_res, sel
     summary = {
         "pipeline_run": datetime.now(timezone.utc).isoformat(),
         "stages": {
-            "live_scrape": {"providers": scrape_res.get("providers_scraped", 0), "mode": scrape_res.get("mode")},
+
             "agi_train": {"exit_code": agi_train_res.get("exit_code"), "model": agi_train_res.get("model_exists", False)},
             "agi_pipeline": {
                 "generate": agi_pipe_res.get("generate", {}).get("exit_code"),
@@ -506,9 +477,8 @@ def stage_save(scrape_res, agi_train_res, agi_pipe_res, groq_res, merge_res, sel
 # ─── Main ───
 
 def main():
-    parser = argparse.ArgumentParser(description="RentMasseur Production Pipeline")
-    parser.add_argument("--skip-scrape", action="store_true", help="Skip live competitor scrape")
-    parser.add_argument("--skip-selenium", action="store_true", help="Skip Selenium automation (login/availability/bio)")
+    parser = argparse.ArgumentParser(description="RentMasseur Production Pipeline — Money Loop")
+    parser.add_argument("--skip-selenium", action="store_true", help="Skip Selenium automation")
     parser.add_argument("--skip-availability", action="store_true", help="Skip availability setting in Selenium")
     parser.add_argument("--skip-bio", action="store_true", help="Skip bio update in Selenium")
     parser.add_argument("--agi-only", action="store_true", help="Only run AGI pipeline (no Groq, no Selenium)")
@@ -534,12 +504,7 @@ def main():
         logger.error("Real bios corpus not found at %s", REAL_BIOS)
         sys.exit(1)
 
-    # Stage 1: Live scrape
-    scrape_res = {"providers_scraped": 0}
-    if not args.skip_scrape:
-        scrape_res = stage_live_scrape()
-
-    # Stage 2: AGI train
+    # Stage 1: AGI train
     agi_train_res = stage_agi_train(label=args.label, epochs=args.epochs)
 
     # Stage 3: AGI pipeline
@@ -559,6 +524,7 @@ def main():
         selenium_res = stage_selenium(merge_res, skip_availability=args.skip_availability, skip_bio=args.skip_bio)
 
     # Stage 7: Save
+    scrape_res = {"providers_scraped": 0}  # legacy placeholder
     summary = stage_save(scrape_res, agi_train_res, agi_pipe_res, groq_res, merge_res, selenium_res)
 
     elapsed = time.time() - start

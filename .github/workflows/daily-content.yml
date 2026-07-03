@@ -1,8 +1,8 @@
-name: Daily Content Generator
+name: Content Generator
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 6,18 * * *'  # Twice daily — morning and evening content cycles
   workflow_dispatch:
 
 permissions:
