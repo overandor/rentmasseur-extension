@@ -1,0 +1,14 @@
+{
+  "action": "metrics-collector",
+  "timestamp": "2026-07-07T23:52:31.500636+00:00",
+  "source": "first_party_extension_or_manual",
+  "automated_login": false,
+  "captcha_bypassed": false,
+  "metrics_processed": 0,
+  "availability_updated": false,
+  "status": "completed",
+  "summary": {
+    "status": "no_data",
+    "message": "No metrics ingested yet."
+  }
+}
