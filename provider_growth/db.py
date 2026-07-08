@@ -113,6 +113,44 @@ SCHEMA: tuple[str, ...] = (
     )
     """,
     """
+    CREATE TABLE IF NOT EXISTS policy_rules (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS outbox_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        draft_id INTEGER NOT NULL,
+        visitor_key TEXT NOT NULL,
+        channel TEXT NOT NULL,
+        state TEXT NOT NULL DEFAULT 'queued',
+        policy_decision TEXT NOT NULL DEFAULT 'pending',
+        policy_reason TEXT NOT NULL DEFAULT '',
+        next_action_at TEXT,
+        exported_path TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(draft_id) REFERENCES message_drafts(id),
+        FOREIGN KEY(visitor_key) REFERENCES visitors(visitor_key)
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS revenue_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        visitor_key TEXT,
+        event_type TEXT NOT NULL,
+        amount_cents INTEGER NOT NULL DEFAULT 0,
+        currency TEXT NOT NULL DEFAULT 'USD',
+        event_at TEXT NOT NULL,
+        source TEXT NOT NULL DEFAULT 'manual',
+        notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
     CREATE TABLE IF NOT EXISTS receipts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         receipt_type TEXT NOT NULL,
@@ -139,6 +177,22 @@ SCHEMA: tuple[str, ...] = (
     CREATE INDEX IF NOT EXISTS idx_conversations_key_status
     ON client_conversations(visitor_key, status)
     """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_outbox_state_time
+    ON outbox_items(state, next_action_at)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_revenue_events_key_time
+    ON revenue_events(visitor_key, event_at)
+    """,
+)
+
+DEFAULT_POLICY: tuple[tuple[str, str, str], ...] = (
+    ("manual_approval_required", "true", "Drafts must be approved by a human before handoff."),
+    ("min_hours_between_outbound", "24", "Cooldown per record before another outbound handoff."),
+    ("quiet_hours_start", "21", "Local hour when outbound handoff should stop."),
+    ("quiet_hours_end", "8", "Local hour when outbound handoff may resume."),
+    ("max_outbox_per_day", "20", "Operator review capacity cap; not an auto-send quota."),
 )
 
 
@@ -151,10 +205,23 @@ def connect(db_path: str = DEFAULT_DB_PATH) -> sqlite3.Connection:
     return conn
 
 
+def seed_default_policy(conn: sqlite3.Connection) -> None:
+    for key, value, description in DEFAULT_POLICY:
+        conn.execute(
+            """
+            INSERT INTO policy_rules(key, value, description)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO NOTHING
+            """,
+            (key, value, description),
+        )
+
+
 def init_db(db_path: str = DEFAULT_DB_PATH) -> None:
     with connect(db_path) as conn:
         for stmt in SCHEMA:
             conn.execute(stmt)
+        seed_default_policy(conn)
         conn.commit()
 
 
