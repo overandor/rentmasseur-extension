@@ -43,6 +43,7 @@ SCHEMA: tuple[str, ...] = (
         visitor_key TEXT NOT NULL,
         template_name TEXT NOT NULL,
         body TEXT NOT NULL,
+        channel TEXT NOT NULL DEFAULT 'platform',
         status TEXT NOT NULL DEFAULT 'draft',
         approval_required INTEGER NOT NULL DEFAULT 1,
         approved_at TEXT,
@@ -50,6 +51,37 @@ SCHEMA: tuple[str, ...] = (
         skipped_reason TEXT,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(visitor_key) REFERENCES visitors(visitor_key)
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS client_conversations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        visitor_key TEXT NOT NULL,
+        channel TEXT NOT NULL DEFAULT 'imessage',
+        client_handle_hash TEXT,
+        last_inbound_at TEXT,
+        last_outbound_at TEXT,
+        status TEXT NOT NULL DEFAULT 'active',
+        interest_stage TEXT NOT NULL DEFAULT 'new',
+        revenue_stage TEXT NOT NULL DEFAULT 'unknown',
+        do_not_contact INTEGER NOT NULL DEFAULT 0,
+        notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(visitor_key) REFERENCES visitors(visitor_key)
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS conversation_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        conversation_id INTEGER NOT NULL,
+        direction TEXT NOT NULL,
+        body_hash TEXT NOT NULL,
+        body_preview TEXT NOT NULL DEFAULT '',
+        event_at TEXT NOT NULL,
+        metadata_json TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(conversation_id) REFERENCES client_conversations(id)
     )
     """,
     """
@@ -99,9 +131,13 @@ SCHEMA: tuple[str, ...] = (
     CREATE INDEX IF NOT EXISTS idx_message_drafts_key_status
     ON message_drafts(visitor_key, status)
     """,
-    """,
+    """
     CREATE INDEX IF NOT EXISTS idx_profile_versions_label
     ON profile_versions(label)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_conversations_key_status
+    ON client_conversations(visitor_key, status)
     """,
 )
 
