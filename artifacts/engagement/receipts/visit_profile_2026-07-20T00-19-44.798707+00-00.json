@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:19:44.798707+00:00",
+  "elapsed_s": 603.93,
+  "username": "italianodue",
+  "url": "https://rentmasseur.com/italianodue",
+  "page_title": "Italianodue | RentMasseur",
+  "content_hash": "1c7a406109590b202f0159caadfa70475021edbd3b2905e6d93d7f77104ce9da",
+  "screenshot": "visit_065_italianodue",
+  "visited_at": "2026-07-20T00:19:44.797065+00:00",
+  "last_online": "Jul 17",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "71c49648fef90886"
+}

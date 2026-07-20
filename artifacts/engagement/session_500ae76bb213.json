@@ -1,0 +1,81 @@
+{
+  "session_id": "500ae76bb213",
+  "actions": [],
+  "login": true,
+  "visitors_found": 101,
+  "visited": [
+    {
+      "username": "kpmgeyguy",
+      "url": "https://rentmasseur.com/kpmgeyguy",
+      "status": "ok",
+      "page_title": "Kpmgeyguy | RentMasseur",
+      "content_hash": "8ff8152eb6ccf951f062ce8746d6a12a1d42284ab81fdd646d3687878ee8b921",
+      "screenshot": "visit_001_kpmgeyguy",
+      "visited_at": "2026-07-20T00:11:39.462333+00:00",
+      "last_online": null,
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true
+    },
+    {
+      "username": "MassageCustomer",
+      "url": "https://rentmasseur.com/MassageCustomer",
+      "status": "ok",
+      "page_title": "MassageCustomer | RentMasseur",
+      "content_hash": "f584c4f9df386f4b4eb23591732abeaa084d8a0315ca182aac52ffc24588f5d3",
+      "screenshot": "visit_002_MassageCustomer",
+      "visited_at": "2026-07-20T00:11:45.520331+00:00",
+      "last_online": null,
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true
+    },
+    {
+      "username": "summerboyy",
+      "url": "https://rentmasseur.com/summerboyy",
+      "status": "ok",
+      "page_title": "Summerboyy | RentMasseur",
+      "content_hash": "a949924000e27bda3b962fe4bf7ed448105a5f709ccc5ae72d50c51df26b2aa1",
+      "screenshot": "visit_003_summerboyy",
+      "visited_at": "2026-07-20T00:11:53.758488+00:00",
+      "last_online": "39 min ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true
+    },
+    {
+      "username": "BenClib",
+      "url": "https://rentmasseur.com/BenClib",
+      "status": "ok",
+      "page_title": "BenClib | RentMasseur",
+      "content_hash": "b3915a3790b66aed5c11d3f758195bd045852154e119ef82da3702e5477d92fc",
+      "screenshot": "visit_004_BenClib",
+      "visited_at": "2026-07-20T00:12:00.292520+00:00",
+      "last_online": "49 min ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true
+    },
+    {
+      "username": "mikeandrew",
+      "url": "https://rentmasseur.com/mikeandrew",
+      "status": "ok",
+      "page_title": "Mikeandrew | RentMasseur",
+      "content_hash": "362c86f6104f0433011e26c73665071d3fb47380b96be43e945a35d944787af1",
+      "screenshot": "visit_005_mikeandrew",
+      "visited_at": "2026-07-20T00:12:07.422615+00:00",
+      "last_online": "44 min ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true
+    }
+  ],
+  "messaged": [],
+  "end_time": "2026-07-20T00:12:10.462693+00:00",
+  "total_elapsed_s": 84.96
+}

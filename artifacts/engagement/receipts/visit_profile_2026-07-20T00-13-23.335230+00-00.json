@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:13:23.335230+00:00",
+  "elapsed_s": 222.46,
+  "username": "Daffalex",
+  "url": "https://rentmasseur.com/Daffalex",
+  "page_title": "Daffalex | RentMasseur",
+  "content_hash": "81ab84284b8898599cf3254f9138e38b111e849e64cf918724086c1e14609987",
+  "screenshot": "visit_010_Daffalex",
+  "visited_at": "2026-07-20T00:13:23.333653+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "07ae97813bc76482"
+}

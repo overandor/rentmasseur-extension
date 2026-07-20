@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:20:54.017460+00:00",
+  "elapsed_s": 673.15,
+  "username": "CuriousAlter",
+  "url": "https://rentmasseur.com/CuriousAlter",
+  "page_title": "CuriousAlter | RentMasseur",
+  "content_hash": "6236f8aee764db450bb1707ddd56d21deee8661e2aa08ad8f985b04e8808d206",
+  "screenshot": "visit_074_CuriousAlter",
+  "visited_at": "2026-07-20T00:20:54.012029+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "dfd25fc6e29184f4"
+}

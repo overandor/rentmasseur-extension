@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:13:16.080915+00:00",
+  "elapsed_s": 215.21,
+  "username": "barcolet",
+  "url": "https://rentmasseur.com/barcolet",
+  "page_title": "Barcolet | RentMasseur",
+  "content_hash": "4b907539aa94b3a0badedc4eebe2748c40b6ea9126bdc5b979310561f138f578",
+  "screenshot": "visit_009_barcolet",
+  "visited_at": "2026-07-20T00:13:16.079402+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "a3f8edff8ece0365"
+}

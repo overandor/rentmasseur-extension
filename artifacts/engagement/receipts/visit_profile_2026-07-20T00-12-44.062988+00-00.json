@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:12:44.062988+00:00",
+  "elapsed_s": 183.19,
+  "username": "BenClib",
+  "url": "https://rentmasseur.com/BenClib",
+  "page_title": "BenClib | RentMasseur",
+  "content_hash": "924b5992e4375d9aa5f67ce9970b098dc07c0dd445255352ff1dd197994aad92",
+  "screenshot": "visit_004_BenClib",
+  "visited_at": "2026-07-20T00:12:44.061482+00:00",
+  "last_online": "50 min ago",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "fb60260cec7aee70"
+}

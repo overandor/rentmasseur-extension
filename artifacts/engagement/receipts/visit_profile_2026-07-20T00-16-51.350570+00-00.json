@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:16:51.350570+00:00",
+  "elapsed_s": 430.48,
+  "username": "JKJerseyCity",
+  "url": "https://rentmasseur.com/JKJerseyCity",
+  "page_title": "JKJerseyCity | RentMasseur",
+  "content_hash": "e33bde252dad77c72da784653e61138c3fab7161b40ab0511194d24d64270701",
+  "screenshot": "visit_041_JKJerseyCity",
+  "visited_at": "2026-07-20T00:16:51.349282+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "cd0bab0ea64bb9f4"
+}

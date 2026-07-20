@@ -1,0 +1,283 @@
+name: RM Engagement Engine — 24/7 Visitor Engagement
+
+on:
+  schedule:
+    - cron: '7 */3 * * *'       # Every 3h offset 7min — scrape + visit-back
+    - cron: '42 */6 * * *'      # Every 6h offset 42min — full run with messaging
+    - cron: '15 9,21 * * *'     # 9:15am + 9:15pm — organic morning/evening visit
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode: scrape, visit, full, message'
+        required: false
+        default: 'full'
+      limit:
+        description: 'Max visitors to visit (0 = all)'
+        required: false
+        default: '10'
+      threshold:
+        description: 'Visit count threshold for messaging'
+        required: false
+        default: '3'
+      max_load_more:
+        description: 'Max Load More clicks'
+        required: false
+        default: '30'
+      dry_run:
+        description: 'Dry run (no actions)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+
+jobs:
+  engagement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RM_USER: ${{ secrets.RENTMASSEUR_USERNAME || secrets.RM_USER }}
+      RM_PASS: ${{ secrets.RENTMASSEUR_PASSWORD || secrets.RM_PASS }}
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME || secrets.RM_USER }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD || secrets.RM_PASS }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install undetected-chromedriver selenium requests Pillow
+
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          echo "Chrome: $(google-chrome --version)"
+
+      - name: Restore engagement DB
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: engagement-db
+          path: artifacts/engagement/
+
+      - name: Run engagement engine
+        id: engine
+        continue-on-error: true
+        timeout-minutes: 25
+        run: |
+          MODE="${{ github.event.inputs.mode || 'full' }}"
+          LIMIT="${{ github.event.inputs.limit || '10' }}"
+          THRESHOLD="${{ github.event.inputs.threshold || '3' }}"
+          MAX_LOAD_MORE="${{ github.event.inputs.max_load_more || '30' }}"
+          DRY=""
+
+          if [ "${{ github.event.inputs.dry_run || 'false' }}" = "true" ]; then
+            DRY="--dry-run"
+          fi
+
+          # Determine schedule-based mode
+          if [ -z "${{ github.event.inputs.mode }}" ]; then
+            # Every 3h cron = scrape + visit
+            # Every 6h cron = full run with messaging
+            HOUR=$(date -u +%H)
+            MIN=$(date -u +%M)
+            if [ "$MIN" -ge "30" ]; then
+              MODE="full"
+            else
+              MODE="visit"
+            fi
+          fi
+
+          echo "=== RM Engagement Engine ==="
+          echo "Mode: $MODE | Limit: $LIMIT | Threshold: $THRESHOLD | MaxLoadMore: $MAX_LOAD_MORE"
+
+          ARGS="--login --limit $LIMIT --max-load-more $MAX_LOAD_MORE --threshold $THRESHOLD --max-messages 15 $DRY"
+
+          case "$MODE" in
+            scrape)
+              python3 rm_engagement_engine.py $ARGS --scrape-only 2>&1 | tee artifacts/engagement/engine_run.log
+              ;;
+            visit)
+              python3 rm_engagement_engine.py $ARGS --visit-back 2>&1 | tee artifacts/engagement/engine_run.log
+              ;;
+            message)
+              python3 rm_engagement_engine.py $ARGS --message-repeat 2>&1 | tee artifacts/engagement/engine_run.log
+              ;;
+            full|*)
+              python3 rm_engagement_engine.py $ARGS --full-run 2>&1 | tee artifacts/engagement/engine_run.log
+              ;;
+          esac
+
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "::warning::Engine exited with code $EXIT_CODE"
+          fi
+
+      - name: Verify receipts
+        if: always()
+        run: |
+          echo "=== Receipt Verification ==="
+          RECEIPT_DIR="artifacts/engagement/receipts"
+          if [ ! -d "$RECEIPT_DIR" ]; then
+            echo "::error::No receipts directory found"
+            exit 1
+          fi
+
+          RECEIPT_COUNT=$(find "$RECEIPT_DIR" -name '*.json' | wc -l)
+          THUMB_COUNT=$(find "artifacts/engagement/thumbnails" -name '*.jpg' 2>/dev/null | wc -l)
+          echo "Receipts: $RECEIPT_COUNT"
+          echo "Thumbnails: $THUMB_COUNT"
+
+          if [ "$RECEIPT_COUNT" -eq 0 ]; then
+            echo "::error::No receipts generated — engine did not perform any actions"
+            exit 1
+          fi
+
+          python3 -c "
+          import json, pathlib, sys
+          receipts_dir = pathlib.Path('$RECEIPT_DIR')
+          required = ['session_id', 'action', 'status', 'timestamp', 'receipt_hash']
+          errors = []
+          for f in sorted(receipts_dir.glob('*.json')):
+              try:
+                  data = json.loads(f.read_text())
+                  missing = [k for k in required if k not in data]
+                  if missing:
+                      errors.append(f'{f.name}: missing {missing}')
+                  else:
+                      print(f'  OK: {f.name} → {data[\"action\"]}={data[\"status\"]} hash={data[\"receipt_hash\"]}')
+              except Exception as e:
+                  errors.append(f'{f.name}: parse error: {e}')
+          if errors:
+              for e in errors:
+                  print(f'::error::{e}')
+              sys.exit(1)
+          print(f'All {len(list(receipts_dir.glob(\"*.json\")))} receipts valid.')
+          "
+
+      - name: Print DB stats
+        if: always()
+        run: |
+          python3 -c "
+          import sqlite3, pathlib
+          db = pathlib.Path('artifacts/engagement/engagement.db')
+          if not db.exists():
+              print('No DB found')
+              exit(0)
+          conn = sqlite3.connect(str(db))
+          visitors = conn.execute('SELECT COUNT(*) FROM visitors').fetchone()[0]
+          events = conn.execute('SELECT COUNT(*) FROM visit_log').fetchone()[0]
+          messages = conn.execute('SELECT COUNT(*) FROM message_log').fetchone()[0]
+          repeats = conn.execute('SELECT COUNT(*) FROM visitors WHERE visit_count >= 3').fetchone()[0]
+          print(f'Visitors tracked: {visitors}')
+          print(f'Visit events: {events}')
+          print(f'Messages sent: {messages}')
+          print(f'Repeat visitors (3+): {repeats}')
+          top = conn.execute('SELECT username, visit_count, last_online, last_messaged FROM visitors ORDER BY visit_count DESC LIMIT 15').fetchall()
+          print()
+          print('Top visitors:')
+          for r in top:
+              print(f'  {r[0]}: {r[1]} visits | online={r[2]} | messaged={r[3][:19] if r[3] else \"never\"}')
+          "
+
+      - name: Commit DB + receipts
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add artifacts/engagement/engagement.db artifacts/engagement/receipts/*.json artifacts/engagement/session_*.json artifacts/engagement/thumbnails/ 2>/dev/null || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "engagement: $(date -u +%Y-%m-%d-%H:%M) [skip-ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Sync engagement DB to Hugging Face
+        if: always() && env.HF_TOKEN != ''
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "HF_TOKEN not set — skipping HF sync"
+            exit 0
+          fi
+          if [ ! -f "artifacts/engagement/engagement.db" ]; then
+            echo "No engagement DB to sync"
+            exit 0
+          fi
+
+          echo "=== Syncing engagement DB to Hugging Face ==="
+          # Clone HF repo shallow
+          git clone --depth 1 "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/josephrw/rentmasseur-optimizer" /tmp/hf-repo 2>&1 || {
+            echo "::warning::HF clone failed"
+            exit 0
+          }
+
+          # Copy engagement DB and receipts
+          mkdir -p /tmp/hf-repo/artifacts/engagement/receipts
+          mkdir -p /tmp/hf-repo/artifacts/engagement/thumbnails
+          cp artifacts/engagement/engagement.db /tmp/hf-repo/artifacts/engagement/
+          cp artifacts/engagement/receipts/*.json /tmp/hf-repo/artifacts/engagement/receipts/ 2>/dev/null || true
+          cp artifacts/engagement/thumbnails/*.jpg /tmp/hf-repo/artifacts/engagement/thumbnails/ 2>/dev/null || true
+          cp artifacts/engagement/session_*.json /tmp/hf-repo/artifacts/engagement/ 2>/dev/null || true
+
+          # Commit and push to HF
+          cd /tmp/hf-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add artifacts/engagement/
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "engagement sync: $(date -u +%Y-%m-%d-%H:%M)"
+            git push 2>&1 || echo "::warning::HF push failed"
+            echo "=== HF Space updated: https://josephrw-rentmasseur-optimizer.hf.space ==="
+          else
+            echo "No changes to sync to HF"
+          fi
+
+      - name: Upload DB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: engagement-db
+          path: artifacts/engagement/engagement.db
+          retention-days: 90
+
+      - name: Upload full artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rm-engagement-${{ github.run_id }}
+          path: |
+            artifacts/engagement/
+            !artifacts/engagement/engagement.db
+          retention-days: 30
+
+      - name: Create issue on failure
+        if: steps.engine.outputs.exit_code != '0' && steps.engine.outputs.exit_code != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let logPreview = '';
+            try {
+              logPreview = fs.readFileSync('artifacts/engagement/engine_run.log', 'utf8').slice(-3000);
+            } catch (e) {}
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[RM-Engagement] Failure — run ${context.runId}`,
+              body: `## Engagement Engine Failure\n\n**Run**: ${context.runId}\n**Exit code**: '${{ steps.engine.outputs.exit_code }}'\n\n### Last 3000 chars of log:\n\`\`\`\n${logPreview}\n\`\`\`\n\nCheck artifacts for screenshots and receipts.`,
+              labels: ['engagement-failure', 'needs-investigation'],
+            });

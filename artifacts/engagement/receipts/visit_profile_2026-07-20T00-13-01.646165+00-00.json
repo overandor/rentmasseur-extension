@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:13:01.646165+00:00",
+  "elapsed_s": 200.78,
+  "username": "ScottBrearley",
+  "url": "https://rentmasseur.com/ScottBrearley",
+  "page_title": "ScottBrearley | RentMasseur",
+  "content_hash": "88f34ee54a44fb0403e9412d53944a2d926755129ea7d5efd0a9a29f6e9087a0",
+  "screenshot": "visit_007_ScottBrearley",
+  "visited_at": "2026-07-20T00:13:01.638426+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "72bcb437c6795d84"
+}

@@ -1,0 +1,10 @@
+{
+  "session_id": "01c960b20927",
+  "action": "login",
+  "status": "pass",
+  "timestamp": "2026-07-20T00:21:12.188358+00:00",
+  "elapsed_s": 26.69,
+  "url": "https://rentmasseur.com/",
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  "receipt_hash": "e5dae631c3c82599"
+}

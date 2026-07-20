@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:21:24.426936+00:00",
+  "elapsed_s": 703.56,
+  "username": "PobRom",
+  "url": "https://rentmasseur.com/PobRom",
+  "page_title": "PobRom | RentMasseur",
+  "content_hash": "fd94845093b8717bb620390e798075dfec403c1cc284dfef2581803d497b2758",
+  "screenshot": "visit_078_PobRom",
+  "visited_at": "2026-07-20T00:21:24.425508+00:00",
+  "last_online": "Jul 17",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "cf24508fe19d77c9"
+}

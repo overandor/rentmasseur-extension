@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:19:20.831003+00:00",
+  "elapsed_s": 579.96,
+  "username": "hillguydc",
+  "url": "https://rentmasseur.com/hillguydc",
+  "page_title": "Hillguydc | RentMasseur",
+  "content_hash": "608287e2c27a2af54099d927d1b598e9568a8ac66d8a105021a2e181dae9a6d7",
+  "screenshot": "visit_062_hillguydc",
+  "visited_at": "2026-07-20T00:19:20.829618+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "b2d485158d4b1d54"
+}

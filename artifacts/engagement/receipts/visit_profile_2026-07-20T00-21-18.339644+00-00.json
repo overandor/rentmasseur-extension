@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:21:18.339644+00:00",
+  "elapsed_s": 697.47,
+  "username": "SomeoneAB",
+  "url": "https://rentmasseur.com/SomeoneAB",
+  "page_title": "SomeoneAB | RentMasseur",
+  "content_hash": "2987eaff7d2d4ec673ae73e2d928bb3d85a007174e89612dc1dfba232dfd728d",
+  "screenshot": "visit_077_SomeoneAB",
+  "visited_at": "2026-07-20T00:21:18.330871+00:00",
+  "last_online": "Jul 17",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "dfc62a8732533c6f"
+}

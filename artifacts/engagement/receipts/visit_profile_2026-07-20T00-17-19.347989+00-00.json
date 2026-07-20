@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:17:19.347989+00:00",
+  "elapsed_s": 458.48,
+  "username": "Mikebiman",
+  "url": "https://rentmasseur.com/Mikebiman",
+  "page_title": "Mikebiman | RentMasseur",
+  "content_hash": "7688e40d147de4a17ddc3a0d92fbb15937ec8de92e6e73e7d21ed91437f3c421",
+  "screenshot": "visit_045_Mikebiman",
+  "visited_at": "2026-07-20T00:17:19.346690+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "f4a51c17cb7a3e52"
+}

@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:14:50.232425+00:00",
+  "elapsed_s": 309.36,
+  "username": "JimWest",
+  "url": "https://rentmasseur.com/JimWest",
+  "page_title": "JimWest | RentMasseur",
+  "content_hash": "17c84dc3e27babcf92e800e7aeb5fc1060eace6125e27a8a82f2cf16821d5994",
+  "screenshot": "visit_023_JimWest",
+  "visited_at": "2026-07-20T00:14:50.230966+00:00",
+  "last_online": "24 min ago",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "07282cb1b920ac02"
+}

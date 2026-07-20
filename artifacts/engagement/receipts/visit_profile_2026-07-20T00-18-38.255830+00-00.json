@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:18:38.255830+00:00",
+  "elapsed_s": 537.39,
+  "username": "JamieNYC",
+  "url": "https://rentmasseur.com/JamieNYC",
+  "page_title": "JamieNYC | RentMasseur",
+  "content_hash": "a78d6ccc187071ccd891cbc118a839f88eb5e667d7736dd59ad61119618246ea",
+  "screenshot": "visit_056_JamieNYC",
+  "visited_at": "2026-07-20T00:18:38.253787+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "36866f06a7dd5628"
+}

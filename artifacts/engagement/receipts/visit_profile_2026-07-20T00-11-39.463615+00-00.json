@@ -1,0 +1,19 @@
+{
+  "session_id": "500ae76bb213",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:11:39.463615+00:00",
+  "elapsed_s": 53.96,
+  "username": "kpmgeyguy",
+  "url": "https://rentmasseur.com/kpmgeyguy",
+  "page_title": "Kpmgeyguy | RentMasseur",
+  "content_hash": "8ff8152eb6ccf951f062ce8746d6a12a1d42284ab81fdd646d3687878ee8b921",
+  "screenshot": "visit_001_kpmgeyguy",
+  "visited_at": "2026-07-20T00:11:39.462333+00:00",
+  "last_online": null,
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "aff553a528ee291f"
+}

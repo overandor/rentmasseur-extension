@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:13:57.363640+00:00",
+  "elapsed_s": 256.49,
+  "username": "fulmer",
+  "url": "https://rentmasseur.com/fulmer",
+  "page_title": "Fulmer | RentMasseur",
+  "content_hash": "f4ed9d5afeca653f66200a945bf5fb85088e155732af5f2925c742ea159d3bce",
+  "screenshot": "visit_015_fulmer",
+  "visited_at": "2026-07-20T00:13:57.362404+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "facd5d38f5566438"
+}

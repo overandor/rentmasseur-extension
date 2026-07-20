@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:19:06.279674+00:00",
+  "elapsed_s": 565.41,
+  "username": "Bolder",
+  "url": "https://rentmasseur.com/Bolder",
+  "page_title": "Bolder | RentMasseur",
+  "content_hash": "9a02abb3c820eb645dd11e1321f8ad1b54ef967d079c6d16980d4adf36ede2e4",
+  "screenshot": "visit_060_Bolder",
+  "visited_at": "2026-07-20T00:19:06.278407+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "bca1e2cb1cbf937c"
+}

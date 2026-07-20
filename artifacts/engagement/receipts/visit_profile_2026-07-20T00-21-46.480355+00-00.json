@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:21:46.480355+00:00",
+  "elapsed_s": 725.61,
+  "username": "JonasSimone",
+  "url": "https://rentmasseur.com/JonasSimone",
+  "page_title": "JonasSimone | RentMasseur",
+  "content_hash": "e574c1f2d147225cabc22059170fc87ec1705828dfb376b1bdfde8526ebb35de",
+  "screenshot": "visit_081_JonasSimone",
+  "visited_at": "2026-07-20T00:21:46.478918+00:00",
+  "last_online": null,
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "70580602239d472c"
+}

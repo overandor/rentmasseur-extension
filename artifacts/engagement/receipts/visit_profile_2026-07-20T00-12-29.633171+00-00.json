@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:12:29.633171+00:00",
+  "elapsed_s": 168.76,
+  "username": "MassageCustomer",
+  "url": "https://rentmasseur.com/MassageCustomer",
+  "page_title": "MassageCustomer | RentMasseur",
+  "content_hash": "f584c4f9df386f4b4eb23591732abeaa084d8a0315ca182aac52ffc24588f5d3",
+  "screenshot": "visit_002_MassageCustomer",
+  "visited_at": "2026-07-20T00:12:29.631726+00:00",
+  "last_online": null,
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "9394394e44fd70f6"
+}

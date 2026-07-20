@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:14:42.355758+00:00",
+  "elapsed_s": 301.49,
+  "username": "EliTee",
+  "url": "https://rentmasseur.com/EliTee",
+  "page_title": "EliTee | RentMasseur",
+  "content_hash": "e78bb2eda94c5be8e43f05c2e969550d858baf18dcd6f8d32105fb7ff21a1d9f",
+  "screenshot": "visit_022_EliTee",
+  "visited_at": "2026-07-20T00:14:42.354470+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "845096910f7a0e8b"
+}

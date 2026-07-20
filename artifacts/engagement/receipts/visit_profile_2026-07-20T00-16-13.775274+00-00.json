@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:16:13.775274+00:00",
+  "elapsed_s": 392.9,
+  "username": "MHKNYC",
+  "url": "https://rentmasseur.com/MHKNYC",
+  "page_title": "MHKNYC | RentMasseur",
+  "content_hash": "712e7eacd49fe1d80c5f43414dfe0634c7e721aa1c092a248afa6cf26067f79c",
+  "screenshot": "visit_035_MHKNYC",
+  "visited_at": "2026-07-20T00:16:13.773805+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "dbdcad1b0f26748f"
+}

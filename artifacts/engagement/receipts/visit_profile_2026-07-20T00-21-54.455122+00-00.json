@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:21:54.455122+00:00",
+  "elapsed_s": 733.58,
+  "username": "robertbattus",
+  "url": "https://rentmasseur.com/robertbattus",
+  "page_title": "Robertbattus | RentMasseur",
+  "content_hash": "0841041786076b19d4f4d96b944d5b44fd0381511c61f1cb48a36eda3ef63f20",
+  "screenshot": "visit_082_robertbattus",
+  "visited_at": "2026-07-20T00:21:54.453200+00:00",
+  "last_online": "Jul 17",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "5f8bc762b1aa1245"
+}

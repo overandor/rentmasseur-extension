@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:16:32.669740+00:00",
+  "elapsed_s": 411.8,
+  "username": "JamesTolken",
+  "url": "https://rentmasseur.com/JamesTolken",
+  "page_title": "JamesTolken | RentMasseur",
+  "content_hash": "4908dbc9011d396019de42a674d198a6bb1b8d196307368538588e20b5305fc2",
+  "screenshot": "visit_038_JamesTolken",
+  "visited_at": "2026-07-20T00:16:32.668205+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "88124ecc08bcf256"
+}

@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:21:32.258089+00:00",
+  "elapsed_s": 711.39,
+  "username": "NycbroDJ",
+  "url": "https://rentmasseur.com/NycbroDJ",
+  "page_title": "NycbroDJ | RentMasseur",
+  "content_hash": "39d4aaa23b96e960cdf79306270cafff4e45d0f63fcd03c090b9bbbf5cf199c1",
+  "screenshot": "visit_079_NycbroDJ",
+  "visited_at": "2026-07-20T00:21:32.256705+00:00",
+  "last_online": null,
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "5cbe78ad3cf7a711"
+}

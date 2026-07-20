@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:15:22.927718+00:00",
+  "elapsed_s": 342.06,
+  "username": "Trailin",
+  "url": "https://rentmasseur.com/Trailin",
+  "page_title": "Trailin | RentMasseur",
+  "content_hash": "e4d151737383f0fe145e82ff58598ed6d17b2262b75f3a6eabf87db5f4a19ba2",
+  "screenshot": "visit_028_Trailin",
+  "visited_at": "2026-07-20T00:15:22.926231+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "a394117351332118"
+}

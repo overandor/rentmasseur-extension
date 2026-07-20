@@ -19,11 +19,13 @@ Endpoints:
 import os
 import json
 import glob
+import sqlite3
 import subprocess
 import time
 import random
 import requests
 from datetime import datetime, timezone
+from pathlib import Path
 from fastapi import FastAPI, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +47,10 @@ CONTENT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "content"
 ORCHESTRATOR_LOG = os.path.join(CONTENT_DIR, "orchestrator.log")
 VERCEL_BACKEND_URL = os.getenv("VERCEL_BACKEND_URL", "")
 REBRANDLY_LINK = os.getenv("REBRANDLY_LINK", "")
+
+ENGAGEMENT_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts", "engagement", "engagement.db")
+BIO_EXPERIMENTS_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts", "engagement", "bio_experiments.db")
+BIO_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts", "engagement", "current_bio.json")
 
 os.makedirs(CONTENT_DIR, exist_ok=True)
 
@@ -82,6 +88,56 @@ def _load_all_bios():
     return bios
 
 
+def _engagement_stats():
+    if not os.path.exists(ENGAGEMENT_DB):
+        return {"total": 0, "repeat_3plus": 0, "messages_sent": 0, "top_visitors": [], "recent_visits": [], "visit_events": 0, "last_updated": None}
+    conn = sqlite3.connect(ENGAGEMENT_DB)
+    conn.row_factory = sqlite3.Row
+    total = conn.execute("SELECT COUNT(*) FROM visitors").fetchone()[0]
+    repeat_3 = conn.execute("SELECT COUNT(*) FROM visitors WHERE visit_count >= 3").fetchone()[0]
+    msgs = conn.execute("SELECT COUNT(*) FROM message_log WHERE status='sent'").fetchone()[0]
+    visit_events = conn.execute("SELECT COUNT(*) FROM visit_log").fetchone()[0]
+    top = conn.execute(
+        "SELECT username, visit_count, last_online, last_messaged FROM visitors ORDER BY visit_count DESC LIMIT 10"
+    ).fetchall()
+    recent = conn.execute(
+        "SELECT username, visited_at, status, content_hash FROM visit_log ORDER BY visited_at DESC LIMIT 20"
+    ).fetchall()
+    last_updated_row = conn.execute("SELECT visited_at FROM visit_log ORDER BY visited_at DESC LIMIT 1").fetchone()
+    conn.close()
+    return {
+        "total": total,
+        "repeat_3plus": repeat_3,
+        "messages_sent": msgs,
+        "visit_events": visit_events,
+        "top_visitors": [dict(r) for r in top],
+        "recent_visits": [dict(r) for r in recent],
+        "last_updated": last_updated_row[0] if last_updated_row else None,
+    }
+
+
+def _bio_experiments():
+    if not os.path.exists(BIO_EXPERIMENTS_DB):
+        return []
+    conn = sqlite3.connect(BIO_EXPERIMENTS_DB)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT id, bio_text, model, score, deployed_at, status, visitors_during FROM bio_experiments ORDER BY created_at DESC LIMIT 20"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def _current_bio():
+    if os.path.exists(BIO_CACHE):
+        try:
+            with open(BIO_CACHE) as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"bio": "(not fetched)", "char_count": 0}
+
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
     rl_state = load_json(os.path.join(CONTENT_DIR, "rl_state.json"), {})
@@ -92,6 +148,9 @@ async def dashboard():
     revenue = ga_state.get("best_revenue", 0)
     target = 300
     progress = min(100, round((revenue / target) * 100, 1))
+    eng = _engagement_stats()
+    bio_exp = _bio_experiments()
+    current_bio = _current_bio()
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -314,6 +373,26 @@ pre {{
         <div class="num">{sum(counts.values())}</div>
         <div class="sub">Total generated items</div>
     </div>
+    <div class="card glass">
+        <h3>Visitors Tracked</h3>
+        <div class="num">{eng.get('total', 0)}</div>
+        <div class="sub">{eng.get('repeat_3plus', 0)} repeat (3+ visits)</div>
+    </div>
+    <div class="card glass">
+        <h3>Visit Events</h3>
+        <div class="num">{eng.get('visit_events', 0)}</div>
+        <div class="sub">Total profile visits logged</div>
+    </div>
+    <div class="card glass">
+        <h3>Messages Sent</h3>
+        <div class="num">{eng.get('messages_sent', 0)}</div>
+        <div class="sub">Auto-engagement pipeline</div>
+    </div>
+    <div class="card glass">
+        <h3>Bio Experiments</h3>
+        <div class="num">{len(bio_exp)}</div>
+        <div class="sub">Ollama-generated candidates</div>
+    </div>
 </div>
 
 <div class="actions">
@@ -331,6 +410,44 @@ pre {{
         <table class="table">
             <tr><th>ID</th><th>Chars</th><th>Preview</th></tr>
             {''.join([f"<tr><td>{b['id']}</td><td>{b['chars']}</td><td>{b['preview'][:80]}...</td></tr>" for b in _load_all_bios()[:5]]) or '<tr><td colspan="3">No bios yet</td></tr>'}
+        </table>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Current Live Bio</h2>
+    <div class="glass" style="padding: 20px;">
+        <pre>{current_bio.get('bio', '(not fetched)')[:500]}</pre>
+        <div class="sub">{current_bio.get('char_count', 0)} chars | Fetched: {str(current_bio.get('fetched_at', 'never'))[:19]}</div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Top Visitors (Engagement Engine) — Last Updated: {str(eng.get('last_updated', 'never'))[:19] if eng.get('last_updated') else 'never'}</h2>
+    <div class="glass" style="padding: 20px;">
+        <table class="table">
+            <tr><th>Username</th><th>Visits</th><th>Last Online</th><th>Last Messaged</th></tr>
+            {''.join([f"<tr><td>{v['username']}</td><td>{v['visit_count']}</td><td>{v.get('last_online') or '—'}</td><td>{str(v.get('last_messaged'))[:19] if v.get('last_messaged') else 'never'}</td></tr>" for v in eng.get('top_visitors', [])[:10]]) or '<tr><td colspan="4">No visitors tracked yet</td></tr>'}
+        </table>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Recent Visits (Live Feed)</h2>
+    <div class="glass" style="padding: 20px;">
+        <table class="table">
+            <tr><th>Username</th><th>Visited At</th><th>Status</th><th>Hash</th></tr>
+            {''.join([f"<tr><td>{v['username']}</td><td>{str(v.get('visited_at', ''))[:19]}</td><td>{v.get('status', '')}</td><td>{v.get('content_hash', '')[:12]}...</td></tr>" for v in eng.get('recent_visits', [])[:20]]) or '<tr><td colspan="4">No visits logged yet</td></tr>'}
+        </table>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Ollama Bio Experiments</h2>
+    <div class="glass" style="padding: 20px;">
+        <table class="table">
+            <tr><th>ID</th><th>Model</th><th>Score</th><th>Status</th><th>Visitors</th><th>Preview</th></tr>
+            {''.join([f"<tr><td>#{b['id']}</td><td>{b['model']}</td><td>{b['score']}</td><td>{b['status']}</td><td>{b.get('visitors_during', 0)}</td><td>{b['bio_text'][:60]}...</td></tr>" for b in bio_exp[:10]]) or '<tr><td colspan="6">No bio experiments yet</td></tr>'}
         </table>
     </div>
 </div>
@@ -405,8 +522,39 @@ async def api_os_report():
         "availability": availability,
         "competitors_analyzed": len(competitors),
         "rebrandly_link": REBRANDLY_LINK,
+        "engagement": _engagement_stats(),
+        "bio_experiments": _bio_experiments(),
+        "current_bio": _current_bio(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
+
+
+@app.get("/api/engagement")
+async def api_engagement():
+    return JSONResponse(_engagement_stats())
+
+
+@app.get("/api/engagement/visitors")
+async def api_engagement_visitors():
+    if not os.path.exists(ENGAGEMENT_DB):
+        return JSONResponse({"visitors": []})
+    conn = sqlite3.connect(ENGAGEMENT_DB)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT username, visit_count, first_seen, last_seen, last_online, last_messaged, message_count FROM visitors ORDER BY visit_count DESC LIMIT 100"
+    ).fetchall()
+    conn.close()
+    return JSONResponse({"visitors": [dict(r) for r in rows]})
+
+
+@app.get("/api/bio-experiments")
+async def api_bio_experiments():
+    return JSONResponse({"experiments": _bio_experiments()})
+
+
+@app.get("/api/current-bio")
+async def api_current_bio():
+    return JSONResponse(_current_bio())
 
 
 @app.get("/api/os/bios")
@@ -467,6 +615,7 @@ async def api_content(subdir: str):
 
 
 @app.get("/health")
+@app.get("/api/health")
 async def health():
     return JSONResponse({"status": "ok", "service": "rentmasseur-optimizer", "timestamp": datetime.now(timezone.utc).isoformat()})
 

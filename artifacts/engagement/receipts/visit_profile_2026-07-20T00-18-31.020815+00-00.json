@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:18:31.020815+00:00",
+  "elapsed_s": 530.15,
+  "username": "wrhaynes",
+  "url": "https://rentmasseur.com/wrhaynes",
+  "page_title": "Wrhaynes | RentMasseur",
+  "content_hash": "6c1a7ee0ece85c9b872e1c713eb872595efadd7edc7cd4128f8cb05f268e55eb",
+  "screenshot": "visit_055_wrhaynes",
+  "visited_at": "2026-07-20T00:18:31.019330+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "af10c00e222d37a0"
+}

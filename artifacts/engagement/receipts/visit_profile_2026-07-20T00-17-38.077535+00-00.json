@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:17:38.077535+00:00",
+  "elapsed_s": 477.21,
+  "username": "Richrc",
+  "url": "https://rentmasseur.com/Richrc",
+  "page_title": "Richrc | RentMasseur",
+  "content_hash": "17f93082121e3dc8446f699d0af08d79cd0bb41ab13f0a34a3a312fd81030a72",
+  "screenshot": "visit_048_Richrc",
+  "visited_at": "2026-07-20T00:17:38.076113+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "07c4e36609183399"
+}

@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:23:01.054119+00:00",
+  "elapsed_s": 800.18,
+  "username": "BGUptown",
+  "url": "https://rentmasseur.com/BGUptown",
+  "page_title": "BGUptown | RentMasseur",
+  "content_hash": "7951cc20989012bb2069588224391598280caa625fb88b5d3e31bb3876424b21",
+  "screenshot": "visit_091_BGUptown",
+  "visited_at": "2026-07-20T00:23:01.052424+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "cd036d60d944aa13"
+}

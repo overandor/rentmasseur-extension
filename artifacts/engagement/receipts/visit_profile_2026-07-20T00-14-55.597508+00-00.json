@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:14:55.597508+00:00",
+  "elapsed_s": 314.73,
+  "username": "NicholasGlim",
+  "url": "https://rentmasseur.com/NicholasGlim",
+  "page_title": "NicholasGlim | RentMasseur",
+  "content_hash": "26b60f75e5b5f44df9016b8c9ff2cc0bef1cc39ba8ecfb0ed1230dddfa4ac312",
+  "screenshot": "visit_024_NicholasGlim",
+  "visited_at": "2026-07-20T00:14:55.595912+00:00",
+  "last_online": "Jul 19",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "07d8d9bea151156a"
+}

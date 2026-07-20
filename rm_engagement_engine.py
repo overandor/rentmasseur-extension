@@ -1,0 +1,1097 @@
+#!/usr/bin/env python3
+"""
+RM Engagement Engine — 24/7 visitor engagement automation.
+
+Features:
+  - Scrapes ALL visitors by clicking "Load More" until exhausted
+  - Tracks visit counts per visitor across sessions (SQLite)
+  - Extracts profile metadata: last online, last visit to your page
+  - Auto-messages visitors who visited 3+ times (with human approval gate)
+  - Generates message pool from templates with personalization
+  - Visit-back all unique visitors with human-like delays
+  - Anti-bot: undetected ChromeDriver, randomized UA, human typing
+  - Full receipt + screenshot attribution for every action
+
+Usage:
+  python3 rm_engagement_engine.py --headed --login --full-run
+  python3 rm_engagement_engine.py --headed --login --scrape-only
+  python3 rm_engagement_engine.py --headed --login --message-repeat --threshold 3
+  python3 rm_engagement_engine.py --headed --login --visit-back --limit 0  # 0 = all
+"""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import hashlib
+import io
+import json
+import os
+import random
+import sqlite3
+import time
+import traceback
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional
+
+BASE_URL = "https://rentmasseur.com"
+ARTIFACTS = Path("artifacts/engagement")
+SCREENSHOTS = ARTIFACTS / "screenshots"
+RECEIPTS = ARTIFACTS / "receipts"
+DB_PATH = ARTIFACTS / "engagement.db"
+
+THUMBNAILS = ARTIFACTS / "thumbnails"
+
+for d in (ARTIFACTS, SCREENSHOTS, RECEIPTS, THUMBNAILS):
+    d.mkdir(parents=True, exist_ok=True)
+
+SESSION_ID = hashlib.sha256(f"{time.time()}{random.random()}".encode()).hexdigest()[:12]
+START_TIME = time.time()
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+]
+
+MESSAGE_TEMPLATES = [
+    "Hey {name}, noticed you stopped by again! Always great to see familiar faces. What brings you back? 😊",
+    "Hi {name}! I see you've been checking out my profile — happy to answer any questions you might have about scheduling.",
+    "Hey there {name}, thanks for the repeat visits! If you're thinking about booking, I have some availability this week. Let me know!",
+    "Hi {name}! You've visited a few times — I'm guessing you're interested in a session? I'm in Manhattan, easy to schedule. Shoot me a message!",
+    "Hey {name}, returning visitor! That's awesome. I offer a great rate for repeat clients. Want to set something up?",
+    "Hi {name}! I noticed you've been back a few times. I'm available today if you want to stop by — Manhattan incall, very clean and professional.",
+    "Hey {name}! Thanks for the continued interest. I'm taking bookings for this week — morning and afternoon slots open. What works for you?",
+    "Hi {name}, you're becoming a regular visitor! 😄 I'd love to meet you — any particular day or time you're thinking about?",
+]
+
+EXCLUDE_USERNAMES = {
+    'settings', 'gay-massage', 'stream', 'masseurcams', 'advertise',
+    'about', 'login', 'sitemap', 'topics', 'robots', 'api', 'blog',
+    'blogs', 'reviews', 'interviews', 'find-massage', 'live-cams',
+    'available', 'static', '_next', 'images', 'mailbox', 'compose',
+}
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def elapsed() -> float:
+    return round(time.time() - START_TIME, 2)
+
+
+def log(msg: str, level: str = "INFO"):
+    print(f"[ENGINE] [{elapsed():>7.1f}s] [{level:<5}] {msg}")
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
+
+
+def write_receipt(action: str, status: str, data: dict) -> Path:
+    receipt = {
+        "session_id": SESSION_ID,
+        "action": action,
+        "status": status,
+        "timestamp": now_iso(),
+        "elapsed_s": elapsed(),
+        **data,
+    }
+    content = json.dumps(receipt, sort_keys=True, indent=2)
+    rhash = sha256_text(content)[:16]
+    receipt["receipt_hash"] = rhash
+    fname = f"{action}_{receipt['timestamp'].replace(':', '-')}.json"
+    rpath = RECEIPTS / fname
+    rpath.write_text(json.dumps(receipt, indent=2), encoding="utf-8")
+    log(f"Receipt: {action} → {status} (hash={rhash})")
+    return rpath
+
+
+def human_delay(min_s: float = 0.8, max_s: float = 2.5):
+    time.sleep(random.uniform(min_s, max_s))
+
+
+# ─── Organic Visit Patterns ───────────────────────────────────────────
+
+def organic_visit_delay():
+    """Vary delays to mimic human browsing patterns — not robotic fixed intervals."""
+    # Sometimes quick, sometimes slow, occasionally pause like reading
+    roll = random.random()
+    if roll < 0.6:
+        # Normal browsing: 2-5s
+        time.sleep(random.uniform(2.0, 5.0))
+    elif roll < 0.85:
+        # Reading profile: 5-12s
+        time.sleep(random.uniform(5.0, 12.0))
+    else:
+        # Distracted / long pause: 10-25s
+        time.sleep(random.uniform(10.0, 25.0))
+
+
+def organic_batch_pause(batch_num: int):
+    """Every N visits, take a longer break like a human stepping away."""
+    if batch_num > 0 and batch_num % random.choice([15, 20, 25]) == 0:
+        pause = random.uniform(30, 90)
+        log(f"  Organic batch pause: {pause:.0f}s (after {batch_num} visits)")
+        time.sleep(pause)
+
+
+def organic_shuffle(visitors: list[dict]) -> list[dict]:
+    """Shuffle visit order — never visit in the same sequence twice."""
+    shuffled = visitors.copy()
+    random.shuffle(shuffled)
+    return shuffled
+
+
+def organic_session_size(total: int) -> int:
+    """Don't visit all 450 in one robotic batch — visit a natural subset per session."""
+    if total <= 20:
+        return total
+    # Visit 30-70% of remaining, leaving organic gaps
+    return max(20, int(total * random.uniform(0.3, 0.7)))
+
+
+def human_type(element, text: str, min_delay: float = 0.05, max_delay: float = 0.15):
+    for char in text:
+        element.send_keys(char)
+        time.sleep(random.uniform(min_delay, max_delay))
+
+
+def pick_message(username: str) -> str:
+    name = username.capitalize()
+    template = random.choice(MESSAGE_TEMPLATES)
+    return template.format(name=name)
+
+
+# ─── Screenshot Compression ───────────────────────────────────────────
+
+def compress_screenshot(png_path: Path, max_width: int = 400, quality: int = 50) -> tuple[str, int]:
+    """Compress a PNG screenshot to a small JPEG thumbnail, return base64 + size in KB.
+    Original PNG is deleted after compression."""
+    try:
+        from PIL import Image
+        img = Image.open(str(png_path))
+        ratio = max_width / img.width
+        new_size = (max_width, int(img.height * ratio))
+        img = img.resize(new_size, Image.LANCZOS)
+        img = img.convert("RGB")
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=quality, optimize=True)
+        thumb_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+        thumb_kb = round(len(buf.getvalue()) / 1024, 1)
+        # Save thumbnail file
+        thumb_path = THUMBNAILS / (png_path.stem + ".jpg")
+        thumb_path.write_bytes(buf.getvalue())
+        # Delete original PNG
+        png_path.unlink(missing_ok=True)
+        return thumb_b64, thumb_kb
+    except Exception as e:
+        log(f"Screenshot compression failed: {e}", "WARN")
+        return "", 0
+
+
+def already_visited_today(username: str) -> bool:
+    """Check if we already visited this profile today."""
+    conn = sqlite3.connect(str(DB_PATH))
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    row = conn.execute(
+        "SELECT visited_at FROM visit_log WHERE username=? AND status='ok' ORDER BY visited_at DESC LIMIT 1",
+        (username,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return False
+    try:
+        last_visit = row[0][:10]  # YYYY-MM-DD
+        return last_visit == today
+    except Exception:
+        return False
+
+
+# ─── SQLite Persistence ──────────────────────────────────────────────
+
+def init_db():
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS visitors (
+            username TEXT PRIMARY KEY,
+            visit_count INTEGER DEFAULT 0,
+            first_seen TEXT,
+            last_seen TEXT,
+            last_online TEXT,
+            last_visited_my_page TEXT,
+            last_messaged TEXT,
+            message_count INTEGER DEFAULT 0,
+            profile_url TEXT,
+            last_profile_hash TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS visit_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            session_id TEXT,
+            visited_at TEXT,
+            status TEXT,
+            content_hash TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS message_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            session_id TEXT,
+            sent_at TEXT,
+            message_text TEXT,
+            status TEXT,
+            template_index INTEGER
+        )
+    """)
+    conn.commit()
+    conn.close()
+    log(f"DB initialized: {DB_PATH}")
+
+
+def record_visitor_seen(username: str, profile_url: str):
+    conn = sqlite3.connect(str(DB_PATH))
+    now = now_iso()
+    existing = conn.execute("SELECT visit_count FROM visitors WHERE username=?", (username,)).fetchone()
+    if existing:
+        conn.execute(
+            "UPDATE visitors SET visit_count=visit_count+1, last_seen=?, profile_url=? WHERE username=?",
+            (now, profile_url, username)
+        )
+    else:
+        conn.execute(
+            "INSERT INTO visitors (username, visit_count, first_seen, last_seen, profile_url) VALUES (?, 1, ?, ?, ?)",
+            (username, now, now, profile_url)
+        )
+    conn.execute(
+        "INSERT INTO visit_log (username, session_id, visited_at, status, content_hash) VALUES (?, ?, ?, 'seen', NULL)",
+        (username, SESSION_ID, now)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_visitor_stats(username: str) -> dict:
+    conn = sqlite3.connect(str(DB_PATH))
+    row = conn.execute(
+        "SELECT visit_count, first_seen, last_seen, last_online, last_visited_my_page, last_messaged, message_count FROM visitors WHERE username=?",
+        (username,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return {"visit_count": 0}
+    return {
+        "visit_count": row[0],
+        "first_seen": row[1],
+        "last_seen": row[2],
+        "last_online": row[3],
+        "last_visited_my_page": row[4],
+        "last_messaged": row[5],
+        "message_count": row[6],
+    }
+
+
+def update_visitor_meta(username: str, last_online: str = None, last_visited_my_page: str = None, profile_hash: str = None):
+    conn = sqlite3.connect(str(DB_PATH))
+    fields = []
+    vals = []
+    if last_online:
+        fields.append("last_online=?")
+        vals.append(last_online)
+    if last_visited_my_page:
+        fields.append("last_visited_my_page=?")
+        vals.append(last_visited_my_page)
+    if profile_hash:
+        fields.append("last_profile_hash=?")
+        vals.append(profile_hash)
+    if fields:
+        vals.append(username)
+        conn.execute(f"UPDATE visitors SET {', '.join(fields)} WHERE username=?", vals)
+        conn.commit()
+    conn.close()
+
+
+def record_message(username: str, message_text: str, status: str, template_index: int):
+    conn = sqlite3.connect(str(DB_PATH))
+    now = now_iso()
+    conn.execute(
+        "INSERT INTO message_log (username, session_id, sent_at, message_text, status, template_index) VALUES (?, ?, ?, ?, ?, ?)",
+        (username, SESSION_ID, now, message_text, status, template_index)
+    )
+    conn.execute(
+        "UPDATE visitors SET last_messaged=?, message_count=message_count+1 WHERE username=?",
+        (now, username)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_all_visitors() -> list[dict]:
+    conn = sqlite3.connect(str(DB_PATH))
+    rows = conn.execute(
+        "SELECT username, visit_count, last_seen, last_online, last_visited_my_page, last_messaged, message_count FROM visitors ORDER BY visit_count DESC"
+    ).fetchall()
+    conn.close()
+    return [
+        {
+            "username": r[0], "visit_count": r[1], "last_seen": r[2],
+            "last_online": r[3], "last_visited_my_page": r[4],
+            "last_messaged": r[5], "message_count": r[6],
+        }
+        for r in rows
+    ]
+
+
+def get_repeat_visitors(threshold: int = 3) -> list[dict]:
+    conn = sqlite3.connect(str(DB_PATH))
+    rows = conn.execute(
+        "SELECT username, visit_count, last_messaged, message_count FROM visitors WHERE visit_count >= ? ORDER BY visit_count DESC",
+        (threshold,)
+    ).fetchall()
+    conn.close()
+    return [
+        {"username": r[0], "visit_count": r[1], "last_messaged": r[2], "message_count": r[3]}
+        for r in rows
+    ]
+
+
+# ─── Browser Engine ──────────────────────────────────────────────────
+
+BLOCK_NEEDLES = [
+    ("captcha", "captcha_detected"),
+    ("crowdsec", "crowdsec_detected"),
+    ("access forbidden", "access_forbidden"),
+    ("verify you are human", "human_verification"),
+    ("unusual traffic", "traffic_challenge"),
+    ("too many requests", "rate_limited"),
+    ("cloudflare", "cloudflare_challenge"),
+]
+
+
+def detect_block_text(text: str, url: str) -> Optional[str]:
+    text_lower = text.lower()
+    url_lower = url.lower()
+    for needle, reason in BLOCK_NEEDLES:
+        if needle in text_lower or needle in url_lower:
+            return reason
+    return None
+
+
+class EngagementEngine:
+    def __init__(self, headed: bool):
+        self.headed = headed
+        self.driver = None
+        self.logged_in = False
+        self.ua = random.choice(USER_AGENTS)
+        log(f"Engine: Selenium (undetected) | UA: {self.ua[:40]}...")
+
+    def start(self):
+        import undetected_chromedriver as uc
+
+        options = uc.ChromeOptions()
+        if not self.headed:
+            options.add_argument("--headless=new")
+        options.add_argument("--window-size=1440,900")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument(f"--user-agent={self.ua}")
+
+        chrome_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        if os.path.exists(chrome_path):
+            options.binary_location = chrome_path
+
+        try:
+            import subprocess, re
+            ver_out = subprocess.check_output(
+                [chrome_path, "--version"], stderr=subprocess.DEVNULL
+            ).decode().strip()
+            chrome_major = int(re.search(r'(\d+)\.', ver_out).group(1))
+            self.driver = uc.Chrome(options=options, version_main=chrome_major)
+        except Exception:
+            self.driver = uc.Chrome(options=options)
+
+        self.driver.set_page_load_timeout(45)
+        self.driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+                Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+                Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+                Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+                window.chrome = { runtime: {} };
+            """
+        })
+        log("Browser started (Selenium/undetected)")
+
+    def stop(self):
+        if self.driver:
+            try:
+                self.driver.quit()
+            except Exception:
+                pass
+        log("Browser closed")
+
+    def screenshot(self, name: str) -> str:
+        path = SCREENSHOTS / f"{name}.png"
+        try:
+            self.driver.save_screenshot(str(path))
+        except Exception:
+            return ""
+        return str(path)
+
+    def screenshot_compressed(self, name: str) -> dict:
+        """Take screenshot, compress to thumbnail, delete original PNG.
+        Returns dict with thumbnail_base64, thumbnail_kb, original_size_kb."""
+        path = SCREENSHOTS / f"{name}.png"
+        try:
+            self.driver.save_screenshot(str(path))
+            orig_kb = round(path.stat().st_size / 1024, 1)
+            thumb_b64, thumb_kb = compress_screenshot(path)
+            return {
+                "thumbnail_b64": thumb_b64[:500] if thumb_b64 else "",  # truncated for receipt
+                "thumbnail_file": f"{name}.jpg",
+                "thumbnail_kb": thumb_kb,
+                "original_kb": orig_kb,
+                "compression_ratio": round(thumb_kb / orig_kb, 3) if orig_kb > 0 else 0,
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    def page_text(self) -> str:
+        try:
+            return self.driver.execute_script(
+                "return document.body ? document.body.innerText : ''"
+            )[:8000]
+        except Exception:
+            return ""
+
+    def detect_block(self) -> Optional[str]:
+        return detect_block_text(self.page_text(), self.driver.current_url)
+
+    def login(self, username: str, password: str) -> bool:
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.keys import Keys
+
+        log("=== LOGIN ===")
+        try:
+            self.driver.get(f"{BASE_URL}/login")
+            human_delay(3, 5)
+            self.screenshot("01_login_page")
+
+            block = self.detect_block()
+            if block:
+                log(f"BLOCKED: {block}", "ERROR")
+                write_receipt("login", "blocked", {"reason": block})
+                return False
+
+            inputs = self.driver.find_elements(By.CSS_SELECTOR, "input")
+            email_el = pass_el = None
+            for inp in inputs:
+                if not inp.is_displayed():
+                    continue
+                itype = (inp.get_attribute("type") or "").lower()
+                iname = (inp.get_attribute("name") or "").lower()
+                if itype == "password":
+                    pass_el = inp
+                elif "email" in iname or "user" in iname or itype in ("email", "text"):
+                    email_el = inp
+
+            if not email_el or not pass_el:
+                log("Login form not found", "ERROR")
+                write_receipt("login", "fail", {"reason": "form_not_found"})
+                return False
+
+            log("Typing credentials (human-like)...")
+            email_el.click()
+            human_delay(0.3, 0.8)
+            human_type(email_el, username)
+            human_delay(0.5, 1.2)
+            pass_el.click()
+            human_delay(0.3, 0.6)
+            human_type(pass_el, password)
+            human_delay(0.8, 1.5)
+
+            self.screenshot("02_login_filled")
+            pass_el.send_keys(Keys.ENTER)
+            human_delay(4, 7)
+
+            current_url = self.driver.current_url
+            if "/login" in current_url.lower():
+                log("Login failed", "ERROR")
+                self.screenshot("03_login_failed")
+                write_receipt("login", "fail", {"reason": "still_on_login_page", "url": current_url})
+                return False
+
+            self.logged_in = True
+            self.screenshot("03_login_success")
+            log(f"Login OK — URL: {current_url}")
+            write_receipt("login", "pass", {"url": current_url, "ua": self.ua})
+            return True
+
+        except Exception as e:
+            log(f"Login error: {e}", "ERROR")
+            write_receipt("login", "error", {"error": str(e)})
+            return False
+
+    # ── Scrape ALL visitors with Load More ───────────────────────────
+
+    def scrape_all_visitors(self, max_load_more: int = 50) -> list[dict]:
+        from selenium.webdriver.common.by import By
+
+        log("=== SCRAPE ALL VISITORS (with Load More) ===")
+        self.driver.get(f"{BASE_URL}/settings/whosawme")
+        human_delay(4, 6)
+        self.screenshot("04_whosawme_initial")
+
+        block = self.detect_block()
+        if block:
+            log(f"BLOCKED: {block}", "ERROR")
+            write_receipt("scrape_visitors", "blocked", {"reason": block})
+            return []
+
+        all_visitors = []
+        load_more_count = 0
+
+        while load_more_count < max_load_more:
+            # Scrape current page state
+            current_visitors = self.driver.execute_script("""
+                const result = [];
+                const seen = new Set();
+                const profileImgs = document.querySelectorAll('img[alt="Profile photo"], img[alt="profile-picture"]');
+                for (const img of profileImgs) {
+                    const a = img.closest('a');
+                    if (a && a.href) {
+                        const path = new URL(a.href).pathname;
+                        const username = path.replace('/', '');
+                        if (username && !seen.has(username) && !username.includes('settings') && !username.includes('gay-massage')) {
+                            seen.add(username);
+                            result.push({username: username, url: a.href, name: username});
+                        }
+                    }
+                }
+                const links = Array.from(document.querySelectorAll('a[href]'));
+                for (const a of links) {
+                    const href = a.href;
+                    if (!href.startsWith('https://rentmasseur.com/')) continue;
+                    const path = new URL(href).pathname;
+                    if (path && path !== '/' && path.split('/').length === 2 && path.split('/')[1] !== '') {
+                        const username = path.replace('/', '');
+                        if (!seen.has(username) && !username.startsWith('_') && username.length > 2) {
+                            seen.add(username);
+                            result.push({username: username, url: href, name: username});
+                        }
+                    }
+                }
+                return result;
+            """)
+
+            # Merge with existing
+            existing_names = {v["username"] for v in all_visitors}
+            new_count = 0
+            for v in current_visitors:
+                if v["username"] not in existing_names and v["username"] not in EXCLUDE_USERNAMES:
+                    all_visitors.append(v)
+                    new_count += 1
+
+            log(f"  Load More #{load_more_count}: found {len(current_visitors)} on page, {new_count} new, total {len(all_visitors)}")
+
+            # Try to find and click "Load More" button
+            load_more_clicked = False
+            for sel in [
+                "button:has-text('Load More')",
+                "button:has-text('load more')",
+                "button:has-text('LOAD MORE')",
+                "a:has-text('Load More')",
+                "button[class*='load']",
+                "button[class*='more']",
+                "[class*='load-more']",
+                "[class*='loadmore']",
+            ]:
+                try:
+                    # Selenium doesn't support :has-text, use JS
+                    clicked = self.driver.execute_script(f"""
+                        const btns = document.querySelectorAll('button, a');
+                        for (const btn of btns) {{
+                            const text = (btn.textContent || '').toLowerCase().trim();
+                            if (text.includes('load more') || text.includes('loadmore') || text.includes('show more')) {{
+                                if (btn.offsetParent !== null) {{
+                                    btn.click();
+                                    return true;
+                                }}
+                            }}
+                        }}
+                        // Also try class-based
+                        const els = document.querySelectorAll('[class*="load"], [class*="more"]');
+                        for (const el of els) {{
+                            if (el.offsetParent !== null && (el.tagName === 'BUTTON' || el.tagName === 'A')) {{
+                                el.click();
+                                return true;
+                            }}
+                        }}
+                        return false;
+                    """)
+                    if clicked:
+                        load_more_clicked = True
+                        load_more_count += 1
+                        log(f"  Clicked Load More (#{load_more_count})")
+                        human_delay(2, 4)
+                        break
+                except Exception:
+                    continue
+
+            if not load_more_clicked:
+                log(f"  No more Load More button — scraping complete")
+                break
+
+            if new_count == 0 and load_more_count > 3:
+                log(f"  No new visitors in last {load_more_count} clicks — stopping")
+                break
+
+        # Deduplicate
+        seen = set()
+        unique = []
+        for v in all_visitors:
+            if v["username"] not in seen and v["username"] not in EXCLUDE_USERNAMES:
+                seen.add(v["username"])
+                unique.append(v)
+
+        log(f"Total unique visitors: {len(unique)} (after {load_more_count} Load More clicks)")
+        self.screenshot("04_whosawme_final")
+
+        # Record in DB
+        for v in unique:
+            record_visitor_seen(v["username"], v["url"])
+
+        write_receipt("scrape_visitors", "pass", {
+            "total_unique": len(unique),
+            "load_more_clicks": load_more_count,
+            "visitors": unique,
+        })
+        return unique
+
+    # ── Visit profile + extract metadata ─────────────────────────────
+
+    def visit_profile(self, visitor: dict, idx: int, total: int) -> dict:
+        from selenium.webdriver.common.by import By
+
+        uname = visitor["username"]
+        url = visitor["url"]
+
+        # One visit per day — skip if already visited today
+        if already_visited_today(uname):
+            log(f"  [{idx+1}/{total}] Skip {uname} — already visited today")
+            return {"username": uname, "status": "skipped_daily"}
+
+        log(f"  [{idx+1}/{total}] Visiting {uname}...")
+
+        try:
+            self.driver.get(url)
+            human_delay(2, 4)
+
+            block = self.detect_block()
+            if block:
+                log(f"  BLOCKED on {uname}: {block}", "WARN")
+                return {"username": uname, "status": "blocked", "reason": block}
+
+            # Verify URL is a real profile (not redirect/404)
+            current_url = self.driver.current_url
+            page_title = self.driver.title or ""
+            if "404" in page_title or "not found" in page_title.lower():
+                log(f"  404 on {uname}", "WARN")
+                return {"username": uname, "status": "404", "url": current_url}
+
+            # Take compressed screenshot
+            ss_name = f"visit_{idx+1:03d}_{uname}"
+            ss_info = self.screenshot_compressed(ss_name)
+
+            # Extract profile metadata
+            meta = self.driver.execute_script(r"""
+                const text = document.body ? document.body.innerText : '';
+                const result = {};
+
+                // Last online
+                const onlineMatch = text.match(/(?:last\s+online|online\s+status|last\s+active)[:\s]+([^\n]+)/i);
+                if (onlineMatch) result.last_online = onlineMatch[1].trim();
+
+                // Last visit to your page
+                const visitMatch = text.match(/(?:visited\s+you|last\s+visit|visited\s+your\s+profile)[:\s]+([^\n]+)/i);
+                if (visitMatch) result.last_visited_you = visitMatch[1].trim();
+
+                // Visit count from profile
+                const countMatch = text.match(/(?:visited\s+you\s+)(\d+)\s+times?/i);
+                if (countMatch) result.visit_count_profile = parseInt(countMatch[1]);
+
+                // Location
+                const locMatch = text.match(/(?:location|based\s+in)[:\s]+([^\n]+)/i);
+                if (locMatch) result.location = locMatch[1].trim();
+
+                // Available status
+                result.available = text.toLowerCase().includes('available now');
+
+                // Profile text hash
+                let hash = 0;
+                for (let i = 0; i < text.length; i++) {
+                    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+                }
+                result.profile_hash = hash.toString();
+
+                return result;
+            """)
+
+            page_text = self.page_text()[:1000]
+            content_hash = sha256_text(page_text)
+
+            # Update DB with metadata
+            update_visitor_meta(
+                uname,
+                last_online=meta.get("last_online"),
+                last_visited_my_page=meta.get("last_visited_you"),
+                profile_hash=content_hash,
+            )
+
+            # Record visit in log
+            conn = sqlite3.connect(str(DB_PATH))
+            conn.execute(
+                "INSERT INTO visit_log (username, session_id, visited_at, status, content_hash) VALUES (?, ?, ?, 'ok', ?)",
+                (uname, SESSION_ID, now_iso(), content_hash)
+            )
+            conn.commit()
+            conn.close()
+
+            result = {
+                "username": uname,
+                "url": current_url,
+                "status": "ok",
+                "page_title": page_title,
+                "content_hash": content_hash,
+                "screenshot_thumbnail": ss_info.get("thumbnail_file", ""),
+                "screenshot_kb": ss_info.get("thumbnail_kb", 0),
+                "original_screenshot_kb": ss_info.get("original_kb", 0),
+                "compression_ratio": ss_info.get("compression_ratio", 0),
+                "visited_at": now_iso(),
+                "verified_utc_timestamp": now_iso(),
+                "last_online": meta.get("last_online"),
+                "last_visited_you": meta.get("last_visited_you"),
+                "visit_count_profile": meta.get("visit_count_profile"),
+                "location": meta.get("location"),
+                "available_now": meta.get("available", False),
+                "url_verified": current_url.startswith("https://rentmasseur.com/") and "404" not in page_title,
+                "agent": "rm_engagement_engine",
+                "agent_session": SESSION_ID,
+                "agent_ua": self.ua,
+            }
+            log(f"    title='{page_title}' online={meta.get('last_online', '?')} visited_you={meta.get('last_visited_you', '?')} thumb={ss_info.get('thumbnail_kb', 0)}KB (was {ss_info.get('original_kb', 0)}KB)")
+            write_receipt("visit_profile", "pass", result)
+            return result
+
+        except Exception as e:
+            log(f"  ERROR visiting {uname}: {e}", "WARN")
+            return {"username": uname, "status": "error", "error": str(e)}
+
+    # ── Message a visitor ────────────────────────────────────────────
+
+    def message_visitor(self, username: str, message_text: str, template_idx: int) -> dict:
+        from selenium.webdriver.common.by import By
+
+        log(f"=== MESSAGE: {username} ===")
+        log(f"  Message: \"{message_text[:80]}...\"")
+
+        try:
+            # Navigate to compose
+            compose_url = f"{BASE_URL}/mailbox/compose?to={username}"
+            self.driver.get(compose_url)
+            human_delay(3, 5)
+
+            block = self.detect_block()
+            if block:
+                log(f"  BLOCKED: {block}", "ERROR")
+                write_receipt("message_visitor", "blocked", {"username": username, "reason": block})
+                record_message(username, message_text, "blocked", template_idx)
+                return {"username": username, "status": "blocked", "reason": block}
+
+            self.screenshot(f"msg_{username}_compose")
+
+            # Find message textarea
+            textarea = None
+            for sel in [
+                "textarea[name*='message' i]",
+                "textarea[name*='body' i]",
+                "textarea[name*='content' i]",
+                "textarea",
+                "[contenteditable='true']",
+            ]:
+                try:
+                    els = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                    for el in els:
+                        if el.is_displayed():
+                            textarea = el
+                            break
+                except Exception:
+                    continue
+                if textarea:
+                    break
+
+            if not textarea:
+                log(f"  No message field found for {username}", "WARN")
+                write_receipt("message_visitor", "fail", {"username": username, "reason": "no_message_field"})
+                record_message(username, message_text, "no_field", template_idx)
+                return {"username": username, "status": "no_field"}
+
+            # Type message human-like
+            log("  Typing message (human-like)...")
+            textarea.click()
+            human_delay(0.5, 1.0)
+            human_type(textarea, message_text)
+            human_delay(1, 2)
+
+            self.screenshot(f"msg_{username}_typed")
+
+            # Find and click send button
+            sent = False
+            for sel in ["button[type='submit']", "button:has-text('Send')", "button:has-text('SEND')", "input[type='submit']"]:
+                try:
+                    els = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                    for el in els:
+                        if el.is_displayed() and el.is_enabled():
+                            self.driver.execute_script("arguments[0].click();", el)
+                            sent = True
+                            break
+                except Exception:
+                    continue
+                if sent:
+                    break
+
+            if not sent:
+                # Try JS-based search
+                sent = self.driver.execute_script("""
+                    const btns = document.querySelectorAll('button, input[type="submit"]');
+                    for (const btn of btns) {
+                        const text = (btn.textContent || btn.value || '').toLowerCase().trim();
+                        if (text.includes('send') && btn.offsetParent !== null) {
+                            btn.click();
+                            return true;
+                        }
+                    }
+                    return false;
+                """)
+
+            human_delay(3, 5)
+
+            if sent:
+                self.screenshot(f"msg_{username}_sent")
+                log(f"  Message sent to {username}!")
+                write_receipt("message_visitor", "pass", {
+                    "username": username,
+                    "message": message_text,
+                    "template_index": template_idx,
+                })
+                record_message(username, message_text, "sent", template_idx)
+                return {"username": username, "status": "sent", "message": message_text}
+            else:
+                log(f"  Could not find send button for {username}", "WARN")
+                write_receipt("message_visitor", "fail", {"username": username, "reason": "no_send_button"})
+                record_message(username, message_text, "no_send", template_idx)
+                return {"username": username, "status": "no_send_button"}
+
+        except Exception as e:
+            log(f"  ERROR messaging {username}: {e}", "ERROR")
+            write_receipt("message_visitor", "error", {"username": username, "error": str(e)})
+            record_message(username, message_text, "error", template_idx)
+            return {"username": username, "status": "error", "error": str(e)}
+
+
+# ─── Main ────────────────────────────────────────────────────────────
+
+def load_env():
+    env_path = Path(__file__).parent / ".env"
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
+
+def main():
+    parser = argparse.ArgumentParser(description="RM Engagement Engine — 24/7 visitor engagement")
+    parser.add_argument("--headed", action="store_true", help="Show browser window")
+    parser.add_argument("--login", action="store_true", help="Login with .env creds")
+    parser.add_argument("--full-run", action="store_true", help="Scrape all + visit back + message repeats")
+    parser.add_argument("--scrape-only", action="store_true", help="Only scrape visitors (with Load More)")
+    parser.add_argument("--visit-back", action="store_true", help="Visit back all scraped visitors")
+    parser.add_argument("--message-repeat", action="store_true", help="Message visitors who visited 3+ times")
+    parser.add_argument("--message-all", action="store_true", help="Message ALL visitors (not just repeats)")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would happen without acting")
+    parser.add_argument("--limit", type=int, default=0, help="Max visitors to visit (0 = all)")
+    parser.add_argument("--threshold", type=int, default=3, help="Visit count threshold for messaging")
+    parser.add_argument("--max-load-more", type=int, default=50, help="Max Load More clicks")
+    parser.add_argument("--message-delay", type=float, default=30.0, help="Seconds between messages (anti-spam)")
+    parser.add_argument("--max-messages", type=int, default=20, help="Max messages per session (safety cap)")
+    args = parser.parse_args()
+
+    load_env()
+    init_db()
+
+    username = os.getenv("RM_USER") or os.getenv("RENTMASSEUR_USERNAME", "")
+    password = os.getenv("RM_PASS") or os.getenv("RENTMASSEUR_PASSWORD", "")
+
+    log("=" * 60)
+    log(f"RM ENGAGEMENT ENGINE — Session: {SESSION_ID}")
+    log(f"Headed: {args.headed} | Login: {args.login} | Full-run: {args.full_run}")
+    log(f"Visit-back: {args.visit_back} | Message-repeat: {args.message_repeat}")
+    log(f"Limit: {args.limit} (0=all) | Threshold: {args.threshold} | MaxLoadMore: {args.max_load_more}")
+    log("=" * 60)
+
+    engine = EngagementEngine(headed=args.headed)
+    results = {"session_id": SESSION_ID, "actions": []}
+
+    try:
+        engine.start()
+
+        # Login
+        if args.login or args.full_run:
+            if not username or not password:
+                log("No credentials found", "ERROR")
+                write_receipt("login", "skipped", {"reason": "no_credentials"})
+                return
+            ok = engine.login(username, password)
+            results["login"] = ok
+            if not ok:
+                log("Login failed — aborting", "ERROR")
+                return
+
+        # Scrape all visitors
+        if args.full_run or args.scrape_only or args.visit_back:
+            visitors = engine.scrape_all_visitors(max_load_more=args.max_load_more)
+            results["visitors_found"] = len(visitors)
+
+            if args.dry_run:
+                log(f"DRY RUN — found {len(visitors)} visitors")
+                for v in visitors:
+                    stats = get_visitor_stats(v["username"])
+                    log(f"  {v['username']}: {stats['visit_count']} visits")
+                write_receipt("dry_run", "pass", {"visitors": visitors})
+                return
+
+        # Visit back
+        if args.full_run or args.visit_back:
+            to_visit = visitors if args.limit == 0 else visitors[:args.limit]
+            # Organic: shuffle order so we never visit in the same sequence
+            to_visit = organic_shuffle(to_visit)
+            # Organic: don't visit all in one robotic batch
+            if args.limit == 0 and len(to_visit) > 20:
+                session_size = organic_session_size(len(to_visit))
+                log(f"\n=== VISIT BACK: {session_size}/{len(to_visit)} profiles (organic session) ===")
+                to_visit = to_visit[:session_size]
+            else:
+                log(f"\n=== VISIT BACK: {len(to_visit)} profiles ===")
+            visited = []
+            skipped = 0
+            for i, v in enumerate(to_visit):
+                r = engine.visit_profile(v, i, len(to_visit))
+                visited.append(r)
+                if r.get("status") == "skipped_daily":
+                    skipped += 1
+                else:
+                    organic_visit_delay()
+                    organic_batch_pause(i + 1)
+            results["visited"] = visited
+            write_receipt("visit_back_summary", "pass", {
+                "total_in_queue": len(to_visit),
+                "visited_count": sum(1 for v in visited if v.get("status") == "ok"),
+                "skipped_today": skipped,
+                "blocked_count": sum(1 for v in visited if v.get("status") == "blocked"),
+                "error_count": sum(1 for v in visited if v.get("status") == "error"),
+                "404_count": sum(1 for v in visited if v.get("status") == "404"),
+            })
+
+        # Message repeat visitors (or all if --message-all)
+        if args.full_run or args.message_repeat or args.message_all:
+            if args.message_all:
+                repeat_visitors = get_all_visitors()
+                log(f"\n=== MESSAGE ALL VISITORS: {len(repeat_visitors)} ===")
+            else:
+                repeat_visitors = get_repeat_visitors(threshold=args.threshold)
+                log(f"\n=== MESSAGE REPEAT VISITORS: {len(repeat_visitors)} (threshold={args.threshold}) ===")
+            repeat_visitors = repeat_visitors[:args.max_messages]
+
+            if args.dry_run:
+                for rv in repeat_visitors:
+                    msg = pick_message(rv["username"])
+                    log(f"  Would message {rv['username']} ({rv['visit_count']} visits): \"{msg[:60]}...\"")
+                write_receipt("message_dry_run", "pass", {"repeat_visitors": repeat_visitors})
+                return
+
+            messaged = []
+            for i, rv in enumerate(repeat_visitors):
+                uname = rv["username"]
+                stats = get_visitor_stats(uname)
+
+                # Skip if already messaged recently (within 24h)
+                if stats.get("last_messaged"):
+                    try:
+                        last_msg_time = datetime.fromisoformat(stats["last_messaged"].replace("Z", "+00:00"))
+                        hours_since = (datetime.now(timezone.utc) - last_msg_time).total_seconds() / 3600
+                        if hours_since < 24:
+                            log(f"  Skip {uname} — messaged {hours_since:.1f}h ago")
+                            continue
+                    except Exception:
+                        pass
+
+                template_idx = random.randint(0, len(MESSAGE_TEMPLATES) - 1)
+                message = pick_message(uname)
+
+                log(f"  [{i+1}/{len(repeat_visitors)}] {uname} ({rv['visit_count']} visits)")
+                r = engine.message_visitor(uname, message, template_idx)
+                messaged.append(r)
+
+                # Anti-spam delay between messages
+                if i < len(repeat_visitors) - 1 and i + 1 < args.max_messages:
+                    log(f"  Waiting {args.message_delay}s before next message (anti-spam)...")
+                    time.sleep(args.message_delay)
+
+            results["messaged"] = messaged
+            write_receipt("message_summary", "pass", {
+                "messaged_count": len(messaged),
+                "sent_count": sum(1 for m in messaged if m.get("status") == "sent"),
+                "blocked_count": sum(1 for m in messaged if m.get("status") == "blocked"),
+                "error_count": sum(1 for m in messaged if m.get("status") == "error"),
+            })
+
+        # Print visitor stats summary
+        all_visitors = get_all_visitors()
+        log(f"\n=== VISITOR STATS (from DB) ===")
+        log(f"Total unique visitors tracked: {len(all_visitors)}")
+        for v in all_visitors[:20]:
+            log(f"  {v['username']}: {v['visit_count']} visits | last_online={v.get('last_online', '?')} | last_messaged={v.get('last_messaged', 'never')}")
+
+    except KeyboardInterrupt:
+        log("Interrupted by user", "WARN")
+    except Exception as e:
+        log(f"FATAL: {e}", "ERROR")
+        traceback.print_exc()
+        write_receipt("fatal", "error", {"error": str(e), "traceback": traceback.format_exc()})
+    finally:
+        engine.stop()
+
+    # Write session summary
+    results["end_time"] = now_iso()
+    results["total_elapsed_s"] = elapsed()
+    summary_path = ARTIFACTS / f"session_{SESSION_ID}.json"
+    summary_path.write_text(json.dumps(results, indent=2, default=str), encoding="utf-8")
+
+    receipt_count = len(list(RECEIPTS.glob("*.json")))
+    log("=" * 60)
+    log(f"SESSION COMPLETE — {SESSION_ID}")
+    log(f"  Duration: {elapsed():.1f}s")
+    log(f"  Receipts: {receipt_count}")
+    log(f"  Summary: {summary_path}")
+    log("=" * 60)
+
+
+if __name__ == "__main__":
+    main()

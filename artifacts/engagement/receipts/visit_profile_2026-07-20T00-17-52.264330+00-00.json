@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:17:52.264330+00:00",
+  "elapsed_s": 491.39,
+  "username": "Sjboys",
+  "url": "https://rentmasseur.com/Sjboys",
+  "page_title": "Sjboys | RentMasseur",
+  "content_hash": "d99bea02f496caee2547720e8e6d62340f054d0e1521fffab8facd7be84da88e",
+  "screenshot": "visit_050_Sjboys",
+  "visited_at": "2026-07-20T00:17:52.263166+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "1298afec8ed4fdab"
+}

@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:16:26.251280+00:00",
+  "elapsed_s": 405.38,
+  "username": "HeyJohnDavid",
+  "url": "https://rentmasseur.com/HeyJohnDavid",
+  "page_title": "HeyJohnDavid | RentMasseur",
+  "content_hash": "38c5db6bea9f5ad5fcac3ab381b49def4004f93e674a39468189a57c238f6e2f",
+  "screenshot": "visit_037_HeyJohnDavid",
+  "visited_at": "2026-07-20T00:16:26.249886+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "e70df6f2e5e665de"
+}

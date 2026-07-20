@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:21:02.013632+00:00",
+  "elapsed_s": 681.14,
+  "username": "KevNewYork",
+  "url": "https://rentmasseur.com/KevNewYork",
+  "page_title": "KevNewYork | RentMasseur",
+  "content_hash": "ce70ea44c09723017e34bf1507c4d81e0bd21fe4507326c7c65c6b8884a06af3",
+  "screenshot": "visit_075_KevNewYork",
+  "visited_at": "2026-07-20T00:21:02.011056+00:00",
+  "last_online": "32 min ago",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "f0d842f6716833c1"
+}

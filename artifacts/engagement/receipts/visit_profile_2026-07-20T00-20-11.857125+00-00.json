@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:20:11.857125+00:00",
+  "elapsed_s": 630.99,
+  "username": "Bluetopper",
+  "url": "https://rentmasseur.com/Bluetopper",
+  "page_title": "Bluetopper | RentMasseur",
+  "content_hash": "192a16375247de6b843f5ddd759f08abf5c65976ea0342f5025c3427232be281",
+  "screenshot": "visit_069_Bluetopper",
+  "visited_at": "2026-07-20T00:20:11.855391+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "5fd751217517589e"
+}

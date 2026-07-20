@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:13:37.925457+00:00",
+  "elapsed_s": 237.05,
+  "username": "RobertKH",
+  "url": "https://rentmasseur.com/RobertKH",
+  "page_title": "RobertKH | RentMasseur",
+  "content_hash": "3ef938ff77121ff0e5e29a600de9033d61fe65ab401fbdb81b7af0dda1901e65",
+  "screenshot": "visit_012_RobertKH",
+  "visited_at": "2026-07-20T00:13:37.923157+00:00",
+  "last_online": "58 min ago",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "e93a6e4dd36ea0fc"
+}

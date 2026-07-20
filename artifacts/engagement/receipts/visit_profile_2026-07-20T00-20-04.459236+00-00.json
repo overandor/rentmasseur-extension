@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:20:04.459236+00:00",
+  "elapsed_s": 623.59,
+  "username": "NYCGLB",
+  "url": "https://rentmasseur.com/NYCGLB",
+  "page_title": "NYCGLB | RentMasseur",
+  "content_hash": "39866a5216145ddfae3fb39b129430660dc7b1e821c6b4a345730744d5c1265f",
+  "screenshot": "visit_068_NYCGLB",
+  "visited_at": "2026-07-20T00:20:04.457068+00:00",
+  "last_online": "Jul 17",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "868f8db7b30bfed8"
+}

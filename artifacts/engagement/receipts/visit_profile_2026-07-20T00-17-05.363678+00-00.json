@@ -1,0 +1,19 @@
+{
+  "session_id": "b2fdfa6b6cbd",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:17:05.363678+00:00",
+  "elapsed_s": 444.49,
+  "username": "Krebs",
+  "url": "https://rentmasseur.com/Krebs",
+  "page_title": "Krebs | RentMasseur",
+  "content_hash": "a264d3d8494fa741c066822722b22e8f570065e7c86fa46c61201f92df1c2b6f",
+  "screenshot": "visit_043_Krebs",
+  "visited_at": "2026-07-20T00:17:05.362185+00:00",
+  "last_online": "Jul 18",
+  "last_visited_you": null,
+  "visit_count_profile": null,
+  "location": "Home:",
+  "available_now": true,
+  "receipt_hash": "e2ff928c23c6e6b6"
+}
