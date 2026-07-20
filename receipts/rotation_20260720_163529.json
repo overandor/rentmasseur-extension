@@ -1,0 +1,17 @@
+{
+  "action": "master-rotator",
+  "timestamp": "2026-07-20T16:35:29Z",
+  "run_id": "29759640959",
+  "dry_run": "true",
+  "components": "all",
+  "preflight_passed": true,
+  "gate_decision": {
+  "status": "blocked_missing_real_inputs",
+  "reason": "Real first-party metrics and candidate TSV are required before a live profile decision.",
+  "live_update_allowed": false,
+  "dry_run": "true",
+  "run_id": "29759640959"
+},
+  "content_changed": " M content/decisions/latest_decision.json ?? production_control_loop ?? receipts/rotation_20260720_163529.json ",
+  "status": "completed"
+}
