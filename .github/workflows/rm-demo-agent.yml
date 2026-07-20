@@ -1,0 +1,184 @@
+name: RM Demo Agent — Anti-Bot Visit-Back + Probe
+
+on:
+  schedule:
+    - cron: '45 */8 * * *'  # Every 8h — probe-only, less frequent than engagement engine
+  workflow_dispatch:
+    inputs:
+      engine:
+        description: 'Browser engine: selenium or playwright'
+        required: false
+        default: 'selenium'
+      limit:
+        description: 'Max visitors to visit (default 10)'
+        required: false
+        default: '10'
+      dry_run:
+        description: 'List visitors without visiting'
+        required: false
+        default: 'false'
+      probe_only:
+        description: 'Only probe pages, no visit-back'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+
+jobs:
+  demo-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RM_USER: ${{ secrets.RENTMASSEUR_USERNAME }}
+      RM_PASS: ${{ secrets.RENTMASSEUR_PASSWORD }}
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install undetected-chromedriver selenium playwright requests
+          python -m playwright install chromium --with-deps
+
+      - name: Install Chrome and ChromeDriver
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          echo "Chrome: $(google-chrome --version)"
+
+      - name: Run demo agent
+        id: agent
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          ENGINE="${{ github.event.inputs.engine || 'selenium' }}"
+          LIMIT="${{ github.event.inputs.limit || '10' }}"
+          DRY=""
+          PROBE=""
+
+          if [ "${{ github.event.inputs.dry_run || 'false' }}" = "true" ]; then
+            DRY="--dry-run"
+          fi
+          if [ "${{ github.event.inputs.probe_only || 'false' }}" = "true" ]; then
+            PROBE="--probe-only"
+          fi
+
+          echo "=== RM Demo Agent ==="
+          echo "Engine: $ENGINE | Limit: $LIMIT | Dry: $DRY | Probe: $PROBE"
+
+          python3 rm_demo_agent.py \
+            --engine "$ENGINE" \
+            --login \
+            --visit-back \
+            --limit "$LIMIT" \
+            --auto-message \
+            --message-threshold 3 \
+            --max-load-more 30 \
+            --max-messages 10 \
+            --message-delay 30 \
+            --engagement-report \
+            $DRY $PROBE 2>&1 | tee artifacts/demo_agent/agent_run.log
+
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "::warning::Agent exited with code $EXIT_CODE"
+          fi
+
+      - name: Verify receipts
+        if: always()
+        run: |
+          echo "=== Receipt Verification ==="
+          RECEIPT_DIR="artifacts/demo_agent/receipts"
+          if [ ! -d "$RECEIPT_DIR" ]; then
+            echo "::error::No receipts directory found"
+            exit 1
+          fi
+
+          RECEIPT_COUNT=$(find "$RECEIPT_DIR" -name '*.json' | wc -l)
+          SCREENSHOT_COUNT=$(find "artifacts/demo_agent/screenshots" -name '*.png' 2>/dev/null | wc -l)
+          echo "Receipts: $RECEIPT_COUNT"
+          echo "Screenshots: $SCREENSHOT_COUNT"
+
+          if [ "$RECEIPT_COUNT" -eq 0 ]; then
+            echo "::error::No receipts generated — agent did not perform any actions"
+            exit 1
+          fi
+
+          # Verify each receipt has required fields
+          python3 -c "
+          import json, pathlib, sys
+          receipts_dir = pathlib.Path('$RECEIPT_DIR')
+          required = ['session_id', 'action', 'status', 'timestamp', 'receipt_hash']
+          errors = []
+          for f in sorted(receipts_dir.glob('*.json')):
+              try:
+                  data = json.loads(f.read_text())
+                  missing = [k for k in required if k not in data]
+                  if missing:
+                      errors.append(f'{f.name}: missing {missing}')
+                  else:
+                      print(f'  OK: {f.name} → {data[\"action\"]}={data[\"status\"]} hash={data[\"receipt_hash\"]}')
+              except Exception as e:
+                  errors.append(f'{f.name}: parse error: {e}')
+          if errors:
+              for e in errors:
+                  print(f'::error::{e}')
+              sys.exit(1)
+          print(f'All {len(list(receipts_dir.glob(\"*.json\")))} receipts valid.')
+          "
+
+      - name: Commit receipts and screenshots
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add artifacts/demo_agent/receipts/*.json artifacts/demo_agent/session_*.json artifacts/demo_agent/engagement.db 2>/dev/null || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "demo-agent: receipts $(date -u +%Y-%m-%d-%H:%M) [skip-ci]"
+            git push
+          else
+            echo "No receipt changes to commit"
+          fi
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rm-demo-agent-${{ github.run_id }}
+          path: |
+            artifacts/demo_agent/
+          retention-days: 30
+
+      - name: Create issue on failure
+        if: steps.agent.outputs.exit_code != '0' && steps.agent.outputs.exit_code != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            let logPreview = '';
+            try {
+              logPreview = fs.readFileSync('artifacts/demo_agent/agent_run.log', 'utf8').slice(-2000);
+            } catch (e) {}
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[RM-Demo-Agent] Failure — run ${context.runId}`,
+              body: `## Demo Agent Failure\n\n**Run**: ${context.runId}\n**Exit code**: '${{ steps.agent.outputs.exit_code }}'\n\n### Last 2000 chars of log:\n\`\`\`\n${logPreview}\n\`\`\`\n\nCheck artifacts for screenshots and receipts.`,
+              labels: ['agent-failure', 'needs-investigation'],
+            });

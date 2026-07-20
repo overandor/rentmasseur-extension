@@ -1,0 +1,1520 @@
+#!/usr/bin/env python3
+"""
+RM Demo Agent — Production-ready Playwright + Selenium browser automation.
+
+Anti-bot features:
+  - Undetected ChromeDriver / stealth Playwright context
+  - Randomized User-Agent, viewport, language
+  - Human-like typing delays, mouse movements, scroll pauses
+  - CAPTCHA / block detection with graceful abort
+  - Request interception for API attribution
+
+Verification & logging:
+  - Every action writes a JSON receipt with SHA-256 content hash
+  - Screenshots before/after every mutation
+  - Attribution chain: session_id → action → timestamp → screenshot → hash
+  - Structured console logs with [AGENT] prefix and elapsed timers
+
+Usage:
+  python3 rm_demo_agent.py --engine playwright --headed --login --visit-back --limit 5
+  python3 rm_demo_agent.py --engine selenium   --headed --login --visit-back --limit 5
+  python3 rm_demo_agent.py --engine playwright --headed --dry-run
+  python3 rm_demo_agent.py --engine selenium   --headed --probe-only
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import random
+import re
+import sqlite3
+import sys
+import time
+import traceback
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional
+
+BASE_URL = "https://rentmasseur.com"
+ARTIFACTS = Path("artifacts/demo_agent")
+SCREENSHOTS = ARTIFACTS / "screenshots"
+RECEIPTS = ARTIFACTS / "receipts"
+LOGS = ARTIFACTS / "logs"
+
+for d in (ARTIFACTS, SCREENSHOTS, RECEIPTS, LOGS):
+    d.mkdir(parents=True, exist_ok=True)
+
+SESSION_ID = hashlib.sha256(f"{time.time()}{random.random()}".encode()).hexdigest()[:12]
+START_TIME = time.time()
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+]
+
+VIEWPORTS = [
+    {"width": 1440, "height": 900},
+    {"width": 1536, "height": 864},
+    {"width": 1680, "height": 1050},
+    {"width": 1920, "height": 1080},
+]
+
+LANGUAGES = ["en-US", "en"]
+
+PAGES = {
+    "login":       {"url": f"{BASE_URL}/login",                   "needs_login": False},
+    "dashboard":   {"url": f"{BASE_URL}/settings",                "needs_login": True},
+    "availability":{"url": f"{BASE_URL}/settings?availability=1", "needs_login": True},
+    "about":       {"url": f"{BASE_URL}/settings/about",          "needs_login": True},
+    "whosawme":    {"url": f"{BASE_URL}/settings/whosawme",       "needs_login": True},
+    "mailbox":     {"url": f"{BASE_URL}/mailbox",                 "needs_login": True},
+    "search":      {"url": f"{BASE_URL}/search/manhattan-ny",     "needs_login": False},
+    "profile":     {"url": f"{BASE_URL}/karpathianwolf",          "needs_login": False},
+}
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def elapsed() -> float:
+    return round(time.time() - START_TIME, 2)
+
+
+def log(msg: str, level: str = "INFO"):
+    print(f"[AGENT] [{elapsed():>7.1f}s] [{level:<5}] {msg}")
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
+
+
+def write_receipt(action: str, status: str, data: dict) -> Path:
+    receipt = {
+        "session_id": SESSION_ID,
+        "action": action,
+        "status": status,
+        "timestamp": now_iso(),
+        "elapsed_s": elapsed(),
+        **data,
+    }
+    content = json.dumps(receipt, sort_keys=True, indent=2)
+    rhash = sha256_text(content)[:16]
+    receipt["receipt_hash"] = rhash
+    fname = f"{action}_{receipt['timestamp'].replace(':', '-')}.json"
+    rpath = RECEIPTS / fname
+    rpath.write_text(json.dumps(receipt, indent=2), encoding="utf-8")
+    log(f"Receipt: {action} → {status} (hash={rhash}) → {rpath.name}")
+    return rpath
+
+
+def human_delay(min_s: float = 0.8, max_s: float = 2.5):
+    time.sleep(random.uniform(min_s, max_s))
+
+
+def human_type(element, text: str, min_delay: float = 0.05, max_delay: float = 0.15):
+    for char in text:
+        element.send_keys(char)
+        time.sleep(random.uniform(min_delay, max_delay))
+
+
+DB_PATH = ARTIFACTS / "engagement.db"
+
+MESSAGE_TEMPLATES = [
+    "Hey {name}, noticed you've stopped by a few times — if you're looking for a session this week I have some openings. Let me know what works for you!",
+    "Hi {name}, thanks for checking out my profile again! I'm available this weekend if you'd like to book. Feel free to message me any questions.",
+    "Hey {name}, I see you've been curious about my work — happy to answer any questions you might have. I have availability this week if you're ready to book.",
+    "Hi {name}! You've visited my page a few times — figured I'd reach out. I'm in Manhattan and have some slots opening up. Want to set something up?",
+    "Hey {name}, thanks for the interest! If you're looking for a massage in NYC, I've got openings this week. Shoot me a message and we can work out the details.",
+    "Hi {name}, noticed you checking back in — I appreciate the interest! I'm booking now for this week. Let me know your preferred time and I'll see what I can do.",
+    "Hey {name}, you've been by a few times — no pressure at all, but if you're thinking about booking I'd love to hear from you. I have some flexibility this week.",
+    "Hi {name}! Thanks for visiting my profile again. I'm currently taking bookings — if you have any questions about rates, styles, or availability, just let me know!",
+]
+
+
+def init_db():
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS visitor_history (
+            username TEXT NOT NULL,
+            seen_at TEXT NOT NULL,
+            visit_count INTEGER DEFAULT 1,
+            last_online TEXT,
+            last_visit_my_page TEXT,
+            location TEXT,
+            messaged INTEGER DEFAULT 0,
+            message_text TEXT,
+            messaged_at TEXT,
+            profile_url TEXT,
+            session_id TEXT,
+            UNIQUE(username, seen_at)
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS visitor_stats (
+            username TEXT PRIMARY KEY,
+            total_sightings INTEGER DEFAULT 0,
+            first_seen TEXT,
+            last_seen TEXT,
+            last_online TEXT,
+            last_visit_my_page TEXT,
+            location TEXT,
+            messaged_count INTEGER DEFAULT 0,
+            last_messaged_at TEXT
+        )
+    """)
+    conn.commit()
+    init_provenance_tables(conn)
+    init_acucertainty_claims(conn)
+    return conn
+
+
+def record_visitor_sighting(conn, username: str, visit_count: int = 1,
+                             last_online: str = None, last_visit_my_page: str = None,
+                             location: str = None, profile_url: str = None):
+    now = now_iso()
+    conn.execute(
+        "INSERT OR IGNORE INTO visitor_history (username, seen_at, visit_count, last_online, last_visit_my_page, location, profile_url, session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (username, now, visit_count, last_online, last_visit_my_page, location, profile_url, SESSION_ID)
+    )
+    conn.execute("""
+        INSERT INTO visitor_stats (username, total_sightings, first_seen, last_seen, last_online, last_visit_my_page, location)
+        VALUES (?, 1, ?, ?, ?, ?, ?)
+        ON CONFLICT(username) DO UPDATE SET
+            total_sightings = total_sightings + 1,
+            last_seen = excluded.last_seen,
+            last_online = COALESCE(excluded.last_online, last_online),
+            last_visit_my_page = COALESCE(excluded.last_visit_my_page, last_visit_my_page),
+            location = COALESCE(excluded.location, location)
+    """, (username, now, last_online, last_visit_my_page, location))
+    conn.commit()
+
+
+def get_visitor_stats(conn, username: str) -> dict:
+    cursor = conn.execute("SELECT * FROM visitor_stats WHERE username = ?", (username,))
+    row = cursor.fetchone()
+    if row:
+        cols = [d[0] for d in cursor.description]
+        return dict(zip(cols, row))
+    return {"total_sightings": 0}
+
+
+def get_all_visitor_stats(conn) -> list[dict]:
+    cursor = conn.execute("SELECT * FROM visitor_stats ORDER BY total_sightings DESC")
+    rows = cursor.fetchall()
+    cols = [d[0] for d in cursor.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def record_message_sent(conn, username: str, message_text: str):
+    now = now_iso()
+    conn.execute("UPDATE visitor_stats SET messaged_count = messaged_count + 1, last_messaged_at = ? WHERE username = ?", (now, username))
+    conn.execute(
+        "UPDATE visitor_history SET messaged = 1, message_text = ?, messaged_at = ? "
+        "WHERE rowid = (SELECT rowid FROM visitor_history WHERE username = ? AND messaged = 0 ORDER BY seen_at DESC LIMIT 1)",
+        (message_text, now, username)
+    )
+    conn.commit()
+
+
+def pick_message(username: str) -> str:
+    template = random.choice(MESSAGE_TEMPLATES)
+    return template.format(name=username)
+
+
+def should_message_visitor(conn, username: str, threshold: int, cooldown_days: int = 3) -> tuple[bool, str]:
+    stats = get_visitor_stats(conn, username)
+    visit_count = stats.get("total_sightings", 0)
+    if visit_count < threshold:
+        return False, f"only {visit_count} sightings (threshold={threshold})"
+    if stats.get("last_messaged_at"):
+        try:
+            last = datetime.fromisoformat(stats["last_messaged_at"])
+            if (datetime.now(timezone.utc) - last).days < cooldown_days:
+                return False, f"already messaged {stats['last_messaged_at']} (cooldown {cooldown_days}d)"
+        except Exception:
+            pass
+    if stats.get("messaged_count", 0) >= 3:
+        return False, f"already messaged {stats['messaged_count']} times (max 3)"
+    return True, "eligible"
+
+
+# ─── Persuasion-Provenance Ledger ────────────────────────────────────
+# Every adaptive message records: what signal triggered it, what template
+# was selected, what objection it addresses, what evidence was used, and
+# what behavioral effect followed. Makes personalized persuasion inspectable.
+
+PROVENANCE_SIGNALS = {
+    "repeat_visit": "Visitor has returned to profile 3+ times (inferred interest)",
+    "high_visit_count": "Visitor card shows 5+ visits (strong interest signal)",
+    "recent_online": "Visitor was online within 24h (active user)",
+    "location_match": "Visitor is in same metro area (reduced friction)",
+    "first_message": "No prior messages sent to this visitor",
+    "cooldown_expired": "Previous message sent >3 days ago (re-engagement)",
+}
+
+OBJECTION_MAP = {
+    0: "hesitation — visitor returns but hasn't booked (reduce friction)",
+    1: "uncertainty — visitor may have questions (offer information)",
+    2: "timing — visitor may be waiting for right moment (create urgency)",
+    3: "logistics — visitor may not know location/availability (reduce search cost)",
+    4: "trust — visitor may be evaluating credibility (establish legitimacy)",
+    5: "price — visitor may be comparing options (signal value)",
+    6: "social — visitor may need low-pressure nudge (reduce commitment)",
+    7: "general — visitor has shown interest, open-ended invitation",
+}
+
+
+def init_provenance_tables(conn):
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS persuasion_provenance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            session_id TEXT NOT NULL,
+            sent_at TEXT NOT NULL,
+            template_index INTEGER NOT NULL,
+            template_text TEXT NOT NULL,
+            trigger_signal TEXT NOT NULL,
+            trigger_detail TEXT,
+            objection_addressed TEXT,
+            visitor_sightings INTEGER,
+            visitor_visit_count INTEGER,
+            visitor_location TEXT,
+            visitor_last_online TEXT,
+            consent_basis TEXT DEFAULT 'implicit_visit_behavior',
+            message_status TEXT,
+            follow_up_response TEXT,
+            follow_up_responded_at TEXT,
+            follow_up_booked INTEGER DEFAULT 0,
+            follow_up_cancelled INTEGER DEFAULT 0,
+            follow_up_complaint TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS autonomy_metrics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            message_id INTEGER,
+            metric_type TEXT NOT NULL,
+            metric_value TEXT,
+            recorded_at TEXT NOT NULL,
+            session_id TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS acucertainty_claims (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            claim_text TEXT NOT NULL,
+            claim_source TEXT,
+            domain TEXT,
+            state TEXT NOT NULL DEFAULT 'unresolved',
+            evidence_summary TEXT,
+            contradicted_by TEXT,
+            verified_at TEXT,
+            domain_limit TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+
+
+def record_provenance(conn, username: str, template_index: int, template_text: str,
+                      trigger_signal: str, trigger_detail: str,
+                      visitor_sightings: int, visitor_visit_count: int,
+                      visitor_location: str = None, visitor_last_online: str = None,
+                      message_status: str = "sent"):
+    now = now_iso()
+    objection = OBJECTION_MAP.get(template_index, "general")
+    conn.execute("""
+        INSERT INTO persuasion_provenance
+        (username, session_id, sent_at, template_index, template_text,
+         trigger_signal, trigger_detail, objection_addressed,
+         visitor_sightings, visitor_visit_count, visitor_location,
+         visitor_last_online, message_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (username, SESSION_ID, now, template_index, template_text,
+          trigger_signal, trigger_detail, objection,
+          visitor_sightings, visitor_visit_count, visitor_location,
+          visitor_last_online, message_status))
+    conn.commit()
+    cursor = conn.execute("SELECT last_insert_rowid()")
+    return cursor.fetchone()[0]
+
+
+def record_follow_up(conn, provenance_id: int, responded: bool = False,
+                     booked: bool = False, cancelled: bool = False,
+                     complaint: str = None):
+    now = now_iso()
+    response_text = "responded" if responded else "no_response"
+    if booked:
+        response_text += "+booked"
+    if cancelled:
+        response_text += "+cancelled"
+    conn.execute("""
+        UPDATE persuasion_provenance
+        SET follow_up_response = ?, follow_up_responded_at = ?,
+            follow_up_booked = ?, follow_up_cancelled = ?, follow_up_complaint = ?
+        WHERE id = ?
+    """, (response_text, now if responded else None,
+          1 if booked else 0, 1 if cancelled else 0, complaint, provenance_id))
+    conn.commit()
+
+
+def record_autonomy_metric(conn, username: str, metric_type: str,
+                           metric_value: str, message_id: int = None):
+    now = now_iso()
+    conn.execute("""
+        INSERT INTO autonomy_metrics (username, message_id, metric_type, metric_value, recorded_at, session_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (username, message_id, metric_type, metric_value, now, SESSION_ID))
+    conn.commit()
+
+
+def get_autonomy_report(conn) -> dict:
+    total = conn.execute("SELECT COUNT(*) FROM persuasion_provenance").fetchone()[0]
+    responded = conn.execute("SELECT COUNT(*) FROM persuasion_provenance WHERE follow_up_response LIKE '%responded%'").fetchone()[0]
+    booked = conn.execute("SELECT COUNT(*) FROM persuasion_provenance WHERE follow_up_booked = 1").fetchone()[0]
+    cancelled = conn.execute("SELECT COUNT(*) FROM persuasion_provenance WHERE follow_up_cancelled = 1").fetchone()[0]
+    complaints = conn.execute("SELECT COUNT(*) FROM persuasion_provenance WHERE follow_up_complaint IS NOT NULL").fetchone()[0]
+    no_response = total - responded
+    return {
+        "total_messages": total,
+        "responded": responded,
+        "no_response": no_response,
+        "booked": booked,
+        "cancelled": cancelled,
+        "complaints": complaints,
+        "response_rate": round(responded / total, 3) if total else 0,
+        "booking_rate": round(booked / total, 3) if total else 0,
+        "cancellation_rate": round(cancelled / booked, 3) if booked else 0,
+        "complaint_rate": round(complaints / total, 3) if total else 0,
+        "regret_proxy": round((cancelled + complaints) / max(total, 1), 3),
+    }
+
+
+# ─── Acucertainty State Tracking ─────────────────────────────────────
+# Every commercial hypothesis carries a state: verified, contradicted,
+# unresolved, or domain_limited. No ledger means no accountability.
+
+ACUCERTAINTY_STATES = {"verified", "contradicted", "unresolved", "domain_limited"}
+
+DEFAULT_CLAIMS = [
+    ("Repeat visitors who are messaged are more likely to book than non-messaged repeat visitors", "engagement", "unresolved", "No A/B test conducted; observational only"),
+    ("Personalized messages outperform generic templates", "messaging", "unresolved", "No controlled comparison; templates use name only"),
+    ("Faster reply times increase booking conversion", "response_time", "unresolved", "No response time tracking implemented"),
+    ("Visitors who see 3+ visits are ready to book", "threshold", "unresolved", "Threshold is heuristic, not empirically derived"),
+    ("Location-matched visitors convert better", "targeting", "unresolved", "No location-based conversion analysis"),
+    ("30-second message delay prevents rate limiting", "anti_spam", "domain_limited", "Empirically observed on rentmasseur.com; may not generalize"),
+]
+
+
+def init_acucertainty_claims(conn):
+    existing = conn.execute("SELECT COUNT(*) FROM acucertainty_claims").fetchone()[0]
+    if existing == 0:
+        now = now_iso()
+        for claim, domain, state, evidence in DEFAULT_CLAIMS:
+            conn.execute("""
+                INSERT INTO acucertainty_claims (claim_text, domain, state, evidence_summary, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (claim, domain, state, evidence, now, now))
+        conn.commit()
+
+
+def update_claim_state(conn, claim_id: int, new_state: str, evidence: str = None,
+                       contradicted_by: str = None, domain_limit: str = None):
+    if new_state not in ACUCERTAINTY_STATES:
+        raise ValueError(f"Invalid Acucertainty state: {new_state}")
+    now = now_iso()
+    conn.execute("""
+        UPDATE acucertainty_claims
+        SET state = ?, evidence_summary = COALESCE(?, evidence_summary),
+            contradicted_by = COALESCE(?, contradicted_by),
+            domain_limit = COALESCE(?, domain_limit),
+            verified_at = ?, updated_at = ?
+        WHERE id = ?
+    """, (new_state, evidence, contradicted_by, domain_limit,
+          now if new_state in ("verified", "contradicted") else None,
+          now, claim_id))
+    conn.commit()
+
+
+def get_claims_report(conn) -> list[dict]:
+    cursor = conn.execute("SELECT * FROM acucertainty_claims ORDER BY domain, state")
+    rows = cursor.fetchall()
+    cols = [d[0] for d in cursor.description]
+    return [dict(zip(cols, r)) for r in rows]
+
+
+def determine_trigger_signal(stats: dict, visit_count: int) -> tuple[str, str]:
+    if stats.get("messaged_count", 0) == 0:
+        signal = "first_message"
+        detail = f"First message to visitor with {stats.get('total_sightings', 0)} sightings"
+    elif stats.get("last_messaged_at"):
+        signal = "cooldown_expired"
+        detail = f"Re-engagement after cooldown (last messaged {stats['last_messaged_at']})"
+    elif visit_count >= 5:
+        signal = "high_visit_count"
+        detail = f"High visit count ({visit_count}) indicates strong interest"
+    else:
+        signal = "repeat_visit"
+        detail = f"Repeat visitor with {stats.get('total_sightings', 0)} sightings"
+    return signal, detail
+
+
+BLOCK_NEEDLES = [
+    ("captcha", "captcha_detected"),
+    ("crowdsec", "crowdsec_detected"),
+    ("access forbidden", "access_forbidden"),
+    ("verify you are human", "human_verification"),
+    ("unusual traffic", "traffic_challenge"),
+    ("too many requests", "rate_limited"),
+    ("cloudflare", "cloudflare_challenge"),
+    ("please verify", "verification_required"),
+]
+
+
+def detect_block_text(text: str, url: str) -> Optional[str]:
+    text_lower = text.lower()
+    url_lower = url.lower()
+    for needle, reason in BLOCK_NEEDLES:
+        if needle in text_lower or needle in url_lower:
+            return reason
+    return None
+
+
+# ─── Playwright Engine ───────────────────────────────────────────────
+
+class PlaywrightAgent:
+    def __init__(self, headed: bool):
+        self.headed = headed
+        self.page = None
+        self.context = None
+        self.browser = None
+        self.playwright = None
+        self.logged_in = False
+        self.ua = random.choice(USER_AGENTS)
+        self.viewport = random.choice(VIEWPORTS)
+        self.api_calls: list[dict] = []
+        log(f"Engine: Playwright | UA: {self.ua[:40]}... | Viewport: {self.viewport}")
+
+    def start(self):
+        from playwright.sync_api import sync_playwright
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch(
+            headless=not self.headed,
+            args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled"],
+        )
+        self.context = self.browser.new_context(
+            viewport=self.viewport,
+            user_agent=self.ua,
+            locale=random.choice(LANGUAGES),
+            timezone_id="America/New_York",
+        )
+
+        # Stealth: remove webdriver property
+        self.context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+            window.chrome = { runtime: {} };
+        """)
+
+        # API interception
+        def on_request(req):
+            if "rentmasseur.com/api" in req.url or "/api/" in req.url:
+                self.api_calls.append({
+                    "method": req.method,
+                    "url": req.url,
+                    "ts": now_iso(),
+                    "post_data": req.post_data[:500] if req.post_data else None,
+                })
+
+        def on_response(resp):
+            if "rentmasseur.com/api" in resp.url or "/api/" in resp.url:
+                for call in reversed(self.api_calls):
+                    if call["url"] == resp.url and "status" not in call:
+                        call["status"] = resp.status
+                        try:
+                            body = resp.text()
+                            call["response_len"] = len(body)
+                            call["response_preview"] = body[:300]
+                        except Exception:
+                            pass
+                        break
+
+        self.context.on("request", on_request)
+        self.context.on("response", on_response)
+        self.page = self.context.new_page()
+        log("Browser started (Playwright)")
+
+    def stop(self):
+        if self.browser:
+            self.browser.close()
+        if self.playwright:
+            self.playwright.stop()
+        log("Browser closed (Playwright)")
+
+    def screenshot(self, name: str) -> str:
+        path = SCREENSHOTS / f"{name}.png"
+        try:
+            self.page.screenshot(path=str(path), full_page=False)
+            log(f"Screenshot: {name}.png")
+        except Exception as e:
+            log(f"Screenshot failed: {e}", "WARN")
+            return ""
+        return str(path)
+
+    def page_text(self) -> str:
+        try:
+            return self.page.inner_text("body")[:5000]
+        except Exception:
+            return ""
+
+    def detect_block(self) -> Optional[str]:
+        return detect_block_text(self.page_text(), self.page.url)
+
+    def login(self, username: str, password: str) -> bool:
+        log("=== LOGIN ===")
+        try:
+            self.page.goto(f"{BASE_URL}/login", wait_until="networkidle", timeout=30000)
+            human_delay(2, 4)
+            self.screenshot("01_login_page")
+
+            block = self.detect_block()
+            if block:
+                log(f"BLOCKED: {block}", "ERROR")
+                write_receipt("login", "blocked", {"reason": block})
+                return False
+
+            email_el = None
+            for sel in ["input[type='email']", "input[name*='email' i]", "input[name*='user' i]", "input[type='text']"]:
+                email_el = self.page.query_selector(sel)
+                if email_el and email_el.is_visible():
+                    break
+                email_el = None
+
+            pass_el = self.page.query_selector("input[type='password']")
+
+            if not email_el or not pass_el:
+                log("Login form not found", "ERROR")
+                write_receipt("login", "fail", {"reason": "form_not_found"})
+                return False
+
+            log("Found login form — typing credentials (human-like)...")
+            email_el.click()
+            human_delay(0.3, 0.8)
+            email_el.fill(username)
+            human_delay(0.5, 1.2)
+            pass_el.click()
+            human_delay(0.3, 0.6)
+            pass_el.fill(password)
+            human_delay(0.8, 1.5)
+
+            self.screenshot("02_login_filled")
+
+            for sel in ["button[type='submit']", "button:has-text('LOG')", "button:has-text('Log')", "form button"]:
+                btn = self.page.query_selector(sel)
+                if btn and btn.is_visible():
+                    btn.click()
+                    break
+
+            self.page.wait_for_load_state("networkidle", timeout=15000)
+            human_delay(3, 5)
+
+            current_url = self.page.url
+            log(f"  Post-login URL: {current_url}")
+
+            if "/login" in current_url:
+                log("Login failed — still on login page", "ERROR")
+                self.screenshot("03_login_failed")
+                write_receipt("login", "fail", {"reason": "still_on_login_page", "url": current_url})
+                return False
+
+            self.logged_in = True
+            self.screenshot("03_login_success")
+            log(f"Login OK — URL: {current_url}")
+            write_receipt("login", "pass", {
+                "url": current_url,
+                "screenshot": str(SCREENSHOTS / "03_login_success.png"),
+                "ua": self.ua,
+            })
+            return True
+
+        except Exception as e:
+            log(f"Login error: {e}", "ERROR")
+            write_receipt("login", "error", {"error": str(e)})
+            return False
+
+    def scrape_visitors(self, max_load_more: int = 50) -> list[dict]:
+        log("=== SCRAPE VISITORS ===")
+        self.page.goto(f"{BASE_URL}/settings/whosawme", wait_until="networkidle", timeout=30000)
+        human_delay(3, 5)
+        self.screenshot("04_whosawme")
+
+        block = self.detect_block()
+        if block:
+            log(f"BLOCKED: {block}", "ERROR")
+            write_receipt("scrape_visitors", "blocked", {"reason": block})
+            return []
+
+        load_more_count = 0
+        for _ in range(max_load_more):
+            try:
+                load_btn = self.page.query_selector("button:has-text('Load More'), a:has-text('Load More'), button:has-text('load more'), a:has-text('load more'), button:has-text('Show More'), a:has-text('Show More')")
+                if not load_btn or not load_btn.is_visible():
+                    break
+                log(f"  Clicking Load More ({load_more_count + 1})...")
+                load_btn.click()
+                human_delay(2, 4)
+                self.page.wait_for_load_state("networkidle", timeout=10000)
+                load_more_count += 1
+            except Exception:
+                break
+        log(f"  Load More clicked {load_more_count} times")
+
+        visitors = self.page.evaluate("""
+            () => {
+                const result = [];
+                const seen = new Set();
+                const skip = ['settings','gay-massage','stream','masseurcams','advertise','about','login','sitemap','topics','robots','api'];
+                const cards = document.querySelectorAll('.visitor-card, .visitor-row, .who-saw-me-item, [class*="visitor"], [class*="who-saw"]');
+                for (const card of cards) {
+                    const a = card.querySelector('a[href]');
+                    if (!a) continue;
+                    const href = a.href;
+                    if (!href.startsWith('https://rentmasseur.com/')) continue;
+                    const path = new URL(href).pathname;
+                    if (!path || path === '/' || path.split('/').length !== 2) continue;
+                    const username = path.replace('/', '');
+                    if (!username || seen.has(username) || skip.includes(username) || username.startsWith('_') || username.length <= 2) continue;
+                    seen.add(username);
+                    const text = card.innerText || '';
+                    const vMatch = text.match(/(\\d+)\\s*(?:visits?|views?|times?)/i);
+                    const oMatch = text.match(/(?:last\\s*online|online)\\s*[:\\s]*(.+)/i);
+                    const dMatch = text.match(/(?:last\\s*visit|visited)\\s*[:\\s]*(.+)/i);
+                    const lMatch = text.match(/(?:location|from|city)\\s*[:\\s]*(.+)/i);
+                    result.push({username, url: href, name: username, visit_count: vMatch?parseInt(vMatch[1]):1, last_online: oMatch?oMatch[1].trim():null, last_visit_my_page: dMatch?dMatch[1].trim():null, location: lMatch?lMatch[1].trim():null, card_text: text.substring(0,300)});
+                }
+                const profileImgs = document.querySelectorAll('img[alt="Profile photo"], img[alt="profile-picture"]');
+                for (const img of profileImgs) {
+                    const a = img.closest('a');
+                    if (a && a.href) {
+                        const path = new URL(a.href).pathname;
+                        const username = path.replace('/', '');
+                        if (username && !seen.has(username) && !username.includes('settings') && !username.includes('gay-massage')) {
+                            seen.add(username);
+                            result.push({username, url: a.href, name: username, visit_count: 1});
+                        }
+                    }
+                }
+                const links = Array.from(document.querySelectorAll('a[href]'));
+                for (const a of links) {
+                    const href = a.href;
+                    if (!href.startsWith('https://rentmasseur.com/')) continue;
+                    const path = new URL(href).pathname;
+                    if (path && path !== '/' && path.split('/').length === 2 && path.split('/')[1] !== '') {
+                        const username = path.replace('/', '');
+                        if (!seen.has(username) && !skip.includes(username) && !username.startsWith('_') && username.length > 2) {
+                            seen.add(username);
+                            result.push({username, url: href, name: username, visit_count: 1});
+                        }
+                    }
+                }
+                return result;
+            }
+        """)
+
+        log(f"Found {len(visitors)} visitors (after {load_more_count} Load More clicks)")
+        for v in visitors[:15]:
+            extra = f" visits={v.get('visit_count', 1)}"
+            if v.get('last_online'): extra += f" online={v['last_online']}"
+            if v.get('location'): extra += f" loc={v['location']}"
+            log(f"  {v['name']}{extra}")
+
+        write_receipt("scrape_visitors", "pass", {"count": len(visitors), "load_more_clicks": load_more_count, "visitors": visitors[:30], "screenshot": self.screenshot("04_whosawme_full")})
+        return visitors
+
+    def extract_profile_metadata(self, uname: str) -> dict:
+        try:
+            return self.page.evaluate("""
+                () => {
+                    const text = document.body ? document.body.innerText : '';
+                    const oMatch = text.match(/(?:last\\s*online|online|active)\\s*[:\\s]*(.+)/i);
+                    const lMatch = text.match(/(?:location|from|city|area)\\s*[:\\s]*(.+)/i);
+                    const sMatch = text.match(/(\\d+)\\s*(?:visits?|views?|profile\\s*views?)/i);
+                    return {last_online: oMatch?oMatch[1].trim():null, location: lMatch?lMatch[1].trim():null, profile_views: sMatch?parseInt(sMatch[1]):null};
+                }
+            """)
+        except Exception:
+            return {}
+
+    def visit_profile(self, visitor: dict, idx: int, total: int) -> dict:
+        uname = visitor["username"]
+        url = visitor["url"]
+        log(f"  [{idx+1}/{total}] Visiting {uname}...")
+        try:
+            self.page.goto(url, wait_until="domcontentloaded", timeout=20000)
+            human_delay(2, 4)
+            block = self.detect_block()
+            if block:
+                log(f"  BLOCKED on {uname}: {block}", "WARN")
+                return {"username": uname, "status": "blocked", "reason": block}
+            ss_name = f"visit_{idx+1:03d}_{uname}"
+            self.screenshot(ss_name)
+            page_text = self.page_text()[:1000]
+            meta = self.extract_profile_metadata(uname)
+            result = {"username": uname, "url": self.page.url, "status": "ok", "page_title": self.page.title(), "content_hash": sha256_text(page_text), "screenshot": ss_name, "visited_at": now_iso(), "last_online": meta.get("last_online"), "location": meta.get("location"), "profile_views": meta.get("profile_views")}
+            write_receipt("visit_profile", "pass", result)
+            return result
+        except Exception as e:
+            log(f"  ERROR visiting {uname}: {e}", "WARN")
+            return {"username": uname, "status": "error", "error": str(e)}
+
+    def send_message(self, username: str, message: str) -> dict:
+        log(f"  -> Messaging {username}...")
+        try:
+            compose_url = f"{BASE_URL}/mailbox/compose?to={username}"
+            self.page.goto(compose_url, wait_until="domcontentloaded", timeout=20000)
+            human_delay(2, 3)
+            self.screenshot(f"message_{username}_compose")
+            textarea = None
+            for sel in ["textarea[name*='message' i]", "textarea[name*='body' i]", "textarea[name*='content' i]", "textarea", "div[contenteditable='true']"]:
+                textarea = self.page.query_selector(sel)
+                if textarea and textarea.is_visible(): break
+                textarea = None
+            if not textarea:
+                log(f"  No textarea on compose — trying profile fallback", "WARN")
+                self.page.goto(f"{BASE_URL}/{username}", wait_until="domcontentloaded", timeout=20000)
+                human_delay(2, 3)
+                for sel in ["a:has-text('Message')", "button:has-text('Message')", "a:has-text('Contact')", "button:has-text('Contact')", "a[href*='message']", "a[href*='mail']"]:
+                    msg_btn = self.page.query_selector(sel)
+                    if msg_btn and msg_btn.is_visible():
+                        msg_btn.click()
+                        human_delay(2, 4)
+                        break
+                for sel in ["textarea", "textarea[name*='message']", "div[contenteditable='true']"]:
+                    textarea = self.page.query_selector(sel)
+                    if textarea and textarea.is_visible(): break
+                    textarea = None
+            if not textarea:
+                log(f"  No textarea for {username}", "WARN")
+                return {"username": username, "status": "no_textarea"}
+            textarea.click()
+            human_delay(0.5, 1)
+            textarea.fill(message)
+            human_delay(1, 2)
+            self.screenshot(f"message_{username}_composed")
+            send_btn = None
+            for sel in ["button:has-text('Send')", "button[type='submit']", "button:has-text('send')", "input[type='submit']"]:
+                send_btn = self.page.query_selector(sel)
+                if send_btn and send_btn.is_visible(): break
+                send_btn = None
+            if send_btn:
+                send_btn.click()
+                human_delay(3, 5)
+                self.screenshot(f"message_{username}_sent")
+                log(f"  Message sent to {username}")
+                write_receipt("send_message", "pass", {"username": username, "message": message[:100]})
+                return {"username": username, "status": "sent", "message": message}
+            else:
+                log(f"  No send button for {username}", "WARN")
+                return {"username": username, "status": "no_send_button"}
+        except Exception as e:
+            log(f"  ERROR messaging {username}: {e}", "WARN")
+            write_receipt("send_message", "error", {"username": username, "error": str(e)})
+            return {"username": username, "status": "error", "error": str(e)}
+
+    def probe_page(self, page_name: str) -> dict:
+        cfg = PAGES.get(page_name)
+        if not cfg:
+            log(f"Unknown page: {page_name}", "WARN")
+            return {}
+
+        log(f"=== PROBE: {page_name} ===")
+        log(f"  URL: {cfg['url']}")
+
+        try:
+            self.page.goto(cfg["url"], wait_until="networkidle", timeout=30000)
+            human_delay(2, 4)
+
+            block = self.detect_block()
+            ss = self.screenshot(f"probe_{page_name}")
+
+            if block:
+                log(f"  BLOCKED: {block}", "ERROR")
+                write_receipt("probe", "blocked", {"page": page_name, "reason": block, "screenshot": ss})
+                return {"page": page_name, "status": "blocked", "reason": block}
+
+            if cfg["needs_login"] and not self.logged_in and "/login" in self.page.url:
+                log("  Redirected to login (not authenticated)")
+                write_receipt("probe", "redirected", {"page": page_name, "url": self.page.url})
+                return {"page": page_name, "status": "redirected_to_login"}
+
+            title = self.page.title()
+            text = self.page_text()[:2000]
+            result = {
+                "page": page_name,
+                "url": self.page.url,
+                "status": "ok",
+                "title": title,
+                "content_hash": sha256_text(text),
+                "text_len": len(text),
+                "screenshot": ss,
+            }
+            log(f"  OK: title='{title}' text_len={len(text)}")
+            write_receipt("probe", "pass", result)
+            return result
+
+        except Exception as e:
+            log(f"  ERROR: {e}", "ERROR")
+            write_receipt("probe", "error", {"page": page_name, "error": str(e)})
+            return {"page": page_name, "status": "error", "error": str(e)}
+
+    def save_api_log(self):
+        if self.api_calls:
+            path = LOGS / f"api_calls_{SESSION_ID}.json"
+            path.write_text(json.dumps(self.api_calls, indent=2), encoding="utf-8")
+            log(f"API calls log: {len(self.api_calls)} calls → {path.name}")
+
+
+# ─── Selenium Engine (Undetected ChromeDriver) ──────────────────────
+
+class SeleniumAgent:
+    def __init__(self, headed: bool):
+        self.headed = headed
+        self.driver = None
+        self.logged_in = False
+        self.ua = random.choice(USER_AGENTS)
+        log(f"Engine: Selenium (undetected) | UA: {self.ua[:40]}...")
+
+    def start(self):
+        import undetected_chromedriver as uc
+
+        options = uc.ChromeOptions()
+        if not self.headed:
+            options.add_argument("--headless=new")
+        options.add_argument("--window-size=1440,900")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument(f"--user-agent={self.ua}")
+
+        chrome_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        if os.path.exists(chrome_path):
+            options.binary_location = chrome_path
+
+        try:
+            import subprocess
+            ver_out = subprocess.check_output(
+                [chrome_path, "--version"], stderr=subprocess.DEVNULL
+            ).decode().strip()
+            chrome_major = int(re.search(r'(\d+)\.', ver_out).group(1))
+            self.driver = uc.Chrome(options=options, version_main=chrome_major)
+        except Exception:
+            self.driver = uc.Chrome(options=options)
+
+        self.driver.set_page_load_timeout(45)
+        self.driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+                Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+                Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+                Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+                window.chrome = { runtime: {} };
+            """
+        })
+        log("Browser started (Selenium/undetected)")
+
+    def stop(self):
+        if self.driver:
+            try:
+                self.driver.quit()
+            except Exception:
+                pass
+        log("Browser closed (Selenium)")
+
+    def screenshot(self, name: str) -> str:
+        path = SCREENSHOTS / f"{name}.png"
+        try:
+            self.driver.save_screenshot(str(path))
+            log(f"Screenshot: {name}.png")
+        except Exception as e:
+            log(f"Screenshot failed: {e}", "WARN")
+            return ""
+        return str(path)
+
+    def page_text(self) -> str:
+        try:
+            return self.driver.execute_script(
+                "return document.body ? document.body.innerText : ''"
+            )[:5000]
+        except Exception:
+            return ""
+
+    def detect_block(self) -> Optional[str]:
+        return detect_block_text(self.page_text(), self.driver.current_url)
+
+    def login(self, username: str, password: str) -> bool:
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.keys import Keys
+
+        log("=== LOGIN ===")
+        try:
+            self.driver.get(f"{BASE_URL}/login")
+            human_delay(3, 5)
+            self.screenshot("01_login_page")
+
+            block = self.detect_block()
+            if block:
+                log(f"BLOCKED: {block}", "ERROR")
+                write_receipt("login", "blocked", {"reason": block})
+                return False
+
+            inputs = self.driver.find_elements(By.CSS_SELECTOR, "input")
+            email_el = None
+            pass_el = None
+            for inp in inputs:
+                if not inp.is_displayed():
+                    continue
+                itype = (inp.get_attribute("type") or "").lower()
+                iname = (inp.get_attribute("name") or "").lower()
+                if itype == "password":
+                    pass_el = inp
+                elif "email" in iname or "user" in iname or itype in ("email", "text"):
+                    email_el = inp
+
+            if not email_el or not pass_el:
+                log("Login form not found", "ERROR")
+                write_receipt("login", "fail", {"reason": "form_not_found"})
+                return False
+
+            log("Found login form — typing credentials (human-like)...")
+            email_el.click()
+            human_delay(0.3, 0.8)
+            human_type(email_el, username)
+            human_delay(0.5, 1.2)
+            pass_el.click()
+            human_delay(0.3, 0.6)
+            human_type(pass_el, password)
+            human_delay(0.8, 1.5)
+
+            self.screenshot("02_login_filled")
+            pass_el.send_keys(Keys.ENTER)
+
+            human_delay(4, 7)
+
+            if "/login" in self.driver.current_url.lower():
+                log("Login failed — still on login page", "ERROR")
+                self.screenshot("03_login_failed")
+                write_receipt("login", "fail", {"reason": "still_on_login_page", "url": self.driver.current_url})
+                return False
+
+            self.logged_in = True
+            self.screenshot("03_login_success")
+            log(f"Login OK — URL: {self.driver.current_url}")
+            write_receipt("login", "pass", {
+                "url": self.driver.current_url,
+                "screenshot": str(SCREENSHOTS / "03_login_success.png"),
+                "ua": self.ua,
+            })
+            return True
+
+        except Exception as e:
+            log(f"Login error: {e}", "ERROR")
+            write_receipt("login", "error", {"error": str(e)})
+            return False
+
+    def scrape_visitors(self, max_load_more: int = 50) -> list[dict]:
+        from selenium.webdriver.common.by import By
+
+        log("=== SCRAPE VISITORS ===")
+        self.driver.get(f"{BASE_URL}/settings/whosawme")
+        human_delay(4, 6)
+        self.screenshot("04_whosawme")
+
+        block = self.detect_block()
+        if block:
+            log(f"BLOCKED: {block}", "ERROR")
+            write_receipt("scrape_visitors", "blocked", {"reason": block})
+            return []
+
+        load_more_count = 0
+        for _ in range(max_load_more):
+            try:
+                load_btns = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'Load More') or contains(text(), 'load more') or contains(text(), 'Show More') or contains(text(), 'show more')]")
+                clicked = False
+                for btn in load_btns:
+                    if btn.is_displayed():
+                        btn.click()
+                        clicked = True
+                        break
+                if not clicked:
+                    break
+                log(f"  Clicking Load More ({load_more_count + 1})...")
+                human_delay(2, 4)
+                load_more_count += 1
+            except Exception:
+                break
+        log(f"  Load More clicked {load_more_count} times")
+
+        visitors = self.driver.execute_script("""
+            const result = [];
+            const seen = new Set();
+            const skip = ['settings','gay-massage','stream','masseurcams','advertise','about','login','sitemap','topics','robots','api'];
+            const cards = document.querySelectorAll('.visitor-card, .visitor-row, .who-saw-me-item, [class*="visitor"], [class*="who-saw"]');
+            for (const card of cards) {
+                const a = card.querySelector('a[href]');
+                if (!a) continue;
+                const href = a.href;
+                if (!href.startsWith('https://rentmasseur.com/')) continue;
+                const path = new URL(href).pathname;
+                if (!path || path === '/' || path.split('/').length !== 2) continue;
+                const username = path.replace('/', '');
+                if (!username || seen.has(username) || skip.includes(username) || username.startsWith('_') || username.length <= 2) continue;
+                seen.add(username);
+                const text = card.innerText || '';
+                const vMatch = text.match(/(\\d+)\\s*(?:visits?|views?|times?)/i);
+                const oMatch = text.match(/(?:last\\s*online|online)\\s*[:\\s]*(.+)/i);
+                const dMatch = text.match(/(?:last\\s*visit|visited)\\s*[:\\s]*(.+)/i);
+                const lMatch = text.match(/(?:location|from|city)\\s*[:\\s]*(.+)/i);
+                result.push({username, url: href, name: username, visit_count: vMatch?parseInt(vMatch[1]):1, last_online: oMatch?oMatch[1].trim():null, last_visit_my_page: dMatch?dMatch[1].trim():null, location: lMatch?lMatch[1].trim():null, card_text: text.substring(0,300)});
+            }
+            const profileImgs = document.querySelectorAll('img[alt="Profile photo"], img[alt="profile-picture"]');
+            for (const img of profileImgs) {
+                const a = img.closest('a');
+                if (a && a.href) {
+                    const path = new URL(a.href).pathname;
+                    const username = path.replace('/', '');
+                    if (username && !seen.has(username) && !username.includes('settings') && !username.includes('gay-massage')) {
+                        seen.add(username);
+                        result.push({username, url: a.href, name: username, visit_count: 1});
+                    }
+                }
+            }
+            const links = Array.from(document.querySelectorAll('a[href]'));
+            for (const a of links) {
+                const href = a.href;
+                if (!href.startsWith('https://rentmasseur.com/')) continue;
+                const path = new URL(href).pathname;
+                if (path && path !== '/' && path.split('/').length === 2 && path.split('/')[1] !== '') {
+                    const username = path.replace('/', '');
+                    if (!seen.has(username) && !skip.includes(username) && !username.startsWith('_') && username.length > 2) {
+                        seen.add(username);
+                        result.push({username, url: href, name: username, visit_count: 1});
+                    }
+                }
+            }
+            return result;
+        """)
+
+        log(f"Found {len(visitors)} visitors (after {load_more_count} Load More clicks)")
+        for v in visitors[:15]:
+            extra = f" visits={v.get('visit_count', 1)}"
+            if v.get('last_online'): extra += f" online={v['last_online']}"
+            if v.get('location'): extra += f" loc={v['location']}"
+            log(f"  {v['name']}{extra}")
+
+        write_receipt("scrape_visitors", "pass", {"count": len(visitors), "load_more_clicks": load_more_count, "visitors": visitors[:30], "screenshot": self.screenshot("04_whosawme_full")})
+        return visitors
+
+    def extract_profile_metadata(self, uname: str) -> dict:
+        try:
+            return self.driver.execute_script("""
+                const text = document.body ? document.body.innerText : '';
+                const oMatch = text.match(/(?:last\\s*online|online|active)\\s*[:\\s]*(.+)/i);
+                const lMatch = text.match(/(?:location|from|city|area)\\s*[:\\s]*(.+)/i);
+                const sMatch = text.match(/(\\d+)\\s*(?:visits?|views?|profile\\s*views?)/i);
+                return {last_online: oMatch?oMatch[1].trim():null, location: lMatch?lMatch[1].trim():null, profile_views: sMatch?parseInt(sMatch[1]):null};
+            """)
+        except Exception:
+            return {}
+
+    def visit_profile(self, visitor: dict, idx: int, total: int) -> dict:
+        uname = visitor["username"]
+        url = visitor["url"]
+        log(f"  [{idx+1}/{total}] Visiting {uname}...")
+        try:
+            self.driver.get(url)
+            human_delay(2, 4)
+            block = self.detect_block()
+            if block:
+                log(f"  BLOCKED on {uname}: {block}", "WARN")
+                return {"username": uname, "status": "blocked", "reason": block}
+            ss_name = f"visit_{idx+1:03d}_{uname}"
+            self.screenshot(ss_name)
+            page_text = self.page_text()[:1000]
+            meta = self.extract_profile_metadata(uname)
+            result = {"username": uname, "url": self.driver.current_url, "status": "ok", "page_title": self.driver.title, "content_hash": sha256_text(page_text), "screenshot": ss_name, "visited_at": now_iso(), "last_online": meta.get("last_online"), "location": meta.get("location"), "profile_views": meta.get("profile_views")}
+            write_receipt("visit_profile", "pass", result)
+            return result
+        except Exception as e:
+            log(f"  ERROR visiting {uname}: {e}", "WARN")
+            return {"username": uname, "status": "error", "error": str(e)}
+
+    def send_message(self, username: str, message: str) -> dict:
+        from selenium.webdriver.common.by import By
+        log(f"  -> Messaging {username}...")
+        try:
+            compose_url = f"{BASE_URL}/mailbox/compose?to={username}"
+            self.driver.get(compose_url)
+            human_delay(2, 3)
+            self.screenshot(f"message_{username}_compose")
+            textareas = self.driver.find_elements(By.CSS_SELECTOR, "textarea")
+            textarea = None
+            for ta in textareas:
+                if ta.is_displayed():
+                    textarea = ta
+                    break
+            if not textarea:
+                log(f"  No textarea on compose — trying profile fallback", "WARN")
+                self.driver.get(f"{BASE_URL}/{username}")
+                human_delay(2, 3)
+                for label in ["Message", "message", "Contact", "contact"]:
+                    btns = self.driver.find_elements(By.XPATH, f"//*[contains(text(), '{label}')]")
+                    for btn in btns:
+                        if btn.is_displayed() and btn.tag_name in ("a", "button"):
+                            btn.click()
+                            human_delay(2, 4)
+                            break
+                    else:
+                        continue
+                    break
+                textareas = self.driver.find_elements(By.CSS_SELECTOR, "textarea")
+                for ta in textareas:
+                    if ta.is_displayed():
+                        textarea = ta
+                        break
+            if not textarea:
+                log(f"  No textarea for {username}", "WARN")
+                return {"username": username, "status": "no_textarea"}
+            textarea.click()
+            human_delay(0.5, 1)
+            textarea.send_keys(message)
+            human_delay(1, 2)
+            self.screenshot(f"message_{username}_composed")
+            send_btn = None
+            for label in ["Send", "send", "Submit", "submit"]:
+                btns = self.driver.find_elements(By.XPATH, f"//button[contains(text(), '{label}')]")
+                for btn in btns:
+                    if btn.is_displayed():
+                        send_btn = btn
+                        break
+                if send_btn: break
+            if not send_btn:
+                for btn in self.driver.find_elements(By.CSS_SELECTOR, "button[type='submit'], input[type='submit']"):
+                    if btn.is_displayed():
+                        send_btn = btn
+                        break
+            if send_btn:
+                send_btn.click()
+                human_delay(3, 5)
+                self.screenshot(f"message_{username}_sent")
+                log(f"  Message sent to {username}")
+                write_receipt("send_message", "pass", {"username": username, "message": message[:100]})
+                return {"username": username, "status": "sent", "message": message}
+            else:
+                log(f"  No send button for {username}", "WARN")
+                return {"username": username, "status": "no_send_button"}
+        except Exception as e:
+            log(f"  ERROR messaging {username}: {e}", "WARN")
+            write_receipt("send_message", "error", {"username": username, "error": str(e)})
+            return {"username": username, "status": "error", "error": str(e)}
+
+    def probe_page(self, page_name: str) -> dict:
+        from selenium.webdriver.common.by import By
+
+        cfg = PAGES.get(page_name)
+        if not cfg:
+            return {}
+
+        log(f"=== PROBE: {page_name} ===")
+        try:
+            self.driver.get(cfg["url"])
+            human_delay(3, 5)
+
+            block = self.detect_block()
+            ss = self.screenshot(f"probe_{page_name}")
+
+            if block:
+                log(f"  BLOCKED: {block}", "ERROR")
+                write_receipt("probe", "blocked", {"page": page_name, "reason": block, "screenshot": ss})
+                return {"page": page_name, "status": "blocked", "reason": block}
+
+            if cfg["needs_login"] and not self.logged_in and "/login" in self.driver.current_url:
+                log("  Redirected to login")
+                write_receipt("probe", "redirected", {"page": page_name})
+                return {"page": page_name, "status": "redirected_to_login"}
+
+            title = self.driver.title
+            text = self.page_text()[:2000]
+            result = {
+                "page": page_name,
+                "url": self.driver.current_url,
+                "status": "ok",
+                "title": title,
+                "content_hash": sha256_text(text),
+                "text_len": len(text),
+                "screenshot": ss,
+            }
+            log(f"  OK: title='{title}' text_len={len(text)}")
+            write_receipt("probe", "pass", result)
+            return result
+
+        except Exception as e:
+            log(f"  ERROR: {e}", "ERROR")
+            write_receipt("probe", "error", {"page": page_name, "error": str(e)})
+            return {"page": page_name, "status": "error", "error": str(e)}
+
+
+# ─── Main ────────────────────────────────────────────────────────────
+
+def load_env():
+    env_path = Path(__file__).parent / ".env"
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
+
+def main():
+    parser = argparse.ArgumentParser(description="RM Demo Agent — Playwright + Selenium + Engagement")
+    parser.add_argument("--engine", choices=["playwright", "selenium"], default="selenium")
+    parser.add_argument("--headed", action="store_true", help="Show browser window")
+    parser.add_argument("--login", action="store_true", help="Attempt login with .env creds")
+    parser.add_argument("--visit-back", action="store_true", help="Scrape visitors and visit back")
+    parser.add_argument("--probe-only", action="store_true", help="Only probe pages, no mutations")
+    parser.add_argument("--dry-run", action="store_true", help="List visitors without visiting")
+    parser.add_argument("--limit", type=int, default=0, help="Max visitors to visit (0=all)")
+    parser.add_argument("--pages", default="all", help="Comma-separated page names to probe, or 'all'")
+    parser.add_argument("--message-threshold", type=int, default=3, help="Message visitors with >= N visits")
+    parser.add_argument("--auto-message", action="store_true", help="Auto-message visitors above threshold")
+    parser.add_argument("--max-load-more", type=int, default=50, help="Max Load More clicks on whosawme")
+    parser.add_argument("--engagement-report", action="store_true", help="Print engagement DB summary at end")
+    parser.add_argument("--message-delay", type=float, default=30.0, help="Seconds between messages (anti-spam)")
+    parser.add_argument("--max-messages", type=int, default=20, help="Max messages per session (safety cap)")
+    args = parser.parse_args()
+
+    load_env()
+
+    username = os.getenv("RM_USER") or os.getenv("RENTMASSEUR_USERNAME", "")
+    password = os.getenv("RM_PASS") or os.getenv("RENTMASSEUR_PASSWORD", "")
+
+    log("=" * 60)
+    log(f"RM DEMO AGENT — Session: {SESSION_ID}")
+    log(f"Engine: {args.engine} | Headed: {args.headed} | Login: {args.login}")
+    log(f"Visit-back: {args.visit_back} | Dry-run: {args.dry_run} | Limit: {args.limit or 'ALL'}")
+    log(f"Auto-message: {args.auto_message} | Threshold: {args.message_threshold}")
+    log(f"Max Load More: {args.max_load_more} | Message delay: {args.message_delay}s | Max messages: {args.max_messages}")
+    log(f"Username: {username or '(not set)'}")
+    log("=" * 60)
+
+    conn = init_db()
+
+    if args.engine == "playwright":
+        agent = PlaywrightAgent(headed=args.headed)
+    else:
+        agent = SeleniumAgent(headed=args.headed)
+
+    results = {"session_id": SESSION_ID, "engine": args.engine, "actions": []}
+
+    try:
+        agent.start()
+
+        # Login
+        if args.login:
+            if not username or not password:
+                log("No credentials found in .env (RM_USER/RM_PASS)", "ERROR")
+                write_receipt("login", "skipped", {"reason": "no_credentials"})
+            else:
+                ok = agent.login(username, password)
+                results["actions"].append({"action": "login", "success": ok})
+                if not ok and args.visit_back:
+                    log("Login failed — cannot visit back without auth", "ERROR")
+                    raise RuntimeError("login_failed")
+
+        # Probe pages
+        if args.probe_only or not args.visit_back:
+            page_names = list(PAGES.keys()) if args.pages == "all" else args.pages.split(",")
+            for pname in page_names:
+                r = agent.probe_page(pname)
+                results["actions"].append(r)
+                human_delay(1, 2)
+
+        # Visit back + engagement
+        if args.visit_back:
+            visitors = agent.scrape_visitors(max_load_more=args.max_load_more)
+            results["visitors_found"] = len(visitors)
+
+            # Record all visitor sightings in DB
+            log("=== RECORDING VISITOR SIGHTINGS ===")
+            for v in visitors:
+                record_visitor_sighting(
+                    conn, v["username"],
+                    visit_count=v.get("visit_count", 1),
+                    last_online=v.get("last_online"),
+                    last_visit_my_page=v.get("last_visit_my_page"),
+                    location=v.get("location"),
+                    profile_url=v.get("url"),
+                )
+            log(f"  Recorded {len(visitors)} sightings in DB")
+
+            if args.dry_run:
+                log(f"DRY RUN — would visit {min(len(visitors), args.limit) if args.limit else len(visitors)} profiles")
+                # Still show engagement stats in dry run
+                if args.engagement_report or args.auto_message:
+                    all_stats = get_all_visitor_stats(conn)
+                    eligible = [s for s in all_stats if s["total_sightings"] >= args.message_threshold]
+                    log(f"  Engagement: {len(all_stats)} unique visitors, {len(eligible)} eligible for messaging (threshold={args.message_threshold})")
+                    for s in eligible[:10]:
+                        log(f"    {s['username']}: {s['total_sightings']} sightings, messaged={s['messaged_count']}, last={s.get('last_messaged_at', 'never')}")
+
+                write_receipt("visit_back", "dry_run", {
+                    "visitors_found": len(visitors),
+                    "would_visit": min(len(visitors), args.limit) if args.limit else len(visitors),
+                    "visitor_list": visitors[:30],
+                })
+            else:
+                visited = []
+                to_visit = visitors[:args.limit] if args.limit > 0 else visitors
+                for i, v in enumerate(to_visit):
+                    r = agent.visit_profile(v, i, len(to_visit))
+                    visited.append(r)
+                    # Update DB with profile metadata
+                    if r.get("status") == "ok":
+                        conn.execute(
+                            "UPDATE visitor_stats SET last_online = COALESCE(?, last_online), location = COALESCE(?, location) WHERE username = ?",
+                            (r.get("last_online"), r.get("location"), v["username"])
+                        )
+                        conn.commit()
+                    human_delay(2, 4)
+
+                results["visited"] = visited
+                write_receipt("visit_back_summary", "pass", {
+                    "visitors_found": len(visitors),
+                    "visited_count": len(visited),
+                    "ok_count": sum(1 for v in visited if v.get("status") == "ok"),
+                    "blocked_count": sum(1 for v in visited if v.get("status") == "blocked"),
+                    "error_count": sum(1 for v in visited if v.get("status") == "error"),
+                })
+
+                # Auto-message visitors above threshold
+                if args.auto_message:
+                    log(f"=== AUTO-MESSAGING (threshold={args.message_threshold}, max={args.max_messages}, delay={args.message_delay}s) ===")
+                    messaged = []
+                    skipped = []
+                    msg_count = 0
+                    for v in visitors:
+                        if msg_count >= args.max_messages:
+                            log(f"  Max messages ({args.max_messages}) reached — stopping")
+                            break
+                        uname = v["username"]
+                        eligible, reason = should_message_visitor(conn, uname, args.message_threshold)
+                        if eligible:
+                            template_idx = random.randint(0, len(MESSAGE_TEMPLATES) - 1)
+                            msg = MESSAGE_TEMPLATES[template_idx].format(name=uname)
+                            stats = get_visitor_stats(conn, uname)
+                            signal, detail = determine_trigger_signal(stats, v.get("visit_count", 1))
+                            log(f"  Messaging {uname} [{signal}]: \"{msg[:60]}...\"")
+                            r = agent.send_message(uname, msg)
+                            if r.get("status") == "sent":
+                                record_message_sent(conn, uname, msg)
+                                prov_id = record_provenance(
+                                    conn, uname, template_idx, msg,
+                                    signal, detail,
+                                    visitor_sightings=stats.get("total_sightings", 0),
+                                    visitor_visit_count=v.get("visit_count", 1),
+                                    visitor_location=v.get("location"),
+                                    visitor_last_online=v.get("last_online"),
+                                    message_status="sent"
+                                )
+                                record_autonomy_metric(conn, uname, "message_sent", str(prov_id), prov_id)
+                                r["provenance_id"] = prov_id
+                                r["trigger_signal"] = signal
+                                messaged.append(r)
+                                msg_count += 1
+                                if msg_count < args.max_messages:
+                                    log(f"  Waiting {args.message_delay}s (anti-spam)...")
+                                    time.sleep(args.message_delay)
+                            else:
+                                skipped.append({"username": uname, "reason": r.get("status")})
+                        else:
+                            skipped.append({"username": uname, "reason": reason})
+
+                    results["messaged"] = messaged
+                    results["messaging_skipped"] = skipped
+                    log(f"  Messaged: {len(messaged)} | Skipped: {len(skipped)}")
+                    write_receipt("auto_message_summary", "pass", {
+                        "messaged_count": len(messaged),
+                        "skipped_count": len(skipped),
+                        "threshold": args.message_threshold,
+                    })
+
+        # Engagement report
+        if args.engagement_report:
+            log("=== ENGAGEMENT REPORT ===")
+            all_stats = get_all_visitor_stats(conn)
+            log(f"  Total unique visitors: {len(all_stats)}")
+            for s in all_stats[:20]:
+                msg_status = f"messaged={s['messaged_count']}" if s.get("messaged_count") else "never_messaged"
+                log(f"    {s['username']}: {s['total_sightings']} sightings | {msg_status} | last_seen={s.get('last_seen', '?')}")
+            results["engagement_report"] = all_stats
+
+            log("=== AUTONOMY REPORT ===")
+            autonomy = get_autonomy_report(conn)
+            log(f"  Total messages: {autonomy['total_messages']}")
+            log(f"  Responded: {autonomy['responded']} | No response: {autonomy['no_response']}")
+            log(f"  Booked: {autonomy['booked']} | Cancelled: {autonomy['cancelled']} | Complaints: {autonomy['complaints']}")
+            log(f"  Response rate: {autonomy['response_rate']} | Booking rate: {autonomy['booking_rate']}")
+            log(f"  Cancellation rate: {autonomy['cancellation_rate']} | Complaint rate: {autonomy['complaint_rate']}")
+            log(f"  Regret proxy (cancelled+complaints / total): {autonomy['regret_proxy']}")
+            results["autonomy_report"] = autonomy
+
+            log("=== ACUCERTAINTY CLAIMS ===")
+            claims = get_claims_report(conn)
+            for c in claims:
+                log(f"  [{c['state']}] {c['domain']}: {c['claim_text'][:80]}...")
+                if c.get("evidence_summary"):
+                    log(f"    evidence: {c['evidence_summary'][:80]}")
+            results["acucertainty_claims"] = claims
+
+        # Save API log (Playwright only)
+        if hasattr(agent, "save_api_log"):
+            agent.save_api_log()
+
+    except KeyboardInterrupt:
+        log("Interrupted by user", "WARN")
+    except Exception as e:
+        log(f"FATAL: {e}", "ERROR")
+        traceback.print_exc()
+        write_receipt("fatal", "error", {"error": str(e), "traceback": traceback.format_exc()})
+    finally:
+        conn.close()
+        agent.stop()
+
+    # Write session summary
+    results["end_time"] = now_iso()
+    results["total_elapsed_s"] = elapsed()
+    summary_path = ARTIFACTS / f"session_{SESSION_ID}.json"
+    summary_path.write_text(json.dumps(results, indent=2, default=str), encoding="utf-8")
+
+    receipt_count = len(list(RECEIPTS.glob("*.json")))
+    screenshot_count = len(list(SCREENSHOTS.glob("*.png")))
+
+    log("=" * 60)
+    log(f"SESSION COMPLETE — {SESSION_ID}")
+    log(f"  Duration: {elapsed():.1f}s")
+    log(f"  Receipts: {receipt_count} → {RECEIPTS}/")
+    log(f"  Screenshots: {screenshot_count} → {SCREENSHOTS}/")
+    log(f"  Summary: {summary_path}")
+    log("=" * 60)
+
+
+if __name__ == "__main__":
+    main()

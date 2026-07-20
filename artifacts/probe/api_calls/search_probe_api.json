@@ -1,0 +1,35 @@
+[
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+    "url_path": "/api/v1/home/top-sponsors",
+    "request_headers_redacted": true,
+    "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/search/manhattan-ny",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:4b5a5475db267dd474c8e7618c0a8af000fedbac551bb8bd50ae48e3caecbe61",
+    "response_body_len": 3896,
+    "response_preview": "[{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":348960,\"username\":\"Eledmuscle\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/bf\\/90\\/bf901972-e2c7-4d2f-bb9d-8199a000cbaf--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":94137,\"username\":\"TrevorJames\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Los Angeles, CA\",\"searchCity\":\"losangeles\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/42\\/29\\/42296dd4-97c9-4ee8-94f8-3c9482975bca--w300.jpg\",\"isGold\":1,\"isCertified\":1,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":236472,\"username\":\"LatinoStallion\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"San Antonio, TX\",\"searchCity\":\"sanantonio-tx\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/b8\\/92\\/b892221e-6914-421b-840f-c431503c4ad2--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":250473,\"username\":\"AlexRelaxMassage\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Houston, TX\",\"searchCity\":\"houston\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ee\\/c5\\/eec52ebb-3eef-4eba-88fb-a6b996ec8273--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48618,\"username\":\"BeefyMuscleMan\",\"stat",
+    "response_keys": [
+      "userId",
+      "username",
+      "status",
+      "locationId",
+      "location",
+      "searchCity",
+      "userPhoto",
+      "isGold",
+      "isCertified",
+      "track"
+    ]
+  }
+]

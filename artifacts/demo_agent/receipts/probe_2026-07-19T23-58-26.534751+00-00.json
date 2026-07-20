@@ -1,0 +1,14 @@
+{
+  "session_id": "5ba4a3f22659",
+  "action": "probe",
+  "status": "ok",
+  "timestamp": "2026-07-19T23:58:26.534751+00:00",
+  "elapsed_s": 10.22,
+  "page": "search",
+  "url": "https://rentmasseur.com/search/manhattan-ny",
+  "title": "404 Not Found | RentMasseur.com",
+  "content_hash": "6ee41dad2839377571318b308056e0ff33cf08de2896fbaf0e4b751aadb604b9",
+  "text_len": 1158,
+  "screenshot": "artifacts/demo_agent/screenshots/probe_search.png",
+  "receipt_hash": "3461b44916d8e57e"
+}

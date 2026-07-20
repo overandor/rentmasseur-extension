@@ -1,0 +1,20 @@
+[
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/login",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/login",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null,
+    "ts": "2026-07-02T22:28:06.067163+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "{\"csrf\":\"M3VXcEQ3V0lKSnZYZmQ3cnVvSWoxdz09\",\"captcha\":\"\",\"message\":\"\"}",
+    "response_body_len": 69
+  }
+]

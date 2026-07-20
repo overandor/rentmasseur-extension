@@ -1,0 +1,1781 @@
+{
+  "timestamp": "2026-07-02T22:38:54.616449+00:00",
+  "mode": "authenticated-readonly",
+  "redacted": true,
+  "login_result": {
+    "action": "login",
+    "status": "ok",
+    "reason": null,
+    "mutation_attempted": false,
+    "timestamp": "2026-07-02T22:38:13.869646+00:00"
+  },
+  "pages_probed": [
+    "dashboard_read",
+    "availability_read",
+    "about_profile_read",
+    "bio_field_detect",
+    "stats_read",
+    "mailbox_page_detect",
+    "compose_form_detect",
+    "settings_page_detect",
+    "logout_detect"
+  ],
+  "results": [
+    {
+      "page": "dashboard_read",
+      "url": "https://rentmasseur.com/settings",
+      "timestamp": "2026-07-02T22:38:13.869863+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "Dashboard - RentMasseur",
+      "final_url": "https://rentmasseur.com/settings",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'EXTEND')]",
+            "text": "EXTEND",
+            "type": "",
+            "class": "button is-small",
+            "aria_label": ""
+          }
+        ],
+        "selects": [],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/stream/",
+            "text": "BLOG"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": ""
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "Profile"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "View My Profile"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 3423,
+      "next_data_hash": "sha256:6538bee3f39f20e36e491d9c839c96b601dee4b1b563bdb48cf6e92e5bd84345",
+      "next_data_keys": [],
+      "screenshot": "artifacts/probe/screenshots/dashboard_read.png",
+      "api_calls": [
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        },
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/account/dashboard",
+          "url_path": "/api/v1/account/dashboard",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:e43d49b3bea1b77e653962c05f212a05aa1d22c46f5c76b4dd63d0f338aefc86",
+          "response_body_len": 950,
+          "response_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11565},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}",
+          "response_keys": [
+            "idRequired",
+            "banner",
+            "masseurOfTheDay",
+            "sponsor",
+            "featureInterview",
+            "userSetting",
+            "travels",
+            "profileStatistics",
+            "reviewUrl",
+            "service",
+            "twitter",
+            "onlineBookmarks"
+          ]
+        }
+      ],
+      "api_calls_count": 2
+    },
+    {
+      "page": "availability_read",
+      "url": "https://rentmasseur.com/settings?availability=1",
+      "timestamp": "2026-07-02T22:38:19.210067+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "Dashboard - RentMasseur",
+      "final_url": "https://rentmasseur.com/settings",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SET')]",
+            "text": "SET",
+            "type": "",
+            "class": "jsx-2753549060 button",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'EXTEND')]",
+            "text": "EXTEND",
+            "type": "",
+            "class": "button is-small",
+            "aria_label": ""
+          }
+        ],
+        "selects": [
+          {
+            "xpath": "//select",
+            "name": "",
+            "id": ""
+          },
+          {
+            "xpath": "//select",
+            "name": "",
+            "id": ""
+          }
+        ],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/stream/",
+            "text": "BLOG"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": ""
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "Profile"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "View My Profile"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 3442,
+      "next_data_hash": "sha256:18f577bb99253b52f3921d3a39adaeb566456d0c9bc30fc49569db8810eb2254",
+      "next_data_keys": [],
+      "screenshot": "artifacts/probe/screenshots/availability_read.png",
+      "api_calls": [
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings?availability=1",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        },
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/account/dashboard/availability",
+          "url_path": "/api/v1/account/dashboard/availability",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings?availability=1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:bc057967f6f4e372742800c56c22adbbd6e80caf65b130ee48158790893c54a6",
+          "response_body_len": 400,
+          "response_preview": "{\"selected\":\"Available\",\"list\":[{\"id\":0,\"label\":\"Not Set\",\"timePeriods\":null},{\"id\":1,\"label\":\"Available\",\"timePeriods\":{\"0\":\"1 Hour\",\"1\":\"2 Hours\",\"2\":\"3 Hours\",\"3\":\"4 Hours\",\"4\":\"5 Hours\",\"5\":\"6 Hours\"}},{\"id\":2,\"label\":\"Not Available\",\"timePeriods\":{\"0\":\"1 Hour\",\"1\":\"2 Hours\",\"2\":\"3 Hours\",\"3\":\"4 Hours\",\"4\":\"5 Hours\",\"5\":\"6 Hours\",\"6\":\"1 Day\",\"7\":\"3 Days\",\"8\":\"1 Week\"}}],\"countdown\":1783043459}",
+          "response_keys": [
+            "selected",
+            "list",
+            "countdown"
+          ]
+        },
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/account/dashboard",
+          "url_path": "/api/v1/account/dashboard",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings?availability=1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:25d127adca064ed8ae29e96b7bcd8f0ab2957591119f8df46d37310b11b65f3c",
+          "response_body_len": 950,
+          "response_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11560},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}",
+          "response_keys": [
+            "idRequired",
+            "banner",
+            "masseurOfTheDay",
+            "sponsor",
+            "featureInterview",
+            "userSetting",
+            "travels",
+            "profileStatistics",
+            "reviewUrl",
+            "service",
+            "twitter",
+            "onlineBookmarks"
+          ]
+        }
+      ],
+      "api_calls_count": 3
+    },
+    {
+      "page": "about_profile_read",
+      "url": "https://rentmasseur.com/settings/about",
+      "timestamp": "2026-07-02T22:38:23.659744+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "About Me | RentMasseur.com",
+      "final_url": "https://rentmasseur.com/settings/about",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//input[@id='headline' and @name='headline']",
+            "type": "",
+            "name": "headline",
+            "id": "headline",
+            "placeholder": "Enter profile headline",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//input[@id='hashtags' and @type='text']",
+            "type": "text",
+            "name": "",
+            "id": "hashtags",
+            "placeholder": "Up to 20 hashtags, single words only.",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [
+          {
+            "xpath": "//textarea[@name='description']",
+            "name": "description",
+            "id": "description",
+            "placeholder": "Enter About me",
+            "aria_label": ""
+          }
+        ],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'NOT NOW')]",
+            "text": "NOT NOW",
+            "type": "",
+            "class": "jsx-242671598 button is-white flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'YES')]",
+            "text": "YES",
+            "type": "",
+            "class": "jsx-242671598 button is-danger flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SAVE')]",
+            "text": "SAVE",
+            "type": "",
+            "class": "jsx-936777166 button",
+            "aria_label": ""
+          }
+        ],
+        "selects": [
+          {
+            "xpath": "//select[@name='age']",
+            "name": "age",
+            "id": "age"
+          },
+          {
+            "xpath": "//select[@name='height']",
+            "name": "height",
+            "id": "height"
+          },
+          {
+            "xpath": "//select[@name='weight']",
+            "name": "weight",
+            "id": "weight"
+          },
+          {
+            "xpath": "//select[@name='ethnicity']",
+            "name": "ethnicity",
+            "id": "ethnicity"
+          },
+          {
+            "xpath": "//select[@name='style']",
+            "name": "style",
+            "id": "style"
+          },
+          {
+            "xpath": "//select[@name='pressure']",
+            "name": "pressure",
+            "id": "pressure"
+          },
+          {
+            "xpath": "//select[@name='bodyType']",
+            "name": "bodyType",
+            "id": "bodyType"
+          },
+          {
+            "xpath": "//select[@name='bodyHair']",
+            "name": "bodyHair",
+            "id": "bodyHair"
+          },
+          {
+            "xpath": "//select[@name='experience']",
+            "name": "experience",
+            "id": "experience"
+          },
+          {
+            "xpath": "//select[@name='hivStatus']",
+            "name": "hivStatus",
+            "id": "hivStatus"
+          }
+        ],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/stream/",
+            "text": "BLOG"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": ""
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "Profile"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "View My Profile"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 3416,
+      "next_data_hash": "sha256:3997b79d14c3b3e34736894dd91ddf2301f5bf8087aa81650fe6c53cff781fc4",
+      "next_data_keys": [],
+      "screenshot": "artifacts/probe/screenshots/about_profile_read.png",
+      "api_calls": [
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/settings/about",
+          "url_path": "/api/v1/settings/about",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/about",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:2a885638b41beb1f67cf41088c3409c01ab0aab159eb67d032fd2cf9628b2f14",
+          "response_body_len": 6972,
+          "response_preview": "{\"userProps\":{\"assets\":{\"headline\":\"You bring the smile i bring the Wolf\",\"description\":\"75,000+ profile views.\\n\\n\\n\\nYour shoulders are more divided than Congress.\\nYour lower back is holding tension like a dictator holding office.\\nYour traps have been spreading misinformation for years.\\nI apply pressure until the knots accept peaceful transition.\\n\\nDeep tissue, Swedish, therapeutic, and sensual massage in Manhattan. Strong hands, calm energy, clean boundaries, and enough focus to make your nervous system request asylum.\\n\\n\\u201cRooftop pool?\\u201d Optional.\\n\\u201cSauna?\\u201d Diplomatic pressure.\\n\\u201cMassage?\\u201d Regime change for your back.\\n\\nYou arrive stressed, stiff, overworked, and politically unstable.\\nYou leave looser than a campaign promise after election day.\\n\\nNot therapy.\\nNot luxury cosplay.\\nNot weird.\\n\\nJust time, pressure, warmth, and your body finally conceding defeat.\\n\\nText \\/ WhatsApp Joseph.\\nBooking \\/ profile link: \\u201chttp:\\/\\/rebrand.ly\\/carpathianwolf\\u201d\\nIncall and outcall available. Safe, respectful, professional.\",\"isTextUnderReview\":0},\"information\":{\"age\":30,\"height\":4,\"weight\":16,\"ethnicity\":1,\"style\":6,\"pressure\":4,\"bodyType\":2,\"bodyHair\":3,\"experience\":7,\"hivStatus\":3}},\"properties\":{\"age\":[{\"id\":18,\"value\":18},{\"id\":19,\"value\":19},{\"id\":20,\"value\":20},{\"id\":21,\"value\":21},{\"id\":22,\"value\":22},{\"id\":23,\"value\":23},{\"id\":24,\"value\":24},{\"id\":25,\"value\":25},{\"id\":26,\"value\":26},{\"id\":27,\"value\":27},{\"id\":28,\"value\":28},{\"id\":29,\"value\":29},{\"id\":30,\"value\":30},{\"id\":31,\"value\":31},{\"id\":32,\"value\":32},{\"id\":33,\"value\":33},{\"id\":34,\"value\":34},{\"id\":35,\"value\":35},{\"id\":36,\"value\":36},{\"id\":37,\"value\":37},{\"id\":38,\"value\":38},{\"id\":39,\"value\":39},{\"id\":40,\"value\":40},{\"id\":41,\"value\":41},{\"id\":42,\"value\":42},{\"id\":43,\"value\":43},{\"id\":44,\"value\":44},{\"id\":45,\"value\":45},{\"id\":46,\"value\":46},{\"id\":47,\"value\":47},{\"id\":48,\"value\":48},{\"id\":49,\"value\":49},{\"id\":50,\"value\":50},{\"id\":51,\"value\":51},{\"id\":52,\"value\":52}",
+          "response_keys": [
+            "userProps",
+            "properties"
+          ]
+        },
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/users/248479/hashtags",
+          "url_path": "/api/v1/users/248479/hashtags",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/about",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "response_body_len": 2,
+          "response_preview": "[]",
+          "response_keys": []
+        },
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/about",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        }
+      ],
+      "api_calls_count": 3
+    },
+    {
+      "page": "bio_field_detect",
+      "url": "https://rentmasseur.com/settings/about",
+      "timestamp": "2026-07-02T22:38:28.026134+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "About Me | RentMasseur.com",
+      "final_url": "https://rentmasseur.com/settings/about",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//input[@id='headline' and @name='headline']",
+            "type": "",
+            "name": "headline",
+            "id": "headline",
+            "placeholder": "Enter profile headline",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//input[@id='hashtags' and @type='text']",
+            "type": "text",
+            "name": "",
+            "id": "hashtags",
+            "placeholder": "Up to 20 hashtags, single words only.",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [
+          {
+            "xpath": "//textarea[@name='description']",
+            "name": "description",
+            "id": "description",
+            "placeholder": "Enter About me",
+            "aria_label": ""
+          }
+        ],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'NOT NOW')]",
+            "text": "NOT NOW",
+            "type": "",
+            "class": "jsx-242671598 button is-white flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'YES')]",
+            "text": "YES",
+            "type": "",
+            "class": "jsx-242671598 button is-danger flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SAVE')]",
+            "text": "SAVE",
+            "type": "",
+            "class": "jsx-936777166 button",
+            "aria_label": ""
+          }
+        ],
+        "selects": [
+          {
+            "xpath": "//select[@name='age']",
+            "name": "age",
+            "id": "age"
+          },
+          {
+            "xpath": "//select[@name='height']",
+            "name": "height",
+            "id": "height"
+          },
+          {
+            "xpath": "//select[@name='weight']",
+            "name": "weight",
+            "id": "weight"
+          },
+          {
+            "xpath": "//select[@name='ethnicity']",
+            "name": "ethnicity",
+            "id": "ethnicity"
+          },
+          {
+            "xpath": "//select[@name='style']",
+            "name": "style",
+            "id": "style"
+          },
+          {
+            "xpath": "//select[@name='pressure']",
+            "name": "pressure",
+            "id": "pressure"
+          },
+          {
+            "xpath": "//select[@name='bodyType']",
+            "name": "bodyType",
+            "id": "bodyType"
+          },
+          {
+            "xpath": "//select[@name='bodyHair']",
+            "name": "bodyHair",
+            "id": "bodyHair"
+          },
+          {
+            "xpath": "//select[@name='experience']",
+            "name": "experience",
+            "id": "experience"
+          },
+          {
+            "xpath": "//select[@name='hivStatus']",
+            "name": "hivStatus",
+            "id": "hivStatus"
+          }
+        ],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/stream/",
+            "text": "BLOG"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": ""
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "Profile"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "View My Profile"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 3416,
+      "next_data_hash": "sha256:48e3be895a24e9d8be9d0bbc7fa486ece7e48fd312777935e3ddef5797dc03d6",
+      "next_data_keys": [],
+      "screenshot": "artifacts/probe/screenshots/bio_field_detect.png",
+      "api_calls": [
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/settings/about",
+          "url_path": "/api/v1/settings/about",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/about",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:2a885638b41beb1f67cf41088c3409c01ab0aab159eb67d032fd2cf9628b2f14",
+          "response_body_len": 6972,
+          "response_preview": "{\"userProps\":{\"assets\":{\"headline\":\"You bring the smile i bring the Wolf\",\"description\":\"75,000+ profile views.\\n\\n\\n\\nYour shoulders are more divided than Congress.\\nYour lower back is holding tension like a dictator holding office.\\nYour traps have been spreading misinformation for years.\\nI apply pressure until the knots accept peaceful transition.\\n\\nDeep tissue, Swedish, therapeutic, and sensual massage in Manhattan. Strong hands, calm energy, clean boundaries, and enough focus to make your nervous system request asylum.\\n\\n\\u201cRooftop pool?\\u201d Optional.\\n\\u201cSauna?\\u201d Diplomatic pressure.\\n\\u201cMassage?\\u201d Regime change for your back.\\n\\nYou arrive stressed, stiff, overworked, and politically unstable.\\nYou leave looser than a campaign promise after election day.\\n\\nNot therapy.\\nNot luxury cosplay.\\nNot weird.\\n\\nJust time, pressure, warmth, and your body finally conceding defeat.\\n\\nText \\/ WhatsApp Joseph.\\nBooking \\/ profile link: \\u201chttp:\\/\\/rebrand.ly\\/carpathianwolf\\u201d\\nIncall and outcall available. Safe, respectful, professional.\",\"isTextUnderReview\":0},\"information\":{\"age\":30,\"height\":4,\"weight\":16,\"ethnicity\":1,\"style\":6,\"pressure\":4,\"bodyType\":2,\"bodyHair\":3,\"experience\":7,\"hivStatus\":3}},\"properties\":{\"age\":[{\"id\":18,\"value\":18},{\"id\":19,\"value\":19},{\"id\":20,\"value\":20},{\"id\":21,\"value\":21},{\"id\":22,\"value\":22},{\"id\":23,\"value\":23},{\"id\":24,\"value\":24},{\"id\":25,\"value\":25},{\"id\":26,\"value\":26},{\"id\":27,\"value\":27},{\"id\":28,\"value\":28},{\"id\":29,\"value\":29},{\"id\":30,\"value\":30},{\"id\":31,\"value\":31},{\"id\":32,\"value\":32},{\"id\":33,\"value\":33},{\"id\":34,\"value\":34},{\"id\":35,\"value\":35},{\"id\":36,\"value\":36},{\"id\":37,\"value\":37},{\"id\":38,\"value\":38},{\"id\":39,\"value\":39},{\"id\":40,\"value\":40},{\"id\":41,\"value\":41},{\"id\":42,\"value\":42},{\"id\":43,\"value\":43},{\"id\":44,\"value\":44},{\"id\":45,\"value\":45},{\"id\":46,\"value\":46},{\"id\":47,\"value\":47},{\"id\":48,\"value\":48},{\"id\":49,\"value\":49},{\"id\":50,\"value\":50},{\"id\":51,\"value\":51},{\"id\":52,\"value\":52}",
+          "response_keys": [
+            "userProps",
+            "properties"
+          ]
+        },
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/users/248479/hashtags",
+          "url_path": "/api/v1/users/248479/hashtags",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/about",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "response_body_len": 2,
+          "response_preview": "[]",
+          "response_keys": []
+        },
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/about",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        }
+      ],
+      "api_calls_count": 3
+    },
+    {
+      "page": "stats_read",
+      "url": "https://rentmasseur.com/settings/stats",
+      "timestamp": "2026-07-02T22:38:32.347249+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "404 Not Found | RentMasseur.com",
+      "final_url": "https://rentmasseur.com/settings/stats",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'NOT NOW')]",
+            "text": "NOT NOW",
+            "type": "",
+            "class": "jsx-242671598 button is-white flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'YES')]",
+            "text": "YES",
+            "type": "",
+            "class": "jsx-242671598 button is-danger flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          }
+        ],
+        "selects": [],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/GoodVibesGuy",
+            "text": ""
+          },
+          {
+            "href": "/GoodVibesGuy",
+            "text": "GoodVibesGuy"
+          },
+          {
+            "href": "/Samgl",
+            "text": ""
+          },
+          {
+            "href": "/Samgl",
+            "text": "Samgl"
+          },
+          {
+            "href": "/AngelStrong",
+            "text": ""
+          },
+          {
+            "href": "/AngelStrong",
+            "text": "AngelStrong"
+          },
+          {
+            "href": "/Will_Xavier",
+            "text": ""
+          },
+          {
+            "href": "/Will_Xavier",
+            "text": "Will_Xavier"
+          },
+          {
+            "href": "/BullLatin",
+            "text": ""
+          },
+          {
+            "href": "/BullLatin",
+            "text": "BullLatin"
+          },
+          {
+            "href": "/darrellsbody",
+            "text": ""
+          },
+          {
+            "href": "/darrellsbody",
+            "text": "Darrellsbody"
+          },
+          {
+            "href": "/RodrigoDiPietro",
+            "text": ""
+          },
+          {
+            "href": "/RodrigoDiPietro",
+            "text": "RodrigoDiPietro"
+          },
+          {
+            "href": "/Fredericodedeus",
+            "text": ""
+          },
+          {
+            "href": "/Fredericodedeus",
+            "text": "Fredericodedeus"
+          },
+          {
+            "href": "/EliasLatino",
+            "text": ""
+          },
+          {
+            "href": "/EliasLatino",
+            "text": "EliasLatino"
+          },
+          {
+            "href": "/BodyworkBro",
+            "text": ""
+          },
+          {
+            "href": "/BodyworkBro",
+            "text": "BodyworkBro"
+          },
+          {
+            "href": "/HairyMasseurXX",
+            "text": ""
+          },
+          {
+            "href": "/HairyMasseurXX",
+            "text": "HairyMasseurXX"
+          },
+          {
+            "href": "/YoungxlOwen",
+            "text": ""
+          },
+          {
+            "href": "/YoungxlOwen",
+            "text": "YoungxlOwen"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 1872,
+      "next_data_hash": "sha256:41aece07a298996db77a7c3fd13bb4d6bdf744563687818c7a2eb2f03d77a98d",
+      "next_data_keys": [],
+      "screenshot": "artifacts/probe/screenshots/stats_read.png",
+      "api_calls": [
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+          "url_path": "/api/v1/home/top-sponsors",
+          "request_headers_redacted": true,
+          "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/stats",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:728142db825c37f152dc934c8c81774850dca24d307cdf74630479d845352c46",
+          "response_body_len": 3888,
+          "response_preview": "[{\"userId\":301774,\"username\":\"GoodVibesGuy\",\"status\":{\"isOnline\":false,\"message\":\"10 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ba\\/c4\\/bac4cbd4-77a7-4c97-a8be-54dab7e9faab--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/be\\/f3\\/bef3a8ed-6fc8-4c2d-b55e-af1f2806e5ba--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"avai",
+          "response_keys": [
+            "userId",
+            "username",
+            "status",
+            "locationId",
+            "location",
+            "searchCity",
+            "userPhoto",
+            "isGold",
+            "isCertified",
+            "track"
+          ]
+        },
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/stats",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        }
+      ],
+      "api_calls_count": 2
+    },
+    {
+      "page": "mailbox_page_detect",
+      "url": "https://rentmasseur.com/mailbox",
+      "timestamp": "2026-07-02T22:38:36.705931+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "not_found",
+      "title": "404 Not Found | RentMasseur.com",
+      "final_url": "https://rentmasseur.com/404",
+      "note": "Page returned 404 \u2014 may require different URL or session",
+      "screenshot": "artifacts/probe/screenshots/mailbox_page_detect.png",
+      "api_calls": [
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+          "url_path": "/api/v1/home/top-sponsors",
+          "request_headers_redacted": true,
+          "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/404",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:303755daec738bcae1e6c7f9af8f0e3f9796e9595e18352c4ba8198beeb583c8",
+          "response_body_len": 3869,
+          "response_preview": "[{\"userId\":239960,\"username\":\"Fredericodedeus\",\"status\":{\"isOnline\":false,\"message\":\"Today, 09:22\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/d9\\/ab\\/d9abb06e-86cf-4b70-acec-58cba2d10aea--w300.jpg\",\"isGold\":1,\"isCertified\":1,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":301774,\"username\":\"GoodVibesGuy\",\"status\":{\"isOnline\":false,\"message\":\"10 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ba\\/c4\\/bac4cbd4-77a7-4c97-a8be-54dab7e9faab--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/be\\/f3\\/bef3a8ed-6fc8-4c2d-b55e-af1f2806e5ba--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"av",
+          "response_keys": [
+            "userId",
+            "username",
+            "status",
+            "locationId",
+            "location",
+            "searchCity",
+            "userPhoto",
+            "isGold",
+            "isCertified",
+            "track"
+          ]
+        },
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/404",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        }
+      ],
+      "api_calls_count": 2
+    },
+    {
+      "page": "compose_form_detect",
+      "url": "https://rentmasseur.com/mailbox/compose",
+      "timestamp": "2026-07-02T22:38:41.268914+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "404 Not Found | RentMasseur.com",
+      "final_url": "https://rentmasseur.com/mailbox/compose",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'NOT NOW')]",
+            "text": "NOT NOW",
+            "type": "",
+            "class": "jsx-242671598 button is-white flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'YES')]",
+            "text": "YES",
+            "type": "",
+            "class": "jsx-242671598 button is-danger flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          }
+        ],
+        "selects": [],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/RodrigoDiPietro",
+            "text": ""
+          },
+          {
+            "href": "/RodrigoDiPietro",
+            "text": "RodrigoDiPietro"
+          },
+          {
+            "href": "/AngelStrong",
+            "text": ""
+          },
+          {
+            "href": "/AngelStrong",
+            "text": "AngelStrong"
+          },
+          {
+            "href": "/Samgl",
+            "text": ""
+          },
+          {
+            "href": "/Samgl",
+            "text": "Samgl"
+          },
+          {
+            "href": "/darrellsbody",
+            "text": ""
+          },
+          {
+            "href": "/darrellsbody",
+            "text": "Darrellsbody"
+          },
+          {
+            "href": "/Will_Xavier",
+            "text": ""
+          },
+          {
+            "href": "/Will_Xavier",
+            "text": "Will_Xavier"
+          },
+          {
+            "href": "/GoodVibesGuy",
+            "text": ""
+          },
+          {
+            "href": "/GoodVibesGuy",
+            "text": "GoodVibesGuy"
+          },
+          {
+            "href": "/BullLatin",
+            "text": ""
+          },
+          {
+            "href": "/BullLatin",
+            "text": "BullLatin"
+          },
+          {
+            "href": "/Fredericodedeus",
+            "text": ""
+          },
+          {
+            "href": "/Fredericodedeus",
+            "text": "Fredericodedeus"
+          },
+          {
+            "href": "/AlexisXiao",
+            "text": ""
+          },
+          {
+            "href": "/AlexisXiao",
+            "text": "AlexisXiao"
+          },
+          {
+            "href": "/Jock_massages",
+            "text": ""
+          },
+          {
+            "href": "/Jock_massages",
+            "text": "Jock_massages"
+          },
+          {
+            "href": "/justinyurmouth",
+            "text": ""
+          },
+          {
+            "href": "/justinyurmouth",
+            "text": "Justinyurmouth"
+          },
+          {
+            "href": "/Nepttun",
+            "text": ""
+          },
+          {
+            "href": "/Nepttun",
+            "text": "Nepttun"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 1872,
+      "next_data_hash": "sha256:49e7e43793dd036bdb63a3144dda7ff0569d08ecf3fe99f087450324aac0d3e3",
+      "next_data_keys": [],
+      "screenshot": "artifacts/probe/screenshots/compose_form_detect.png",
+      "api_calls": [
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+          "url_path": "/api/v1/home/top-sponsors",
+          "request_headers_redacted": true,
+          "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/mailbox/compose",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:3c4db57d7f66d0d4feac8c9256db227fbe6c20aa3db28a9fb27ab67e6739d6e2",
+          "response_body_len": 3888,
+          "response_preview": "[{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/0d\\/06\\/0d065776-a6ed-43ae-8eaf-7f6bad85cfb8--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":301774,\"username\":\"GoodVibesGuy\",\"status\":{\"isOnline\":false,\"message\":\"10 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ba\\/c4\\/bac4cbd4-77a7-4c97-a8be-54dab7e9faab--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"avai",
+          "response_keys": [
+            "userId",
+            "username",
+            "status",
+            "locationId",
+            "location",
+            "searchCity",
+            "userPhoto",
+            "isGold",
+            "isCertified",
+            "track"
+          ]
+        },
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/mailbox/compose",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        }
+      ],
+      "api_calls_count": 2
+    },
+    {
+      "page": "settings_page_detect",
+      "url": "https://rentmasseur.com/settings/profile",
+      "timestamp": "2026-07-02T22:38:45.605673+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "404 Not Found | RentMasseur.com",
+      "final_url": "https://rentmasseur.com/settings/profile",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'NOT NOW')]",
+            "text": "NOT NOW",
+            "type": "",
+            "class": "jsx-242671598 button is-white flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'YES')]",
+            "text": "YES",
+            "type": "",
+            "class": "jsx-242671598 button is-danger flex-1",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          }
+        ],
+        "selects": [],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/Will_Xavier",
+            "text": ""
+          },
+          {
+            "href": "/Will_Xavier",
+            "text": "Will_Xavier"
+          },
+          {
+            "href": "/BullLatin",
+            "text": ""
+          },
+          {
+            "href": "/BullLatin",
+            "text": "BullLatin"
+          },
+          {
+            "href": "/RodrigoDiPietro",
+            "text": ""
+          },
+          {
+            "href": "/RodrigoDiPietro",
+            "text": "RodrigoDiPietro"
+          },
+          {
+            "href": "/AngelStrong",
+            "text": ""
+          },
+          {
+            "href": "/AngelStrong",
+            "text": "AngelStrong"
+          },
+          {
+            "href": "/Samgl",
+            "text": ""
+          },
+          {
+            "href": "/Samgl",
+            "text": "Samgl"
+          },
+          {
+            "href": "/darrellsbody",
+            "text": ""
+          },
+          {
+            "href": "/darrellsbody",
+            "text": "Darrellsbody"
+          },
+          {
+            "href": "/Fredericodedeus",
+            "text": ""
+          },
+          {
+            "href": "/Fredericodedeus",
+            "text": "Fredericodedeus"
+          },
+          {
+            "href": "/GoodVibesGuy",
+            "text": ""
+          },
+          {
+            "href": "/GoodVibesGuy",
+            "text": "GoodVibesGuy"
+          },
+          {
+            "href": "/MasseurWithNoah",
+            "text": ""
+          },
+          {
+            "href": "/MasseurWithNoah",
+            "text": "MasseurWithNoah"
+          },
+          {
+            "href": "/StrongHnds",
+            "text": ""
+          },
+          {
+            "href": "/StrongHnds",
+            "text": "StrongHnds"
+          },
+          {
+            "href": "/ExclusiveTouch",
+            "text": ""
+          },
+          {
+            "href": "/ExclusiveTouch",
+            "text": "ExclusiveTouch"
+          },
+          {
+            "href": "/PSGavin",
+            "text": ""
+          },
+          {
+            "href": "/PSGavin",
+            "text": "PSGavin"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 1872,
+      "next_data_hash": "sha256:03d0dd40ca6a3beff864cb239ebe61bddbab081db758823f441eddc26e22188d",
+      "next_data_keys": [],
+      "screenshot": "artifacts/probe/screenshots/settings_page_detect.png",
+      "api_calls": [
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+          "url_path": "/api/v1/home/top-sponsors",
+          "request_headers_redacted": true,
+          "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/profile",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:e9847690e6b41cbaf9ffde49a470e912a6d4d5300efd79238a0385d7d7f0538f",
+          "response_body_len": 3903,
+          "response_preview": "[{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/be\\/f3\\/bef3a8ed-6fc8-4c2d-b55e-af1f2806e5ba--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/0d\\/06\\/0d065776-a6ed-43ae-8eaf-7f6bad85cfb8--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":239960,\"username\":\"Fredericodedeus\",\"status\":{\"isO",
+          "response_keys": [
+            "userId",
+            "username",
+            "status",
+            "locationId",
+            "location",
+            "searchCity",
+            "userPhoto",
+            "isGold",
+            "isCertified",
+            "track"
+          ]
+        },
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings/profile",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        }
+      ],
+      "api_calls_count": 2
+    },
+    {
+      "page": "logout_detect",
+      "url": "https://rentmasseur.com/settings",
+      "timestamp": "2026-07-02T22:38:49.990688+00:00",
+      "needs_login": true,
+      "logged_in": true,
+      "status": "ok",
+      "title": "Dashboard - RentMasseur",
+      "final_url": "https://rentmasseur.com/settings",
+      "xpaths": {
+        "inputs": [
+          {
+            "xpath": "//input[@type='text']",
+            "type": "text",
+            "name": "",
+            "id": "",
+            "placeholder": "Enter location",
+            "aria_label": ""
+          }
+        ],
+        "textareas": [],
+        "buttons": [
+          {
+            "xpath": "//button[contains(text(),'SEARCH')]",
+            "text": "SEARCH",
+            "type": "",
+            "class": "jsx-1292177893 button",
+            "aria_label": ""
+          },
+          {
+            "xpath": "//button[contains(text(),'EXTEND')]",
+            "text": "EXTEND",
+            "type": "",
+            "class": "button is-small",
+            "aria_label": ""
+          }
+        ],
+        "selects": [],
+        "contenteditable": [],
+        "links_profile": [
+          {
+            "href": "/stream/",
+            "text": "BLOG"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": ""
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "Profile"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "View My Profile"
+          },
+          {
+            "href": "/stream/",
+            "text": "Blog"
+          },
+          {
+            "href": "/massages/",
+            "text": "Massages"
+          },
+          {
+            "href": "/about/",
+            "text": "About Us"
+          },
+          {
+            "href": "/topics",
+            "text": "All topics"
+          },
+          {
+            "href": "/Karpathianwolf",
+            "text": "My Profile"
+          }
+        ]
+      },
+      "next_data_len": 3426,
+      "next_data_hash": "sha256:573c18d2d3ce331cc496e1961e31eb9cf79110a39846d7e651a76c34be2138bb",
+      "next_data_keys": [],
+      "logout_selector": null,
+      "screenshot": "artifacts/probe/screenshots/logout_detect.png",
+      "api_calls": [
+        {
+          "method": "POST",
+          "url": "https://rentmasseur.com/api/v1/webpush/init",
+          "url_path": "/api/v1/webpush/init",
+          "request_headers_redacted": true,
+          "post_data": "{\"type\":\"sw\"}",
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+          "response_body_len": 134,
+          "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+          "response_keys": [
+            "vapidPublicKey",
+            "requestPopupTime"
+          ]
+        },
+        {
+          "method": "GET",
+          "url": "https://rentmasseur.com/api/v1/account/dashboard",
+          "url_path": "/api/v1/account/dashboard",
+          "request_headers_redacted": true,
+          "post_data": null,
+          "request_headers": {
+            "sec-ch-ua-platform": "\"macOS\"",
+            "authorization": "[REDACTED]",
+            "referer": "https://rentmasseur.com/settings",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "accept": "application/json, text/plain, */*",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+            "sec-ch-ua-mobile": "?0"
+          },
+          "status": 200,
+          "status_text": "",
+          "response_body_hash": "sha256:0899fb5f629fdac887d11a8ce85b786f419bb54f4af6c89335e12b47fcbd0570",
+          "response_body_len": 950,
+          "response_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11529},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}",
+          "response_keys": [
+            "idRequired",
+            "banner",
+            "masseurOfTheDay",
+            "sponsor",
+            "featureInterview",
+            "userSetting",
+            "travels",
+            "profileStatistics",
+            "reviewUrl",
+            "service",
+            "twitter",
+            "onlineBookmarks"
+          ]
+        }
+      ],
+      "api_calls_count": 2
+    }
+  ]
+}

@@ -1,0 +1,371 @@
+{
+  "dashboard_read": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    },
+    {
+      "method": "GET",
+      "url_path": "/api/v1/account/dashboard",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:e43d49b3bea1b77e653962c05f212a05aa1d22c46f5c76b4dd63d0f338aefc86",
+      "response_body_len": 950,
+      "response_keys": [
+        "idRequired",
+        "banner",
+        "masseurOfTheDay",
+        "sponsor",
+        "featureInterview",
+        "userSetting",
+        "travels",
+        "profileStatistics",
+        "reviewUrl",
+        "service",
+        "twitter",
+        "onlineBookmarks"
+      ],
+      "response_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11565},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}"
+    }
+  ],
+  "availability_read": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    },
+    {
+      "method": "GET",
+      "url_path": "/api/v1/account/dashboard/availability",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:bc057967f6f4e372742800c56c22adbbd6e80caf65b130ee48158790893c54a6",
+      "response_body_len": 400,
+      "response_keys": [
+        "selected",
+        "list",
+        "countdown"
+      ],
+      "response_preview": "{\"selected\":\"Available\",\"list\":[{\"id\":0,\"label\":\"Not Set\",\"timePeriods\":null},{\"id\":1,\"label\":\"Available\",\"timePeriods\":{\"0\":\"1 Hour\",\"1\":\"2 Hours\",\"2\":\"3 Hours\",\"3\":\"4 Hours\",\"4\":\"5 Hours\",\"5\":\"6 Hours\"}},{\"id\":2,\"label\":\"Not Available\",\"timePeriods\":{\"0\":\"1 Hour\",\"1\":\"2 Hours\",\"2\":\"3 Hours\",\"3\":\"4 Hours\",\"4\":\"5 Hours\",\"5\":\"6 Hours\",\"6\":\"1 Day\",\"7\":\"3 Days\",\"8\":\"1 Week\"}}],\"countdown\":1783043459}"
+    },
+    {
+      "method": "GET",
+      "url_path": "/api/v1/account/dashboard",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:25d127adca064ed8ae29e96b7bcd8f0ab2957591119f8df46d37310b11b65f3c",
+      "response_body_len": 950,
+      "response_keys": [
+        "idRequired",
+        "banner",
+        "masseurOfTheDay",
+        "sponsor",
+        "featureInterview",
+        "userSetting",
+        "travels",
+        "profileStatistics",
+        "reviewUrl",
+        "service",
+        "twitter",
+        "onlineBookmarks"
+      ],
+      "response_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11560},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}"
+    }
+  ],
+  "about_profile_read": [
+    {
+      "method": "GET",
+      "url_path": "/api/v1/settings/about",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:2a885638b41beb1f67cf41088c3409c01ab0aab159eb67d032fd2cf9628b2f14",
+      "response_body_len": 6972,
+      "response_keys": [
+        "userProps",
+        "properties"
+      ],
+      "response_preview": "{\"userProps\":{\"assets\":{\"headline\":\"You bring the smile i bring the Wolf\",\"description\":\"75,000+ profile views.\\n\\n\\n\\nYour shoulders are more divided than Congress.\\nYour lower back is holding tension like a dictator holding office.\\nYour traps have been spreading misinformation for years.\\nI apply pressure until the knots accept peaceful transition.\\n\\nDeep tissue, Swedish, therapeutic, and sensual massage in Manhattan. Strong hands, calm energy, clean boundaries, and enough focus to make your nervous system request asylum.\\n\\n\\u201cRooftop pool?\\u201d Optional.\\n\\u201cSauna?\\u201d Diplomatic pressure.\\n\\u201cMassage?\\u201d Regime change for your back.\\n\\nYou arrive stressed, stiff, overworked, and politically unstable.\\nYou leave looser than a campaign promise after election day.\\n\\nNot therapy.\\nNot luxury cosplay.\\nNot weird.\\n\\nJust time, pressure, warmth, and your body finally conceding defeat.\\n\\nText \\/ WhatsApp Joseph.\\nBooking \\/ profile link: \\u201chttp:\\/\\/rebrand.ly\\/carpathianwolf\\u201d\\nIncall and outcall available. Safe, respectful, professional.\",\"isTextUnderReview\":0},\"information\":{\"age\":30,\"height\":4,\"weight\":16,\"ethnicity\":1,\"style\":6,\"pressure\":4,\"bodyType\":2,\"bodyHair\":3,\"experience\":7,\"hivStatus\":3}},\"properties\":{\"age\":[{\"id\":18,\"value\":18},{\"id\":19,\"value\":19},{\"id\":20,\"value\":20},{\"id\":21,\"value\":21},{\"id\":22,\"value\":22},{\"id\":23,\"value\":23},{\"id\":24,\"value\":24},{\"id\":25,\"value\":25},{\"id\":26,\"value\":26},{\"id\":27,\"value\":27},{\"id\":28,\"value\":28},{\"id\":29,\"value\":29},{\"id\":30,\"value\":30},{\"id\":31,\"value\":31},{\"id\":32,\"value\":32},{\"id\":33,\"value\":33},{\"id\":34,\"value\":34},{\"id\":35,\"value\":35},{\"id\":36,\"value\":36},{\"id\":37,\"value\":37},{\"id\":38,\"value\":38},{\"id\":39,\"value\":39},{\"id\":40,\"value\":40},{\"id\":41,\"value\":41},{\"id\":42,\"value\":42},{\"id\":43,\"value\":43},{\"id\":44,\"value\":44},{\"id\":45,\"value\":45},{\"id\":46,\"value\":46},{\"id\":47,\"value\":47},{\"id\":48,\"value\":48},{\"id\":49,\"value\":49},{\"id\":50,\"value\":50},{\"id\":51,\"value\":51},{\"id\":52,\"value\":52}"
+    },
+    {
+      "method": "GET",
+      "url_path": "/api/v1/users/248479/hashtags",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "response_body_len": 2,
+      "response_keys": [],
+      "response_preview": "[]"
+    },
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    }
+  ],
+  "bio_field_detect": [
+    {
+      "method": "GET",
+      "url_path": "/api/v1/settings/about",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:2a885638b41beb1f67cf41088c3409c01ab0aab159eb67d032fd2cf9628b2f14",
+      "response_body_len": 6972,
+      "response_keys": [
+        "userProps",
+        "properties"
+      ],
+      "response_preview": "{\"userProps\":{\"assets\":{\"headline\":\"You bring the smile i bring the Wolf\",\"description\":\"75,000+ profile views.\\n\\n\\n\\nYour shoulders are more divided than Congress.\\nYour lower back is holding tension like a dictator holding office.\\nYour traps have been spreading misinformation for years.\\nI apply pressure until the knots accept peaceful transition.\\n\\nDeep tissue, Swedish, therapeutic, and sensual massage in Manhattan. Strong hands, calm energy, clean boundaries, and enough focus to make your nervous system request asylum.\\n\\n\\u201cRooftop pool?\\u201d Optional.\\n\\u201cSauna?\\u201d Diplomatic pressure.\\n\\u201cMassage?\\u201d Regime change for your back.\\n\\nYou arrive stressed, stiff, overworked, and politically unstable.\\nYou leave looser than a campaign promise after election day.\\n\\nNot therapy.\\nNot luxury cosplay.\\nNot weird.\\n\\nJust time, pressure, warmth, and your body finally conceding defeat.\\n\\nText \\/ WhatsApp Joseph.\\nBooking \\/ profile link: \\u201chttp:\\/\\/rebrand.ly\\/carpathianwolf\\u201d\\nIncall and outcall available. Safe, respectful, professional.\",\"isTextUnderReview\":0},\"information\":{\"age\":30,\"height\":4,\"weight\":16,\"ethnicity\":1,\"style\":6,\"pressure\":4,\"bodyType\":2,\"bodyHair\":3,\"experience\":7,\"hivStatus\":3}},\"properties\":{\"age\":[{\"id\":18,\"value\":18},{\"id\":19,\"value\":19},{\"id\":20,\"value\":20},{\"id\":21,\"value\":21},{\"id\":22,\"value\":22},{\"id\":23,\"value\":23},{\"id\":24,\"value\":24},{\"id\":25,\"value\":25},{\"id\":26,\"value\":26},{\"id\":27,\"value\":27},{\"id\":28,\"value\":28},{\"id\":29,\"value\":29},{\"id\":30,\"value\":30},{\"id\":31,\"value\":31},{\"id\":32,\"value\":32},{\"id\":33,\"value\":33},{\"id\":34,\"value\":34},{\"id\":35,\"value\":35},{\"id\":36,\"value\":36},{\"id\":37,\"value\":37},{\"id\":38,\"value\":38},{\"id\":39,\"value\":39},{\"id\":40,\"value\":40},{\"id\":41,\"value\":41},{\"id\":42,\"value\":42},{\"id\":43,\"value\":43},{\"id\":44,\"value\":44},{\"id\":45,\"value\":45},{\"id\":46,\"value\":46},{\"id\":47,\"value\":47},{\"id\":48,\"value\":48},{\"id\":49,\"value\":49},{\"id\":50,\"value\":50},{\"id\":51,\"value\":51},{\"id\":52,\"value\":52}"
+    },
+    {
+      "method": "GET",
+      "url_path": "/api/v1/users/248479/hashtags",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "response_body_len": 2,
+      "response_keys": [],
+      "response_preview": "[]"
+    },
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    }
+  ],
+  "stats_read": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/home/top-sponsors",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+      "response_body_hash": "sha256:728142db825c37f152dc934c8c81774850dca24d307cdf74630479d845352c46",
+      "response_body_len": 3888,
+      "response_keys": [
+        "userId",
+        "username",
+        "status",
+        "locationId",
+        "location",
+        "searchCity",
+        "userPhoto",
+        "isGold",
+        "isCertified",
+        "track"
+      ],
+      "response_preview": "[{\"userId\":301774,\"username\":\"GoodVibesGuy\",\"status\":{\"isOnline\":false,\"message\":\"10 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ba\\/c4\\/bac4cbd4-77a7-4c97-a8be-54dab7e9faab--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/be\\/f3\\/bef3a8ed-6fc8-4c2d-b55e-af1f2806e5ba--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"avai"
+    },
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    }
+  ],
+  "mailbox_page_detect": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/home/top-sponsors",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+      "response_body_hash": "sha256:303755daec738bcae1e6c7f9af8f0e3f9796e9595e18352c4ba8198beeb583c8",
+      "response_body_len": 3869,
+      "response_keys": [
+        "userId",
+        "username",
+        "status",
+        "locationId",
+        "location",
+        "searchCity",
+        "userPhoto",
+        "isGold",
+        "isCertified",
+        "track"
+      ],
+      "response_preview": "[{\"userId\":239960,\"username\":\"Fredericodedeus\",\"status\":{\"isOnline\":false,\"message\":\"Today, 09:22\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/d9\\/ab\\/d9abb06e-86cf-4b70-acec-58cba2d10aea--w300.jpg\",\"isGold\":1,\"isCertified\":1,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":301774,\"username\":\"GoodVibesGuy\",\"status\":{\"isOnline\":false,\"message\":\"10 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ba\\/c4\\/bac4cbd4-77a7-4c97-a8be-54dab7e9faab--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/be\\/f3\\/bef3a8ed-6fc8-4c2d-b55e-af1f2806e5ba--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"av"
+    },
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    }
+  ],
+  "compose_form_detect": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/home/top-sponsors",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+      "response_body_hash": "sha256:3c4db57d7f66d0d4feac8c9256db227fbe6c20aa3db28a9fb27ab67e6739d6e2",
+      "response_body_len": 3888,
+      "response_keys": [
+        "userId",
+        "username",
+        "status",
+        "locationId",
+        "location",
+        "searchCity",
+        "userPhoto",
+        "isGold",
+        "isCertified",
+        "track"
+      ],
+      "response_preview": "[{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/0d\\/06\\/0d065776-a6ed-43ae-8eaf-7f6bad85cfb8--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":301774,\"username\":\"GoodVibesGuy\",\"status\":{\"isOnline\":false,\"message\":\"10 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ba\\/c4\\/bac4cbd4-77a7-4c97-a8be-54dab7e9faab--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"avai"
+    },
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    }
+  ],
+  "settings_page_detect": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/home/top-sponsors",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+      "response_body_hash": "sha256:e9847690e6b41cbaf9ffde49a470e912a6d4d5300efd79238a0385d7d7f0538f",
+      "response_body_len": 3903,
+      "response_keys": [
+        "userId",
+        "username",
+        "status",
+        "locationId",
+        "location",
+        "searchCity",
+        "userPhoto",
+        "isGold",
+        "isCertified",
+        "track"
+      ],
+      "response_preview": "[{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/be\\/f3\\/bef3a8ed-6fc8-4c2d-b55e-af1f2806e5ba--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/0d\\/06\\/0d065776-a6ed-43ae-8eaf-7f6bad85cfb8--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":239960,\"username\":\"Fredericodedeus\",\"status\":{\"isO"
+    },
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    }
+  ],
+  "logout_detect": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/webpush/init",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"type\":\"sw\"}",
+      "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+      "response_body_len": 134,
+      "response_keys": [
+        "vapidPublicKey",
+        "requestPopupTime"
+      ],
+      "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}"
+    },
+    {
+      "method": "GET",
+      "url_path": "/api/v1/account/dashboard",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:0899fb5f629fdac887d11a8ce85b786f419bb54f4af6c89335e12b47fcbd0570",
+      "response_body_len": 950,
+      "response_keys": [
+        "idRequired",
+        "banner",
+        "masseurOfTheDay",
+        "sponsor",
+        "featureInterview",
+        "userSetting",
+        "travels",
+        "profileStatistics",
+        "reviewUrl",
+        "service",
+        "twitter",
+        "onlineBookmarks"
+      ],
+      "response_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11529},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}"
+    }
+  ]
+}

@@ -1,0 +1,1019 @@
+{
+  "dashboard_read": {
+    "url": "https://rentmasseur.com/settings",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'EXTEND')]",
+        "text": "EXTEND",
+        "type": "",
+        "class": "button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/stream/",
+        "text": "BLOG"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": ""
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "Profile"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "View My Profile"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  },
+  "availability_read": {
+    "url": "https://rentmasseur.com/settings",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SET')]",
+        "text": "SET",
+        "type": "",
+        "class": "jsx-2753549060 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'EXTEND')]",
+        "text": "EXTEND",
+        "type": "",
+        "class": "button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [
+      {
+        "xpath": "//select",
+        "name": "",
+        "id": ""
+      },
+      {
+        "xpath": "//select",
+        "name": "",
+        "id": ""
+      }
+    ],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/stream/",
+        "text": "BLOG"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": ""
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "Profile"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "View My Profile"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  },
+  "about_profile_read": {
+    "url": "https://rentmasseur.com/settings/about",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//input[@id='headline' and @name='headline']",
+        "type": "",
+        "name": "headline",
+        "id": "headline",
+        "placeholder": "Enter profile headline",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//input[@id='hashtags' and @type='text']",
+        "type": "text",
+        "name": "",
+        "id": "hashtags",
+        "placeholder": "Up to 20 hashtags, single words only.",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [
+      {
+        "xpath": "//textarea[@name='description']",
+        "name": "description",
+        "id": "description",
+        "placeholder": "Enter About me",
+        "aria_label": ""
+      }
+    ],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'NOT NOW')]",
+        "text": "NOT NOW",
+        "type": "",
+        "class": "jsx-242671598 button is-white flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'YES')]",
+        "text": "YES",
+        "type": "",
+        "class": "jsx-242671598 button is-danger flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SAVE')]",
+        "text": "SAVE",
+        "type": "",
+        "class": "jsx-936777166 button",
+        "aria_label": ""
+      }
+    ],
+    "selects": [
+      {
+        "xpath": "//select[@name='age']",
+        "name": "age",
+        "id": "age"
+      },
+      {
+        "xpath": "//select[@name='height']",
+        "name": "height",
+        "id": "height"
+      },
+      {
+        "xpath": "//select[@name='weight']",
+        "name": "weight",
+        "id": "weight"
+      },
+      {
+        "xpath": "//select[@name='ethnicity']",
+        "name": "ethnicity",
+        "id": "ethnicity"
+      },
+      {
+        "xpath": "//select[@name='style']",
+        "name": "style",
+        "id": "style"
+      },
+      {
+        "xpath": "//select[@name='pressure']",
+        "name": "pressure",
+        "id": "pressure"
+      },
+      {
+        "xpath": "//select[@name='bodyType']",
+        "name": "bodyType",
+        "id": "bodyType"
+      },
+      {
+        "xpath": "//select[@name='bodyHair']",
+        "name": "bodyHair",
+        "id": "bodyHair"
+      },
+      {
+        "xpath": "//select[@name='experience']",
+        "name": "experience",
+        "id": "experience"
+      },
+      {
+        "xpath": "//select[@name='hivStatus']",
+        "name": "hivStatus",
+        "id": "hivStatus"
+      }
+    ],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/stream/",
+        "text": "BLOG"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": ""
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "Profile"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "View My Profile"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  },
+  "bio_field_detect": {
+    "url": "https://rentmasseur.com/settings/about",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//input[@id='headline' and @name='headline']",
+        "type": "",
+        "name": "headline",
+        "id": "headline",
+        "placeholder": "Enter profile headline",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//input[@id='hashtags' and @type='text']",
+        "type": "text",
+        "name": "",
+        "id": "hashtags",
+        "placeholder": "Up to 20 hashtags, single words only.",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [
+      {
+        "xpath": "//textarea[@name='description']",
+        "name": "description",
+        "id": "description",
+        "placeholder": "Enter About me",
+        "aria_label": ""
+      }
+    ],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'NOT NOW')]",
+        "text": "NOT NOW",
+        "type": "",
+        "class": "jsx-242671598 button is-white flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'YES')]",
+        "text": "YES",
+        "type": "",
+        "class": "jsx-242671598 button is-danger flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SAVE')]",
+        "text": "SAVE",
+        "type": "",
+        "class": "jsx-936777166 button",
+        "aria_label": ""
+      }
+    ],
+    "selects": [
+      {
+        "xpath": "//select[@name='age']",
+        "name": "age",
+        "id": "age"
+      },
+      {
+        "xpath": "//select[@name='height']",
+        "name": "height",
+        "id": "height"
+      },
+      {
+        "xpath": "//select[@name='weight']",
+        "name": "weight",
+        "id": "weight"
+      },
+      {
+        "xpath": "//select[@name='ethnicity']",
+        "name": "ethnicity",
+        "id": "ethnicity"
+      },
+      {
+        "xpath": "//select[@name='style']",
+        "name": "style",
+        "id": "style"
+      },
+      {
+        "xpath": "//select[@name='pressure']",
+        "name": "pressure",
+        "id": "pressure"
+      },
+      {
+        "xpath": "//select[@name='bodyType']",
+        "name": "bodyType",
+        "id": "bodyType"
+      },
+      {
+        "xpath": "//select[@name='bodyHair']",
+        "name": "bodyHair",
+        "id": "bodyHair"
+      },
+      {
+        "xpath": "//select[@name='experience']",
+        "name": "experience",
+        "id": "experience"
+      },
+      {
+        "xpath": "//select[@name='hivStatus']",
+        "name": "hivStatus",
+        "id": "hivStatus"
+      }
+    ],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/stream/",
+        "text": "BLOG"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": ""
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "Profile"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "View My Profile"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  },
+  "stats_read": {
+    "url": "https://rentmasseur.com/settings/stats",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'NOT NOW')]",
+        "text": "NOT NOW",
+        "type": "",
+        "class": "jsx-242671598 button is-white flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'YES')]",
+        "text": "YES",
+        "type": "",
+        "class": "jsx-242671598 button is-danger flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/GoodVibesGuy",
+        "text": ""
+      },
+      {
+        "href": "/GoodVibesGuy",
+        "text": "GoodVibesGuy"
+      },
+      {
+        "href": "/Samgl",
+        "text": ""
+      },
+      {
+        "href": "/Samgl",
+        "text": "Samgl"
+      },
+      {
+        "href": "/AngelStrong",
+        "text": ""
+      },
+      {
+        "href": "/AngelStrong",
+        "text": "AngelStrong"
+      },
+      {
+        "href": "/Will_Xavier",
+        "text": ""
+      },
+      {
+        "href": "/Will_Xavier",
+        "text": "Will_Xavier"
+      },
+      {
+        "href": "/BullLatin",
+        "text": ""
+      },
+      {
+        "href": "/BullLatin",
+        "text": "BullLatin"
+      },
+      {
+        "href": "/darrellsbody",
+        "text": ""
+      },
+      {
+        "href": "/darrellsbody",
+        "text": "Darrellsbody"
+      },
+      {
+        "href": "/RodrigoDiPietro",
+        "text": ""
+      },
+      {
+        "href": "/RodrigoDiPietro",
+        "text": "RodrigoDiPietro"
+      },
+      {
+        "href": "/Fredericodedeus",
+        "text": ""
+      },
+      {
+        "href": "/Fredericodedeus",
+        "text": "Fredericodedeus"
+      },
+      {
+        "href": "/EliasLatino",
+        "text": ""
+      },
+      {
+        "href": "/EliasLatino",
+        "text": "EliasLatino"
+      },
+      {
+        "href": "/BodyworkBro",
+        "text": ""
+      },
+      {
+        "href": "/BodyworkBro",
+        "text": "BodyworkBro"
+      },
+      {
+        "href": "/HairyMasseurXX",
+        "text": ""
+      },
+      {
+        "href": "/HairyMasseurXX",
+        "text": "HairyMasseurXX"
+      },
+      {
+        "href": "/YoungxlOwen",
+        "text": ""
+      },
+      {
+        "href": "/YoungxlOwen",
+        "text": "YoungxlOwen"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  },
+  "compose_form_detect": {
+    "url": "https://rentmasseur.com/mailbox/compose",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'NOT NOW')]",
+        "text": "NOT NOW",
+        "type": "",
+        "class": "jsx-242671598 button is-white flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'YES')]",
+        "text": "YES",
+        "type": "",
+        "class": "jsx-242671598 button is-danger flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/RodrigoDiPietro",
+        "text": ""
+      },
+      {
+        "href": "/RodrigoDiPietro",
+        "text": "RodrigoDiPietro"
+      },
+      {
+        "href": "/AngelStrong",
+        "text": ""
+      },
+      {
+        "href": "/AngelStrong",
+        "text": "AngelStrong"
+      },
+      {
+        "href": "/Samgl",
+        "text": ""
+      },
+      {
+        "href": "/Samgl",
+        "text": "Samgl"
+      },
+      {
+        "href": "/darrellsbody",
+        "text": ""
+      },
+      {
+        "href": "/darrellsbody",
+        "text": "Darrellsbody"
+      },
+      {
+        "href": "/Will_Xavier",
+        "text": ""
+      },
+      {
+        "href": "/Will_Xavier",
+        "text": "Will_Xavier"
+      },
+      {
+        "href": "/GoodVibesGuy",
+        "text": ""
+      },
+      {
+        "href": "/GoodVibesGuy",
+        "text": "GoodVibesGuy"
+      },
+      {
+        "href": "/BullLatin",
+        "text": ""
+      },
+      {
+        "href": "/BullLatin",
+        "text": "BullLatin"
+      },
+      {
+        "href": "/Fredericodedeus",
+        "text": ""
+      },
+      {
+        "href": "/Fredericodedeus",
+        "text": "Fredericodedeus"
+      },
+      {
+        "href": "/AlexisXiao",
+        "text": ""
+      },
+      {
+        "href": "/AlexisXiao",
+        "text": "AlexisXiao"
+      },
+      {
+        "href": "/Jock_massages",
+        "text": ""
+      },
+      {
+        "href": "/Jock_massages",
+        "text": "Jock_massages"
+      },
+      {
+        "href": "/justinyurmouth",
+        "text": ""
+      },
+      {
+        "href": "/justinyurmouth",
+        "text": "Justinyurmouth"
+      },
+      {
+        "href": "/Nepttun",
+        "text": ""
+      },
+      {
+        "href": "/Nepttun",
+        "text": "Nepttun"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  },
+  "settings_page_detect": {
+    "url": "https://rentmasseur.com/settings/profile",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'NOT NOW')]",
+        "text": "NOT NOW",
+        "type": "",
+        "class": "jsx-242671598 button is-white flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'YES')]",
+        "text": "YES",
+        "type": "",
+        "class": "jsx-242671598 button is-danger flex-1",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/Will_Xavier",
+        "text": ""
+      },
+      {
+        "href": "/Will_Xavier",
+        "text": "Will_Xavier"
+      },
+      {
+        "href": "/BullLatin",
+        "text": ""
+      },
+      {
+        "href": "/BullLatin",
+        "text": "BullLatin"
+      },
+      {
+        "href": "/RodrigoDiPietro",
+        "text": ""
+      },
+      {
+        "href": "/RodrigoDiPietro",
+        "text": "RodrigoDiPietro"
+      },
+      {
+        "href": "/AngelStrong",
+        "text": ""
+      },
+      {
+        "href": "/AngelStrong",
+        "text": "AngelStrong"
+      },
+      {
+        "href": "/Samgl",
+        "text": ""
+      },
+      {
+        "href": "/Samgl",
+        "text": "Samgl"
+      },
+      {
+        "href": "/darrellsbody",
+        "text": ""
+      },
+      {
+        "href": "/darrellsbody",
+        "text": "Darrellsbody"
+      },
+      {
+        "href": "/Fredericodedeus",
+        "text": ""
+      },
+      {
+        "href": "/Fredericodedeus",
+        "text": "Fredericodedeus"
+      },
+      {
+        "href": "/GoodVibesGuy",
+        "text": ""
+      },
+      {
+        "href": "/GoodVibesGuy",
+        "text": "GoodVibesGuy"
+      },
+      {
+        "href": "/MasseurWithNoah",
+        "text": ""
+      },
+      {
+        "href": "/MasseurWithNoah",
+        "text": "MasseurWithNoah"
+      },
+      {
+        "href": "/StrongHnds",
+        "text": ""
+      },
+      {
+        "href": "/StrongHnds",
+        "text": "StrongHnds"
+      },
+      {
+        "href": "/ExclusiveTouch",
+        "text": ""
+      },
+      {
+        "href": "/ExclusiveTouch",
+        "text": "ExclusiveTouch"
+      },
+      {
+        "href": "/PSGavin",
+        "text": ""
+      },
+      {
+        "href": "/PSGavin",
+        "text": "PSGavin"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  },
+  "logout_detect": {
+    "url": "https://rentmasseur.com/settings",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'EXTEND')]",
+        "text": "EXTEND",
+        "type": "",
+        "class": "button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/stream/",
+        "text": "BLOG"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": ""
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "Profile"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "View My Profile"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    ]
+  }
+}

@@ -1,0 +1,362 @@
+[
+  {
+    "username": "stream",
+    "first_found_on": "HairyMasseurXX",
+    "review_count": 26,
+    "cities_found": "brooklyn-ny,manhattan-ny,queens-ny",
+    "masseurs_reviewed": "AlexRelaxMassage,Asian_greathands,BeefyMuscleMan,BodyworkBro,Eledmuscle,EliasLatino,ExhaleBrandon,GoodVibesGuy,HairyMasseurXX,JacobAA,JosePerezLatino,Leoleehome,LuisNYC,Nepttun,OloSilver,OwenGrey,RodrigoDiPietro,Samgl,SimonSuraci,Will_Xavier,ZenMen,about,justinyurmouth,massages,robxlNYCmassuer,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:52:04.548214+00:00",
+    "last_seen": "2026-07-02T22:54:24.245581+00:00"
+  },
+  {
+    "username": "topics",
+    "first_found_on": "HairyMasseurXX",
+    "review_count": 26,
+    "cities_found": "brooklyn-ny,manhattan-ny,queens-ny",
+    "masseurs_reviewed": "AlexRelaxMassage,Asian_greathands,BeefyMuscleMan,BodyworkBro,Eledmuscle,EliasLatino,ExhaleBrandon,GoodVibesGuy,HairyMasseurXX,JacobAA,JosePerezLatino,Leoleehome,LuisNYC,Nepttun,OloSilver,OwenGrey,RodrigoDiPietro,Samgl,SimonSuraci,Will_Xavier,ZenMen,about,justinyurmouth,massages,robxlNYCmassuer,stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:52:04.548245+00:00",
+    "last_seen": "2026-07-02T22:54:24.245603+00:00"
+  },
+  {
+    "username": "massages",
+    "first_found_on": "HairyMasseurXX",
+    "review_count": 26,
+    "cities_found": "brooklyn-ny,manhattan-ny,queens-ny",
+    "masseurs_reviewed": "AlexRelaxMassage,Asian_greathands,BeefyMuscleMan,BodyworkBro,Eledmuscle,EliasLatino,ExhaleBrandon,GoodVibesGuy,HairyMasseurXX,JacobAA,JosePerezLatino,Leoleehome,LuisNYC,Nepttun,OloSilver,OwenGrey,RodrigoDiPietro,Samgl,SimonSuraci,Will_Xavier,ZenMen,about,justinyurmouth,robxlNYCmassuer,stream,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:52:04.548251+00:00",
+    "last_seen": "2026-07-02T22:54:24.245613+00:00"
+  },
+  {
+    "username": "about",
+    "first_found_on": "HairyMasseurXX",
+    "review_count": 26,
+    "cities_found": "brooklyn-ny,manhattan-ny,queens-ny",
+    "masseurs_reviewed": "AlexRelaxMassage,Asian_greathands,BeefyMuscleMan,BodyworkBro,Eledmuscle,EliasLatino,ExhaleBrandon,GoodVibesGuy,HairyMasseurXX,JacobAA,JosePerezLatino,Leoleehome,LuisNYC,Nepttun,OloSilver,OwenGrey,RodrigoDiPietro,Samgl,SimonSuraci,Will_Xavier,ZenMen,justinyurmouth,massages,robxlNYCmassuer,stream,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:52:04.548256+00:00",
+    "last_seen": "2026-07-02T22:54:24.245621+00:00"
+  },
+  {
+    "username": "AlexisXiao",
+    "first_found_on": "stream",
+    "review_count": 3,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about,stream,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167543+00:00",
+    "last_seen": "2026-07-02T22:53:57.891852+00:00"
+  },
+  {
+    "username": "Samgl",
+    "first_found_on": "stream",
+    "review_count": 3,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages,stream,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167576+00:00",
+    "last_seen": "2026-07-02T22:53:57.891833+00:00"
+  },
+  {
+    "username": "LeopardBodywork",
+    "first_found_on": "stream",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "stream,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167547+00:00",
+    "last_seen": "2026-07-02T22:53:57.891840+00:00"
+  },
+  {
+    "username": "youngasian",
+    "first_found_on": "stream",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "stream,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167551+00:00",
+    "last_seen": "2026-07-02T22:53:57.891904+00:00"
+  },
+  {
+    "username": "Fredericodedeus",
+    "first_found_on": "stream",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages,stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167555+00:00",
+    "last_seen": "2026-07-02T22:53:44.584064+00:00"
+  },
+  {
+    "username": "JosePerezLatino",
+    "first_found_on": "stream",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "stream,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167563+00:00",
+    "last_seen": "2026-07-02T22:53:57.891815+00:00"
+  },
+  {
+    "username": "HairyMasseurXX",
+    "first_found_on": "stream",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages,stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167568+00:00",
+    "last_seen": "2026-07-02T22:53:44.584081+00:00"
+  },
+  {
+    "username": "GoodVibesGuy",
+    "first_found_on": "stream",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about,stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167572+00:00",
+    "last_seen": "2026-07-02T22:53:51.282297+00:00"
+  },
+  {
+    "username": "ExhaleBrandon",
+    "first_found_on": "massages",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about,massages",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584020+00:00",
+    "last_seen": "2026-07-02T22:53:51.282285+00:00"
+  },
+  {
+    "username": "robxlNYCmassuer",
+    "first_found_on": "massages",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584038+00:00",
+    "last_seen": "2026-07-02T22:53:57.891873+00:00"
+  },
+  {
+    "username": "LuisNYC",
+    "first_found_on": "massages",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about,massages",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584044+00:00",
+    "last_seen": "2026-07-02T22:53:51.282329+00:00"
+  },
+  {
+    "username": "TrevorJames",
+    "first_found_on": "massages",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about,massages",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584057+00:00",
+    "last_seen": "2026-07-02T22:53:51.282340+00:00"
+  },
+  {
+    "username": "JacobAA",
+    "first_found_on": "massages",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584074+00:00",
+    "last_seen": "2026-07-02T22:53:57.891892+00:00"
+  },
+  {
+    "username": "BeefyMuscleMan",
+    "first_found_on": "about",
+    "review_count": 2,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about,topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:51.282353+00:00",
+    "last_seen": "2026-07-02T22:53:57.891910+00:00"
+  },
+  {
+    "username": "LucasVentura",
+    "first_found_on": "stream",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167513+00:00",
+    "last_seen": "2026-07-02T22:53:38.167514+00:00"
+  },
+  {
+    "username": "AngelStrong",
+    "first_found_on": "stream",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167532+00:00",
+    "last_seen": "2026-07-02T22:53:38.167533+00:00"
+  },
+  {
+    "username": "LeopardBWTours",
+    "first_found_on": "stream",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167538+00:00",
+    "last_seen": "2026-07-02T22:53:38.167538+00:00"
+  },
+  {
+    "username": "Eledmuscle",
+    "first_found_on": "stream",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "stream",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:38.167559+00:00",
+    "last_seen": "2026-07-02T22:53:38.167560+00:00"
+  },
+  {
+    "username": "ExclusiveTouch",
+    "first_found_on": "massages",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584032+00:00",
+    "last_seen": "2026-07-02T22:53:44.584033+00:00"
+  },
+  {
+    "username": "Nepttun",
+    "first_found_on": "massages",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584048+00:00",
+    "last_seen": "2026-07-02T22:53:44.584049+00:00"
+  },
+  {
+    "username": "YoungxlOwen",
+    "first_found_on": "massages",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584053+00:00",
+    "last_seen": "2026-07-02T22:53:44.584053+00:00"
+  },
+  {
+    "username": "YoungGuyOldSoul",
+    "first_found_on": "massages",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "massages",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:44.584069+00:00",
+    "last_seen": "2026-07-02T22:53:44.584069+00:00"
+  },
+  {
+    "username": "darrellsbody",
+    "first_found_on": "about",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:51.282271+00:00",
+    "last_seen": "2026-07-02T22:53:51.282271+00:00"
+  },
+  {
+    "username": "Jock_massages",
+    "first_found_on": "about",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:51.282291+00:00",
+    "last_seen": "2026-07-02T22:53:51.282292+00:00"
+  },
+  {
+    "username": "AlexRelaxMassage",
+    "first_found_on": "about",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:51.282323+00:00",
+    "last_seen": "2026-07-02T22:53:51.282323+00:00"
+  },
+  {
+    "username": "Asian_greathands",
+    "first_found_on": "about",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:51.282335+00:00",
+    "last_seen": "2026-07-02T22:53:51.282336+00:00"
+  },
+  {
+    "username": "OloSilver",
+    "first_found_on": "about",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:51.282345+00:00",
+    "last_seen": "2026-07-02T22:53:51.282345+00:00"
+  },
+  {
+    "username": "GoldenBrownLV",
+    "first_found_on": "about",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "about",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:51.282349+00:00",
+    "last_seen": "2026-07-02T22:53:51.282350+00:00"
+  },
+  {
+    "username": "PersianMuscleNYC",
+    "first_found_on": "topics",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:57.891858+00:00",
+    "last_seen": "2026-07-02T22:53:57.891859+00:00"
+  },
+  {
+    "username": "StrongHnds",
+    "first_found_on": "topics",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:57.891877+00:00",
+    "last_seen": "2026-07-02T22:53:57.891878+00:00"
+  },
+  {
+    "username": "Leoleehome",
+    "first_found_on": "topics",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:57.891882+00:00",
+    "last_seen": "2026-07-02T22:53:57.891882+00:00"
+  },
+  {
+    "username": "Will_Xavier",
+    "first_found_on": "topics",
+    "review_count": 1,
+    "cities_found": "manhattan-ny",
+    "masseurs_reviewed": "topics",
+    "sample_review": "",
+    "first_seen": "2026-07-02T22:53:57.891915+00:00",
+    "last_seen": "2026-07-02T22:53:57.891915+00:00"
+  }
+]

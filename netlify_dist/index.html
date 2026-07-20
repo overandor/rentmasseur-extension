@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RentMasseur OS — Netlify Mirror</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; background: #0a0a0a; color: #e0e0e0; margin: 0; padding: 40px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { color: #6ec1e4; }
+    .card { background: #1a1a2e; border-radius: 12px; padding: 24px; margin: 16px 0; }
+    .status { color: #4ade80; font-weight: bold; }
+    a { color: #6ec1e4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .endpoint { font-family: monospace; font-size: 0.85em; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>RentMasseur OS — Netlify Mirror</h1>
+    <div class="card">
+      <p><span class="status">● Online</span> — This is a Netlify backup of the RentMasseur optimizer.</p>
+      <p>API requests are proxied to the Hugging Face Space backend.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>API Endpoints</h3>
+        <p class="endpoint">GET /api/os/report</p>
+        <p class="endpoint">GET /api/os/bios</p>
+        <p class="endpoint">GET /api/os/competitors</p>
+        <p class="endpoint">POST /api/os/ingest</p>
+        <p class="endpoint">POST /api/collect</p>
+      </div>
+      <div class="card">
+        <h3>Primary Backends</h3>
+        <p><a href="https://josephrw-rentmasseur-optimizer.hf.space">Hugging Face Space</a></p>
+        <p><a href="https://github.com/overandor/rentmasseur-extension">GitHub Repo</a></p>
+        <p><a href="https://rentmasseur-vercel.vercel.app">Vercel Functions</a></p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Demo Agent</h3>
+      <p>Anti-bot browser automation with Playwright + Selenium.</p>
+      <p class="endpoint">python3 rm_demo_agent.py --engine selenium --headed --login --visit-back</p>
+    </div>
+  </div>
+</body>
+</html>

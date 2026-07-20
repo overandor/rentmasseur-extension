@@ -1,0 +1,69 @@
+{
+  "login_page_probe": [
+    {
+      "method": "GET",
+      "url_path": "/api/v1/login",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:931e51f15e7d19989d1e78de60e01a87df008c29df30b1ca1368f9a8560ea44a",
+      "response_body_len": 69,
+      "response_keys": [
+        "csrf",
+        "captcha",
+        "message"
+      ],
+      "response_preview": "{\"csrf\":\"[REDACTED]\",\"captcha\":\"\",\"message\":\"\"}"
+    }
+  ],
+  "public_profile_probe": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/analytics",
+      "status": 204,
+      "request_headers_redacted": true,
+      "post_data": "{\"track\":\"\",\"username\":\"Karpathianwolf\"}",
+      "response_body_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_body_len": 0,
+      "response_keys": [],
+      "response_preview": ""
+    },
+    {
+      "method": "GET",
+      "url_path": "/api/v1/locations?withMasseurs=1",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": null,
+      "response_body_hash": "sha256:6078efd4814831b04c1fcefb31fae00a03e9c001d4fcba1d4a962703fecc7b9d",
+      "response_body_len": 172850,
+      "response_keys": [
+        "locations"
+      ],
+      "response_preview": "{\"locations\":[{\"locationId\":1277,\"searchCity\":\"freeport-bs\",\"city\":\"Freeport\",\"state\":\"\",\"country\":\"The Bahamas\",\"continent\":\"Central America\",\"keywords\":\"The Bahamas\",\"label\":\"Freeport, The Bahamas\",\"lat\":26.52946854,\"lng\":-78.65010071,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/freeport-bs\\/\"},{\"locationId\":401,\"searchCity\":\"fairbanks-ak\",\"city\":\"Fairbanks\",\"state\":\"AK\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alaska\",\"label\":\"Fairbanks, AK\",\"lat\":64.83777618,\"lng\":-147.71638489,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/fairbanks-ak\\/\"},{\"locationId\":404,\"searchCity\":\"birmingham-al\",\"city\":\"Birmingham\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Birmingham, AL\",\"lat\":33.5206604,\"lng\":-86.80249023,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/birmingham-al\\/\"},{\"locationId\":408,\"searchCity\":\"huntsville-al\",\"city\":\"Huntsville\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Huntsville, AL\",\"lat\":34.73036957,\"lng\":-86.58610535,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/huntsville-al\\/\"},{\"locationId\":409,\"searchCity\":\"mobile-al\",\"city\":\"Mobile\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Mobile, AL\",\"lat\":30.69643974,\"lng\":-88.18035889,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/mobile-al\\/\"},{\"locationId\":410,\"searchCity\":\"montgomery-al\",\"city\":\"Montgomery\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Montgomery, AL\",\"lat\":32.36680603,\"lng\":-86.29997253,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/montgomery-al\\/\"},{\"locationId\":412,\"searchCity\":\"fayetteville-ar\",\"city\":\"Fayetteville\",\"state\":\"AR\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Arkansas\",\"label\":\"Fayetteville, AR\",\"lat\":36.06258011,\"lng\":-94.15742493,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/fayetteville-ar\\/\"},{\"locationId\":413,\"searchCity\":\"fortsmith-ar\",\"city\":\"Fort Smith\",\"state\":\"AR\",\""
+    }
+  ],
+  "search_probe": [
+    {
+      "method": "POST",
+      "url_path": "/api/v1/home/top-sponsors",
+      "status": 200,
+      "request_headers_redacted": true,
+      "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+      "response_body_hash": "sha256:4b5a5475db267dd474c8e7618c0a8af000fedbac551bb8bd50ae48e3caecbe61",
+      "response_body_len": 3896,
+      "response_keys": [
+        "userId",
+        "username",
+        "status",
+        "locationId",
+        "location",
+        "searchCity",
+        "userPhoto",
+        "isGold",
+        "isCertified",
+        "track"
+      ],
+      "response_preview": "[{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":348960,\"username\":\"Eledmuscle\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/bf\\/90\\/bf901972-e2c7-4d2f-bb9d-8199a000cbaf--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":94137,\"username\":\"TrevorJames\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Los Angeles, CA\",\"searchCity\":\"losangeles\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/42\\/29\\/42296dd4-97c9-4ee8-94f8-3c9482975bca--w300.jpg\",\"isGold\":1,\"isCertified\":1,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":236472,\"username\":\"LatinoStallion\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"San Antonio, TX\",\"searchCity\":\"sanantonio-tx\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/b8\\/92\\/b892221e-6914-421b-840f-c431503c4ad2--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":250473,\"username\":\"AlexRelaxMassage\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Houston, TX\",\"searchCity\":\"houston\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ee\\/c5\\/eec52ebb-3eef-4eba-88fb-a6b996ec8273--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48618,\"username\":\"BeefyMuscleMan\",\"stat"
+    }
+  ]
+}

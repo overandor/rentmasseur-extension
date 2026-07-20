@@ -1,0 +1,14 @@
+{
+  "session_id": "d7e40e2e0b9c",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:00:32.420895+00:00",
+  "elapsed_s": 53.79,
+  "username": "Przmarco",
+  "url": "https://rentmasseur.com/Przmarco",
+  "page_title": "Przmarco | RentMasseur",
+  "content_hash": "108ef89087fb81bd48cb9d0fdd26cd50218698b67fd202c55a66dcbe6ae845ce",
+  "screenshot": "visit_004_Przmarco",
+  "visited_at": "2026-07-20T00:00:32.420885+00:00",
+  "receipt_hash": "72fa9bbbe8d6befa"
+}

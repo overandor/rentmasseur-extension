@@ -1,0 +1,167 @@
+# Auto-generated from Playwright probe — do not edit manually.
+# Generated: 2026-07-02T22:38:54.617332+00:00
+
+functions:
+  dashboard_read:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/settings"
+    selectors_found:
+      inputs: 1
+      textareas: 0
+      buttons: 2
+      selects: 0
+      contenteditable: 0
+    api_endpoints: 2
+    screenshot: true
+    status: "ok"
+  availability_read:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/settings"
+    selectors_found:
+      inputs: 1
+      textareas: 0
+      buttons: 3
+      selects: 2
+      contenteditable: 0
+    api_endpoints: 3
+    screenshot: true
+    status: "ok"
+  about_profile_save_live:
+    mode: "authenticated"
+    type: "mutation"
+    allowed_in_ci: false
+    requires_manual_approval: true
+    discovered_on: "about_profile_read"
+  about_profile_read:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/settings/about"
+    selectors_found:
+      inputs: 3
+      textareas: 1
+      buttons: 4
+      selects: 10
+      contenteditable: 0
+    api_endpoints: 3
+    screenshot: true
+    status: "ok"
+  bio_field_save_live:
+    mode: "authenticated"
+    type: "mutation"
+    allowed_in_ci: false
+    requires_manual_approval: true
+    discovered_on: "bio_field_detect"
+  bio_field_detect:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/settings/about"
+    selectors_found:
+      inputs: 3
+      textareas: 1
+      buttons: 4
+      selects: 10
+      contenteditable: 0
+    api_endpoints: 3
+    screenshot: true
+    status: "ok"
+  stats_read:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/settings/stats"
+    selectors_found:
+      inputs: 1
+      textareas: 0
+      buttons: 3
+      selects: 0
+      contenteditable: 0
+    api_endpoints: 2
+    screenshot: true
+    status: "ok"
+  mailbox_page_detect:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/404"
+    selectors_found:
+      inputs: 0
+      textareas: 0
+      buttons: 0
+      selects: 0
+      contenteditable: 0
+    api_endpoints: 2
+    screenshot: true
+    status: "not_found"
+  mailbox_send:
+    mode: "authenticated"
+    type: "mutation"
+    allowed_in_ci: false
+    disabled: true
+  compose_form_detect:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/mailbox/compose"
+    selectors_found:
+      inputs: 1
+      textareas: 0
+      buttons: 3
+      selects: 0
+      contenteditable: 0
+    api_endpoints: 2
+    screenshot: true
+    status: "ok"
+  settings_page_detect:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/settings/profile"
+    selectors_found:
+      inputs: 1
+      textareas: 0
+      buttons: 3
+      selects: 0
+      contenteditable: 0
+    api_endpoints: 2
+    screenshot: true
+    status: "ok"
+  logout_detect:
+    mode: "authenticated"
+    type: "read"
+    allowed_in_ci: "manual_only"
+    url: "https://rentmasseur.com/settings"
+    selectors_found:
+      inputs: 1
+      textareas: 0
+      buttons: 2
+      selects: 0
+      contenteditable: 0
+    api_endpoints: 2
+    screenshot: true
+    status: "ok"
+  captcha_bypass:
+    mode: "blocked"
+    type: "blocked"
+    allowed_in_ci: false
+    disabled: true
+  anti_bot_bypass:
+    mode: "blocked"
+    type: "blocked"
+    allowed_in_ci: false
+    disabled: true
+  mass_message:
+    mode: "blocked"
+    type: "blocked"
+    allowed_in_ci: false
+    disabled: true
+  fake_availability_loop:
+    mode: "blocked"
+    type: "blocked"
+    allowed_in_ci: false
+    disabled: true

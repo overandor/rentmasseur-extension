@@ -1,0 +1,60 @@
+functions:
+  health_check:
+    type: read
+    target: local_control_plane
+    allowed_in_ci: true
+
+  dashboard_snapshot:
+    type: read
+    target: rentmasseur_account
+    allowed_in_ci: true
+    requires_login: true
+
+  availability_read:
+    type: read
+    target: rentmasseur_account
+    allowed_in_ci: true
+    requires_login: true
+
+  bio_field_detect:
+    type: read
+    target: rentmasseur_profile_settings
+    allowed_in_ci: true
+    requires_login: true
+
+  bio_candidate_generate:
+    type: draft
+    target: local_llm_optimizer
+    allowed_in_ci: true
+
+  bio_candidate_preview:
+    type: draft
+    target: local_control_plane
+    allowed_in_ci: true
+
+  bio_apply_live:
+    type: mutation
+    target: rentmasseur_profile_settings
+    allowed_in_ci: false
+    requires_manual_approval: true
+
+  availability_set_live:
+    type: mutation
+    target: rentmasseur_account
+    allowed_in_ci: false
+    requires_manual_approval: true
+
+  metrics_ingest:
+    type: write_local
+    target: local_control_plane
+    allowed_in_ci: true
+
+  extension_popup_smoke:
+    type: browser_extension
+    target: chrome_extension
+    allowed_in_ci: true
+
+  extension_content_script_smoke:
+    type: browser_extension
+    target: rentmasseur_profile_page
+    allowed_in_ci: true

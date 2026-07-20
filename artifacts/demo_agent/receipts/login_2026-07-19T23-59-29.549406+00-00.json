@@ -1,0 +1,10 @@
+{
+  "session_id": "bcbbad3b3f8b",
+  "action": "login",
+  "status": "fail",
+  "timestamp": "2026-07-19T23:59:29.549406+00:00",
+  "elapsed_s": 12.78,
+  "reason": "still_on_login_page",
+  "url": "https://rentmasseur.com/login",
+  "receipt_hash": "2d436b1fac90dc23"
+}

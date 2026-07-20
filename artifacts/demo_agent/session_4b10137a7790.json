@@ -1,0 +1,12 @@
+{
+  "session_id": "4b10137a7790",
+  "engine": "selenium",
+  "actions": [
+    {
+      "action": "login",
+      "success": true
+    }
+  ],
+  "end_time": "2026-07-20T00:15:20.153600+00:00",
+  "total_elapsed_s": 17.91
+}

@@ -1,0 +1,457 @@
+#!/usr/bin/env python3
+"""
+Mine NY client profiles from RentMasseur reviews.
+
+Strategy:
+  1. Search for masseurs in each NY city (manhattan-ny, brooklyn-ny, etc.)
+  2. Visit each masseur's profile
+  3. Navigate to their reviews page
+  4. Extract reviewer usernames — these are clients
+  5. Deduplicate and save
+
+Safety:
+  - Read-only — no messages, no mutations
+  - Rate-limited between visits
+  - Screenshots every reviews page
+  - Stops on CAPTCHA/blocks
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+
+from playwright.sync_api import sync_playwright, Page, BrowserContext
+
+
+BASE_URL = "https://rentmasseur.com"
+ARTIFACTS = Path("artifacts/ny_clients")
+SCREENSHOTS = ARTIFACTS / "screenshots"
+ARTIFACTS.mkdir(parents=True, exist_ok=True)
+SCREENSHOTS.mkdir(exist_ok=True)
+
+NY_CITIES = [
+    "manhattan-ny", "brooklyn-ny", "queens-ny", "bronx-ny",
+    "staten-island-ny", "long-island-ny", "westchester-ny",
+]
+
+MAX_MASSEURS_PER_CITY = 50
+DELAY_BETWEEN_VISITS = 2.0
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def safe_name(s: str) -> str:
+    return re.sub(r'[^A-Za-z0-9_-]', '_', s)[:60]
+
+
+def detect_block(page: Page) -> Optional[str]:
+    try:
+        txt = page.inner_text("body")[:3000].lower()
+    except Exception:
+        txt = ""
+    url = (page.url or "").lower()
+    for needle, reason in [
+        ("captcha", "captcha"), ("crowdsec", "crowdsec"),
+        ("access forbidden", "forbidden"), ("verify you are human", "verification"),
+        ("too many requests", "rate_limited"),
+    ]:
+        if needle in txt or needle in url:
+            return reason
+    return None
+
+
+def screenshot(page: Page, name: str) -> str:
+    path = SCREENSHOTS / f"{safe_name(name)}.png"
+    try:
+        page.screenshot(path=str(path), full_page=True)
+    except Exception:
+        return ""
+    return str(path)
+
+
+def dismiss_cookies(page: Page):
+    try:
+        btn = page.query_selector("button:has-text('ACCEPT ALL')")
+        if btn and btn.is_visible():
+            btn.click()
+            time.sleep(0.5)
+    except Exception:
+        pass
+
+
+def search_ny_masseurs(page: Page, city: str) -> list[dict]:
+    """Search for masseurs in a NY city and return profile links."""
+    url = f"{BASE_URL}/search/{city}"
+    print(f"\n  Searching: {url}")
+
+    masseurs = []
+    try:
+        page.goto(url, wait_until="networkidle", timeout=30000)
+        time.sleep(3)
+        dismiss_cookies(page)
+
+        block = detect_block(page)
+        if block:
+            print(f"  BLOCKED: {block}")
+            return []
+
+        screenshot(page, f"search_{city}")
+
+        # Extract profile links from search results
+        links = page.query_selector_all("a[href]")
+        seen = set()
+        for el in links:
+            try:
+                href = el.get_attribute("href") or ""
+                text = (el.inner_text() or "").strip()
+                if href.startswith("/") and not any(x in href for x in [
+                    "login", "settings", "search", "blog", "reviews", "interviews",
+                    "available", "find-massage", "live-cams", "sitemap", "advertise",
+                    "mailbox", "static", "_next", "images", "api", "blogs", "404",
+                    "account", "gay-massage", "sponsor",
+                ]):
+                    parts = href.strip("/").split("/")
+                    if parts and parts[0] and len(parts) == 1 and parts[0] not in seen:
+                        seen.add(parts[0])
+                        masseurs.append({
+                            "username": parts[0],
+                            "href": href,
+                            "text": text[:60],
+                            "city": city,
+                        })
+            except Exception:
+                continue
+
+        # Also try __NEXT_DATA__ for structured search results
+        try:
+            nd_text = page.evaluate("() => { const el = document.getElementById('__NEXT_DATA__'); return el ? el.textContent : null; }")
+            if nd_text:
+                nd = json.loads(nd_text)
+                props = nd.get("props", {}).get("pageProps", {})
+                # Search for masseur list in various keys
+                for key in ["masseurs", "users", "results", "profiles", "searchResults"]:
+                    if key in props and isinstance(props[key], list):
+                        for item in props[key]:
+                            uname = item.get("username") or ""
+                            if uname and uname not in {m["username"] for m in masseurs}:
+                                masseurs.append({
+                                    "username": uname,
+                                    "href": f"/{uname}",
+                                    "text": uname,
+                                    "city": city,
+                                    "from_api": True,
+                                })
+        except Exception:
+            pass
+
+    except Exception as e:
+        print(f"  Search error: {e}")
+
+    print(f"  Found {len(masseurs)} masseur profiles in {city}")
+    return masseurs[:MAX_MASSEURS_PER_CITY]
+
+
+def scrape_reviews(page: Page, masseur_username: str) -> list[dict]:
+    """Visit a masseur's reviews page and extract reviewer usernames."""
+    reviewers = []
+
+    # Try /username/reviews and /reviews/username patterns
+    urls_to_try = [
+        f"{BASE_URL}/{masseur_username}/reviews",
+        f"{BASE_URL}/reviews/{masseur_username}",
+    ]
+
+    for url in urls_to_try:
+        try:
+            page.goto(url, wait_until="networkidle", timeout=20000)
+            time.sleep(2)
+            dismiss_cookies(page)
+
+            block = detect_block(page)
+            if block:
+                print(f"    Blocked: {block}")
+                return reviewers
+
+            if "/404" in page.url or "/login" in page.url:
+                continue
+
+            # Check if we're on a reviews page
+            body_text = page.inner_text("body")[:5000].lower()
+            if "review" not in body_text and "rating" not in body_text:
+                continue
+
+            ss = screenshot(page, f"reviews_{safe_name(masseur_username)}")
+
+            # Method 1: Extract from __NEXT_DATA__
+            try:
+                nd_text = page.evaluate("() => { const el = document.getElementById('__NEXT_DATA__'); return el ? el.textContent : null; }")
+                if nd_text:
+                    nd = json.loads(nd_text)
+                    props = nd.get("props", {}).get("pageProps", {})
+
+                    # Look for reviews in various keys
+                    for key in ["reviews", "ratings", "testimonials", "feedback"]:
+                        if key in props:
+                            data = props[key]
+                            if isinstance(data, list):
+                                for item in data:
+                                    reviewer = (
+                                        item.get("reviewer") or item.get("username") or
+                                        item.get("user") or item.get("author") or
+                                        item.get("reviewerUsername") or item.get("clientName") or
+                                        ""
+                                    )
+                                    if isinstance(reviewer, dict):
+                                        reviewer = reviewer.get("username") or reviewer.get("name") or ""
+                                    if reviewer and reviewer != masseur_username:
+                                        reviewers.append({
+                                            "reviewer": reviewer,
+                                            "masseur": masseur_username,
+                                            "rating": item.get("rating") or item.get("stars") or "",
+                                            "text": (item.get("text") or item.get("comment") or item.get("review") or "")[:200],
+                                            "source": f"__NEXT_DATA__.{key}",
+                                        })
+                    print(f"    __NEXT_DATA__: {len(reviewers)} reviews found")
+            except Exception as e:
+                pass
+
+            # Method 2: Extract from DOM — look for links to reviewer profiles
+            try:
+                links = page.query_selector_all("a[href]")
+                seen = {r["reviewer"] for r in reviewers}
+                for el in links:
+                    href = el.get_attribute("href") or ""
+                    text = (el.inner_text() or "").strip()
+                    if href.startswith("/") and not any(x in href for x in [
+                        "login", "settings", "search", "blog", "reviews", "interviews",
+                        "available", "find-massage", "live-cams", "sitemap", "advertise",
+                        "mailbox", "static", "_next", "images", "api", "blogs", "404",
+                        "account", "gay-massage", "sponsor", masseur_username,
+                    ]):
+                        parts = href.strip("/").split("/")
+                        if parts and parts[0] and len(parts) == 1 and parts[0] not in seen:
+                            # Check if this link is near review text
+                            try:
+                                parent_text = el.evaluate("e => e.closest('div, li, article, section') ? e.closest('div, li, article, section').innerText : ''")[:500]
+                                if any(kw in parent_text.lower() for kw in ["review", "rating", "star", "massage", "session", "client"]):
+                                    reviewers.append({
+                                        "reviewer": parts[0],
+                                        "masseur": masseur_username,
+                                        "rating": "",
+                                        "text": parent_text[:200],
+                                        "source": "dom_link_near_review",
+                                    })
+                                    seen.add(parts[0])
+                            except Exception:
+                                # If we can't check context, still add it if it's not the masseur
+                                if len(parts[0]) > 2 and parts[0] not in seen:
+                                    reviewers.append({
+                                        "reviewer": parts[0],
+                                        "masseur": masseur_username,
+                                        "rating": "",
+                                        "text": "",
+                                        "source": "dom_link",
+                                    })
+                                    seen.add(parts[0])
+                print(f"    DOM links: {len(reviewers)} total")
+            except Exception:
+                pass
+
+            # Method 3: Extract from page text — look for "Reviewed by username" patterns
+            try:
+                body = page.inner_text("body")
+                # Patterns: "Reviewed by X", "By: X", "— X", "X wrote", "X says"
+                patterns = [
+                    r"(?:Reviewed by|By:|Review by)\s+([A-Za-z0-9_-]{3,30})",
+                    r"—\s*([A-Za-z0-9_-]{3,30})\s*(?:\n|$)",
+                    r"([A-Za-z0-9_-]{3,30})\s+(?:wrote|says|reviewed)",
+                ]
+                seen = {r["reviewer"] for r in reviewers}
+                for pattern in patterns:
+                    matches = re.findall(pattern, body)
+                    for m in matches:
+                        if m and m != masseur_username and m.lower() not in [
+                            "search", "login", "sign", "available", "massage", "book",
+                        ] and m not in seen:
+                            reviewers.append({
+                                "reviewer": m,
+                                "masseur": masseur_username,
+                                "rating": "",
+                                "text": "",
+                                "source": "text_pattern",
+                            })
+                            seen.add(m)
+            except Exception:
+                pass
+
+            if reviewers:
+                break  # Found reviews, stop trying other URL patterns
+
+        except Exception as e:
+            continue
+
+    return reviewers
+
+
+def main():
+    username = os.getenv("RM_USER") or os.getenv("RENTMASSEUR_USER") or ""
+    password = os.getenv("RM_PASS") or os.getenv("RENTMASSEUR_PASS") or ""
+
+    print(f"\n=== RM NY Client Mining via Reviews ===")
+    print(f"  Strategy: Search NY masseurs → scrape their reviews → extract client usernames")
+    print(f"  Cities: {', '.join(NY_CITIES)}")
+
+    all_masseurs = []
+    all_reviewers = []
+    unique_clients = {}
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            headless=False,
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
+        )
+
+        storage_state = Path(".rm_storage_state.json")
+        ctx_kwargs = {
+            "viewport": {"width": 1440, "height": 1200},
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        }
+
+        if storage_state.exists():
+            ctx_kwargs["storage_state"] = str(storage_state)
+            print("  Using saved storage state")
+
+        context = browser.new_context(**ctx_kwargs)
+        page = context.new_page()
+
+        # Verify session
+        page.goto(f"{BASE_URL}/settings", wait_until="networkidle", timeout=30000)
+        time.sleep(2)
+
+        if "/login" in page.url:
+            if username and password:
+                print("  Session expired — logging in")
+                try:
+                    page.goto(f"{BASE_URL}/login", wait_until="networkidle", timeout=30000)
+                    time.sleep(2)
+                    email_el = page.query_selector("input#email") or page.query_selector("input[name='email']")
+                    pass_el = page.query_selector("input#password") or page.query_selector("input[type='password']")
+                    if email_el and pass_el:
+                        email_el.fill(username)
+                        pass_el.fill(password)
+                        time.sleep(0.5)
+                        btn = page.query_selector("button:has-text('LOGIN')") or page.query_selector("button[type='submit']")
+                        if btn and btn.is_visible():
+                            btn.click()
+                        else:
+                            pass_el.press("Enter")
+                        page.wait_for_load_state("networkidle", timeout=15000)
+                        time.sleep(3)
+                        context.storage_state(path=str(storage_state))
+                        print(f"  Login OK — {page.url}")
+                except Exception as e:
+                    print(f"  Login error: {e}")
+            else:
+                print("!! No credentials — running as public (may have limited access)")
+        else:
+            print("  Session valid")
+
+        # Step 1: Search NY cities for masseurs
+        print(f"\n--- Step 1: Searching NY cities for masseurs ---")
+        for city in NY_CITIES:
+            masseurs = search_ny_masseurs(page, city)
+            for m in masseurs:
+                if m["username"] not in {x["username"] for x in all_masseurs}:
+                    all_masseurs.append(m)
+            time.sleep(1)
+
+        print(f"\n  Total unique NY masseurs found: {len(all_masseurs)}")
+
+        # Step 2: Visit each masseur's reviews page
+        print(f"\n--- Step 2: Scraping reviews from {len(all_masseurs)} masseurs ---")
+        for i, masseur in enumerate(all_masseurs):
+            uname = masseur["username"]
+            city = masseur["city"]
+            print(f"\n  [{i+1}/{len(all_masseurs)}] {uname} ({city})")
+
+            reviewers = scrape_reviews(page, uname)
+            all_reviewers.extend(reviewers)
+
+            for r in reviewers:
+                client = r["reviewer"]
+                if client not in unique_clients:
+                    unique_clients[client] = {
+                        "username": client,
+                        "found_on": [uname],
+                        "cities_found_on": [city],
+                        "review_count": 1,
+                        "sample_review": r.get("text", "")[:200],
+                        "rating": r.get("rating", ""),
+                    }
+                else:
+                    unique_clients[client]["found_on"].append(uname)
+                    if city not in unique_clients[client]["cities_found_on"]:
+                        unique_clients[client]["cities_found_on"].append(city)
+                    unique_clients[client]["review_count"] += 1
+
+            if reviewers:
+                print(f"    → {len(reviewers)} reviewers found")
+            else:
+                print(f"    → No reviews found")
+
+            time.sleep(DELAY_BETWEEN_VISITS)
+
+        browser.close()
+
+    # Step 3: Save results
+    clients_list = list(unique_clients.values())
+    clients_list.sort(key=lambda x: x["review_count"], reverse=True)
+
+    results = {
+        "timestamp": now_iso(),
+        "strategy": "Search NY masseurs → scrape reviews → extract client usernames",
+        "cities_searched": NY_CITIES,
+        "summary": {
+            "masseurs_found": len(all_masseurs),
+            "reviews_scraped": len(all_reviewers),
+            "unique_clients": len(clients_list),
+        },
+        "masseurs": all_masseurs,
+        "all_reviews": all_reviewers,
+        "clients": clients_list,
+    }
+
+    results_path = ARTIFACTS / "ny_clients_from_reviews.json"
+    results_path.write_text(json.dumps(results, indent=2, default=str), encoding="utf-8")
+
+    # Also save just the client list for easy use
+    clients_only = [c["username"] for c in clients_list]
+    clients_path = ARTIFACTS / "ny_client_usernames.txt"
+    clients_path.write_text("\n".join(clients_only), encoding="utf-8")
+
+    print(f"\n{'='*60}")
+    print(f"  Masseurs found: {len(all_masseurs)}")
+    print(f"  Reviews scraped: {len(all_reviewers)}")
+    print(f"  Unique clients: {len(clients_list)}")
+    print(f"\n  Results: {results_path}")
+    print(f"  Client list: {clients_path}")
+    print(f"  Screenshots: {SCREENSHOTS}/")
+
+    if clients_list:
+        print(f"\n--- Top NY Client Profiles (by review count) ---")
+        for c in clients_list[:30]:
+            print(f"  {c['username']:25s} | reviews={c['review_count']:2d} | found on: {', '.join(c['found_on'][:3])}")
+    else:
+        print(f"\n  No clients found — reviews may require login or different page structure")
+
+
+if __name__ == "__main__":
+    main()

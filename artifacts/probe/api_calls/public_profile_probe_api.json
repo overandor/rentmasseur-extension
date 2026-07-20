@@ -1,0 +1,47 @@
+[
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/analytics",
+    "url_path": "/api/v1/analytics",
+    "request_headers_redacted": true,
+    "post_data": "{\"track\":\"\",\"username\":\"Karpathianwolf\"}",
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/Karpathianwolf",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "status": 204,
+    "status_text": "",
+    "response_body_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "response_body_len": 0,
+    "response_preview": "",
+    "response_keys": []
+  },
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/locations?withMasseurs=1",
+    "url_path": "/api/v1/locations?withMasseurs=1",
+    "request_headers_redacted": true,
+    "post_data": null,
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/Karpathianwolf",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:6078efd4814831b04c1fcefb31fae00a03e9c001d4fcba1d4a962703fecc7b9d",
+    "response_body_len": 172850,
+    "response_preview": "{\"locations\":[{\"locationId\":1277,\"searchCity\":\"freeport-bs\",\"city\":\"Freeport\",\"state\":\"\",\"country\":\"The Bahamas\",\"continent\":\"Central America\",\"keywords\":\"The Bahamas\",\"label\":\"Freeport, The Bahamas\",\"lat\":26.52946854,\"lng\":-78.65010071,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/freeport-bs\\/\"},{\"locationId\":401,\"searchCity\":\"fairbanks-ak\",\"city\":\"Fairbanks\",\"state\":\"AK\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alaska\",\"label\":\"Fairbanks, AK\",\"lat\":64.83777618,\"lng\":-147.71638489,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/fairbanks-ak\\/\"},{\"locationId\":404,\"searchCity\":\"birmingham-al\",\"city\":\"Birmingham\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Birmingham, AL\",\"lat\":33.5206604,\"lng\":-86.80249023,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/birmingham-al\\/\"},{\"locationId\":408,\"searchCity\":\"huntsville-al\",\"city\":\"Huntsville\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Huntsville, AL\",\"lat\":34.73036957,\"lng\":-86.58610535,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/huntsville-al\\/\"},{\"locationId\":409,\"searchCity\":\"mobile-al\",\"city\":\"Mobile\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Mobile, AL\",\"lat\":30.69643974,\"lng\":-88.18035889,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/mobile-al\\/\"},{\"locationId\":410,\"searchCity\":\"montgomery-al\",\"city\":\"Montgomery\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Montgomery, AL\",\"lat\":32.36680603,\"lng\":-86.29997253,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/montgomery-al\\/\"},{\"locationId\":412,\"searchCity\":\"fayetteville-ar\",\"city\":\"Fayetteville\",\"state\":\"AR\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Arkansas\",\"label\":\"Fayetteville, AR\",\"lat\":36.06258011,\"lng\":-94.15742493,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/fayetteville-ar\\/\"},{\"locationId\":413,\"searchCity\":\"fortsmith-ar\",\"city\":\"Fort Smith\",\"state\":\"AR\",\"",
+    "response_keys": [
+      "locations"
+    ]
+  }
+]

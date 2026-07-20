@@ -1,0 +1,665 @@
+#!/usr/bin/env python3
+"""
+RM Selenium CI/CD Harness — approval-gated, evidence-only automation.
+
+Safety model:
+- Uses standard Selenium only. No CAPTCHA solving, no stealth/anti-bot bypass.
+- Defaults to read-only actions.
+- Mutations require BOTH:
+  1) RM_ENABLE_MUTATIONS=true
+  2) the action name listed in RM_APPROVED_ACTIONS or --approved-actions-file
+- Stops if CAPTCHA / access-forbidden / verification interstitial is detected.
+- Writes receipts, screenshots, and JSON artifacts for every action.
+"""
+
+from __future__ import annotations
+
+import argparse
+import dataclasses
+import hashlib
+import json
+import os
+import sys
+import time
+import traceback
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Callable, Dict, List, Optional, Tuple
+
+from dotenv import load_dotenv
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException, WebDriverException, NoSuchElementException
+from selenium.webdriver import ChromeOptions
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
+
+BASE_URL = os.getenv("RM_BASE_URL", "https://rentmasseur.com").rstrip("/")
+ARTIFACT_DIR = Path(os.getenv("RM_ARTIFACT_DIR", "artifacts/rm_selenium"))
+RECEIPT_DIR = ARTIFACT_DIR / "receipts"
+SCREEN_DIR = ARTIFACT_DIR / "screenshots"
+HTML_DIR = ARTIFACT_DIR / "html"
+JSON_DIR = ARTIFACT_DIR / "json"
+
+for d in (RECEIPT_DIR, SCREEN_DIR, HTML_DIR, JSON_DIR):
+    d.mkdir(parents=True, exist_ok=True)
+
+
+READ_ONLY = "read_only"
+MUTATION = "mutation"
+
+
+@dataclasses.dataclass
+class ActionResult:
+    action: str
+    ok: bool
+    mode: str
+    status: str
+    url: str = ""
+    data: Optional[dict] = None
+    error: Optional[str] = None
+    blocked_reason: Optional[str] = None
+    screenshot: Optional[str] = None
+    html: Optional[str] = None
+    receipt: Optional[str] = None
+
+
+@dataclasses.dataclass
+class ActionSpec:
+    name: str
+    mode: str
+    description: str
+    fn: Callable[[WebDriver, argparse.Namespace], ActionResult]
+    requires_login: bool = True
+
+
+class ReceiptLedger:
+    def __init__(self, path: Path = RECEIPT_DIR / "ledger.jsonl"):
+        self.path = path
+        self.entries = []
+        if path.exists():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    try:
+                        self.entries.append(json.loads(line))
+                    except Exception:
+                        pass
+
+    def add(self, payload: dict) -> str:
+        prev_hash = self.entries[-1].get("hash", "0" * 64) if self.entries else "0" * 64
+        entry = {
+            "index": len(self.entries),
+            "timestamp": now_iso(),
+            "prev_hash": prev_hash,
+            **payload,
+        }
+        body = json.dumps({k: v for k, v in entry.items() if k != "hash"}, sort_keys=True, default=str)
+        entry["hash"] = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        self.entries.append(entry)
+        with self.path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False, default=str) + "\n")
+        receipt_path = RECEIPT_DIR / f"{entry['index']:05d}_{safe_name(payload.get('action', 'action'))}.json"
+        receipt_path.write_text(json.dumps(entry, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+        return str(receipt_path)
+
+    def verify(self) -> bool:
+        prev = "0" * 64
+        for entry in self.entries:
+            if entry.get("prev_hash") != prev:
+                return False
+            body = json.dumps({k: v for k, v in entry.items() if k != "hash"}, sort_keys=True, default=str)
+            if hashlib.sha256(body.encode("utf-8")).hexdigest() != entry.get("hash"):
+                return False
+            prev = entry["hash"]
+        return True
+
+
+LEDGER = ReceiptLedger()
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def safe_name(s: str) -> str:
+    return "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in s)[:80]
+
+
+def truthy(value: Optional[str]) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def get_username() -> str:
+    return (
+        os.getenv("RM_USER")
+        or os.getenv("RENTMASSEUR_USERNAME")
+        or os.getenv("RM_USERNAME")
+        or ""
+    )
+
+
+def get_password() -> str:
+    return (
+        os.getenv("RM_PASS")
+        or os.getenv("RENTMASSEUR_PASSWORD")
+        or os.getenv("RM_PASSWORD")
+        or ""
+    )
+
+
+def build_driver(headless: bool = True) -> WebDriver:
+    opts = ChromeOptions()
+    if headless:
+        opts.add_argument("--headless=new")
+    opts.add_argument("--window-size=1440,1200")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    if os.getenv("RM_CHROME_BINARY"):
+        opts.binary_location = os.getenv("RM_CHROME_BINARY")
+    driver = webdriver.Chrome(options=opts)
+    driver.set_page_load_timeout(int(os.getenv("RM_PAGE_TIMEOUT", "45")))
+    driver.implicitly_wait(int(os.getenv("RM_IMPLICIT_WAIT", "8")))
+    return driver
+
+
+def page_text(driver: WebDriver) -> str:
+    try:
+        return driver.execute_script("return document.body ? document.body.innerText : ''") or ""
+    except Exception:
+        return ""
+
+
+def detect_block(driver: WebDriver) -> Optional[str]:
+    txt = page_text(driver).lower()
+    url = (driver.current_url or "").lower()
+    needles = [
+        ("captcha", "captcha_or_challenge_detected"),
+        ("crowdsec", "crowdsec_access_control_detected"),
+        ("access forbidden", "access_forbidden_detected"),
+        ("verify you are human", "human_verification_detected"),
+        ("unusual traffic", "traffic_challenge_detected"),
+        ("too many requests", "rate_limit_detected"),
+    ]
+    for needle, reason in needles:
+        if needle in txt or needle in url:
+            return reason
+    return None
+
+
+def capture(driver: WebDriver, action: str) -> Tuple[Optional[str], Optional[str]]:
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    base = f"{ts}_{safe_name(action)}"
+    screenshot_path = SCREEN_DIR / f"{base}.png"
+    html_path = HTML_DIR / f"{base}.html"
+    try:
+        driver.save_screenshot(str(screenshot_path))
+    except Exception:
+        screenshot_path = None
+    try:
+        html_path.write_text(driver.page_source or "", encoding="utf-8", errors="ignore")
+    except Exception:
+        html_path = None
+    return (str(screenshot_path) if screenshot_path else None, str(html_path) if html_path else None)
+
+
+def finish(driver: WebDriver, result: ActionResult) -> ActionResult:
+    result.url = result.url or getattr(driver, "current_url", "")
+    result.screenshot, result.html = capture(driver, result.action)
+    receipt_payload = dataclasses.asdict(result)
+    receipt_payload.pop("receipt", None)
+    result.receipt = LEDGER.add(receipt_payload)
+    (JSON_DIR / f"{safe_name(result.action)}_latest.json").write_text(
+        json.dumps(dataclasses.asdict(result), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return result
+
+
+def blocked(action: str, mode: str, reason: str, driver: Optional[WebDriver] = None) -> ActionResult:
+    res = ActionResult(action=action, ok=False, mode=mode, status="blocked", blocked_reason=reason)
+    if driver:
+        return finish(driver, res)
+    res.receipt = LEDGER.add(dataclasses.asdict(res))
+    return res
+
+
+def approved_actions(args: argparse.Namespace) -> set:
+    values = set()
+    env = os.getenv("RM_APPROVED_ACTIONS", "")
+    if env:
+        values.update([x.strip() for x in env.split(",") if x.strip()])
+    if args.approved_actions_file:
+        path = Path(args.approved_actions_file)
+        if path.exists():
+            data = json.loads(path.read_text(encoding="utf-8"))
+            values.update(data.get("approved_actions", []))
+    return values
+
+
+def require_mutation(action: str, args: argparse.Namespace, driver: WebDriver) -> Optional[ActionResult]:
+    if not truthy(os.getenv("RM_ENABLE_MUTATIONS")) and not args.allow_mutations:
+        return blocked(action, MUTATION, "mutation_disabled_set_RM_ENABLE_MUTATIONS_true_or_pass_allow_mutations", driver)
+    if action not in approved_actions(args):
+        return blocked(action, MUTATION, f"action_not_approved:{action}", driver)
+    return None
+
+
+def click_first(driver: WebDriver, candidates: List[Tuple[str, str]]) -> bool:
+    for by, sel in candidates:
+        try:
+            els = driver.find_elements(by, sel)
+            for el in els:
+                if el.is_displayed() and el.is_enabled():
+                    driver.execute_script("arguments[0].scrollIntoView({block:'center'});", el)
+                    time.sleep(0.3)
+                    driver.execute_script("arguments[0].click();", el)
+                    return True
+        except Exception:
+            continue
+    return False
+
+
+def find_first_input(driver: WebDriver, candidates: List[Tuple[str, str]]):
+    for by, sel in candidates:
+        try:
+            els = driver.find_elements(by, sel)
+            for el in els:
+                if el.is_displayed() and el.is_enabled():
+                    return el
+        except Exception:
+            continue
+    return None
+
+
+def action_smoke(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "smoke"
+    driver.get(BASE_URL)
+    time.sleep(3)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+    data = {"title": driver.title, "base_url": BASE_URL}
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data=data))
+
+
+def action_login(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "login"
+    user = get_username()
+    password = get_password()
+    if not user or not password:
+        return blocked(action, READ_ONLY, "missing_credentials_RM_USER_RM_PASS", driver)
+
+    driver.get(f"{BASE_URL}/login")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+
+    user_el = find_first_input(driver, [
+        (By.CSS_SELECTOR, "input[type='email']"),
+        (By.CSS_SELECTOR, "input[name*='email' i]"),
+        (By.CSS_SELECTOR, "input[name*='user' i]"),
+        (By.CSS_SELECTOR, "input[type='text']"),
+    ])
+    pass_el = find_first_input(driver, [
+        (By.CSS_SELECTOR, "input[type='password']"),
+        (By.CSS_SELECTOR, "input[name*='pass' i]"),
+    ])
+
+    if not user_el or not pass_el:
+        return blocked(action, READ_ONLY, "login_form_not_found", driver)
+
+    driver.execute_script("""
+        const ns = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        if (arguments[0]) { ns.call(arguments[0], arguments[2]); arguments[0].dispatchEvent(new Event('input', {bubbles: true})); }
+        if (arguments[1]) { ns.call(arguments[1], arguments[3]); arguments[1].dispatchEvent(new Event('input', {bubbles: true})); }
+    """, user_el, pass_el, user, password)
+    time.sleep(1)
+    try:
+        pass_el.send_keys(Keys.ENTER)
+    except Exception:
+        driver.execute_script("""
+            const btn = document.querySelector('button[type="submit"]') ||
+                        Array.from(document.querySelectorAll('button')).find(b => /login|sign|submit/i.test(b.innerText));
+            if (btn) btn.click();
+        """)
+    time.sleep(6)
+
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+
+    ok = "/login" not in (driver.current_url or "").lower()
+    status = "ok" if ok else "login_failed"
+    return finish(driver, ActionResult(action, ok, READ_ONLY, status, data={"current_url": driver.current_url}))
+
+
+def ensure_login(driver: WebDriver, args: argparse.Namespace) -> Optional[ActionResult]:
+    if "/login" in (driver.current_url or "") or not driver.current_url:
+        res = action_login(driver, args)
+        if not res.ok:
+            return res
+    return None
+
+
+def action_dashboard_read(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "dashboard_read"
+    driver.get(f"{BASE_URL}/settings")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+    txt = page_text(driver)
+    data = {
+        "title": driver.title,
+        "text_len": len(txt),
+        "signals": {
+            "availability": "availability" in txt.lower(),
+            "profile": "profile" in txt.lower(),
+            "statistics": "statistics" in txt.lower() or "views" in txt.lower(),
+            "messages": "messages" in txt.lower() or "mailbox" in txt.lower(),
+        },
+    }
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data=data))
+
+
+def action_availability_read(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "availability_read"
+    driver.get(f"{BASE_URL}/settings?availability=1")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+    txt = page_text(driver)
+    data = {
+        "text_len": len(txt),
+        "available_word_present": "available" in txt.lower(),
+        "countdown_word_present": "countdown" in txt.lower() or "hour" in txt.lower(),
+    }
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data=data))
+
+
+def action_availability_set(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "availability_set"
+    gate = require_mutation(action, args, driver)
+    if gate:
+        return gate
+
+    driver.get(f"{BASE_URL}/settings?availability=1")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, MUTATION, reason, driver)
+
+    clicked = click_first(driver, [
+        (By.XPATH, "//label[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'available')]"),
+        (By.XPATH, "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'available')]"),
+        (By.CSS_SELECTOR, "button[aria-label*='Available' i]"),
+    ])
+    time.sleep(1)
+
+    saved = click_first(driver, [
+        (By.XPATH, "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'save')]"),
+        (By.XPATH, "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'apply')]"),
+        (By.XPATH, "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'set')]"),
+        (By.CSS_SELECTOR, "button[type='submit']"),
+    ])
+    time.sleep(3)
+
+    ok = clicked and saved and not detect_block(driver)
+    return finish(driver, ActionResult(action, ok, MUTATION, "ok" if ok else "not_verified", data={"clicked_available": clicked, "clicked_save": saved}))
+
+
+def action_about_read(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "about_read"
+    driver.get(f"{BASE_URL}/settings/about")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+    txt = page_text(driver)
+    data = {
+        "text_len": len(txt),
+        "bio_signals": {
+            "headline": "headline" in txt.lower(),
+            "description": "description" in txt.lower() or "about" in txt.lower(),
+            "massage": "massage" in txt.lower(),
+        },
+    }
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data=data))
+
+
+def action_bio_set_approved(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "bio_set_approved"
+    gate = require_mutation(action, args, driver)
+    if gate:
+        return gate
+
+    bio_file = os.getenv("RM_APPROVED_BIO_FILE", args.bio_file or "")
+    if not bio_file or not Path(bio_file).exists():
+        return blocked(action, MUTATION, "missing_RM_APPROVED_BIO_FILE", driver)
+
+    bio_text = Path(bio_file).read_text(encoding="utf-8").strip()
+    if len(bio_text) < 40 or len(bio_text) > int(os.getenv("RM_MAX_BIO_CHARS", "3000")):
+        return blocked(action, MUTATION, "approved_bio_length_out_of_bounds", driver)
+    risky = ["escort", "happy ending", "nude", "naked", "sex", "guaranteed cure"]
+    if any(x in bio_text.lower() for x in risky):
+        return blocked(action, MUTATION, "approved_bio_failed_local_policy_filter", driver)
+
+    driver.get(f"{BASE_URL}/settings/about")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, MUTATION, reason, driver)
+
+    field = find_first_input(driver, [
+        (By.CSS_SELECTOR, "textarea[name*='description' i]"),
+        (By.CSS_SELECTOR, "textarea[name*='bio' i]"),
+        (By.CSS_SELECTOR, "textarea"),
+        (By.CSS_SELECTOR, "[contenteditable='true']"),
+    ])
+    if not field:
+        return blocked(action, MUTATION, "bio_field_not_found", driver)
+
+    try:
+        tag = field.tag_name.lower()
+        if tag == "textarea":
+            field.clear()
+            field.send_keys(bio_text)
+        else:
+            driver.execute_script("arguments[0].innerText = arguments[1]; arguments[0].dispatchEvent(new Event('input', {bubbles:true}));", field, bio_text)
+    except Exception as e:
+        return blocked(action, MUTATION, f"bio_field_write_failed:{e}", driver)
+
+    saved = click_first(driver, [
+        (By.XPATH, "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'save')]"),
+        (By.XPATH, "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'update')]"),
+        (By.CSS_SELECTOR, "button[type='submit']"),
+    ])
+    time.sleep(4)
+
+    ok = saved and not detect_block(driver)
+    return finish(driver, ActionResult(action, ok, MUTATION, "ok" if ok else "not_verified", data={"bio_chars": len(bio_text), "clicked_save": saved}))
+
+
+def action_search_rank_read(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "search_rank_read"
+    city = os.getenv("RM_SEARCH_CITY", args.city or "manhattan-ny")
+    username = os.getenv("RM_TARGET_USERNAME", get_username())
+    driver.get(f"{BASE_URL}/search/{city}")
+    time.sleep(5)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+
+    links = driver.find_elements(By.CSS_SELECTOR, "a[href]")
+    rank = None
+    hrefs = []
+    for idx, a in enumerate(links[:200], 1):
+        href = a.get_attribute("href") or ""
+        text = (a.text or "").strip()
+        hrefs.append({"rank": idx, "text": text[:80], "href": href})
+        if username and username.lower() in (href + " " + text).lower():
+            rank = idx
+            break
+
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data={"city": city, "target": username, "rank": rank, "sample_links": hrefs[:25]}))
+
+
+def action_mailbox_read(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "mailbox_read"
+    driver.get(f"{BASE_URL}/mailbox")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+    txt = page_text(driver)
+    data = {
+        "text_len": len(txt),
+        "message_signals": {
+            "inbox": "inbox" in txt.lower(),
+            "message": "message" in txt.lower(),
+            "email": "email" in txt.lower(),
+        },
+    }
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data=data))
+
+
+def action_blog_read(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "blog_read"
+    driver.get(f"{BASE_URL}/blogs")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+    txt = page_text(driver)
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data={"text_len": len(txt), "blog_word_present": "blog" in txt.lower()}))
+
+
+def action_interview_read(driver: WebDriver, args: argparse.Namespace) -> ActionResult:
+    action = "interview_read"
+    driver.get(f"{BASE_URL}/settings/interview")
+    time.sleep(4)
+    reason = detect_block(driver)
+    if reason:
+        return blocked(action, READ_ONLY, reason, driver)
+    txt = page_text(driver)
+    return finish(driver, ActionResult(action, True, READ_ONLY, "ok", data={"text_len": len(txt), "interview_word_present": "interview" in txt.lower()}))
+
+
+ACTIONS: Dict[str, ActionSpec] = {
+    "smoke": ActionSpec("smoke", READ_ONLY, "Load public homepage and verify no block page.", action_smoke, requires_login=False),
+    "login": ActionSpec("login", READ_ONLY, "Login with first-party credentials; stops on CAPTCHA/challenge.", action_login, requires_login=False),
+    "dashboard_read": ActionSpec("dashboard_read", READ_ONLY, "Read dashboard/settings page and save evidence.", action_dashboard_read),
+    "availability_read": ActionSpec("availability_read", READ_ONLY, "Read availability screen.", action_availability_read),
+    "availability_set": ActionSpec("availability_set", MUTATION, "Set availability only when explicitly approved.", action_availability_set),
+    "about_read": ActionSpec("about_read", READ_ONLY, "Read about/profile settings page.", action_about_read),
+    "bio_set_approved": ActionSpec("bio_set_approved", MUTATION, "Set bio from a pre-approved local file only.", action_bio_set_approved),
+    "search_rank_read": ActionSpec("search_rank_read", READ_ONLY, "Read public search page and estimate target rank.", action_search_rank_read),
+    "mailbox_read": ActionSpec("mailbox_read", READ_ONLY, "Open mailbox page and capture high-level evidence only.", action_mailbox_read),
+    "blog_read": ActionSpec("blog_read", READ_ONLY, "Open blogs page and capture evidence.", action_blog_read),
+    "interview_read": ActionSpec("interview_read", READ_ONLY, "Open interview/settings page and capture evidence.", action_interview_read),
+}
+
+
+def parse_actions(raw: str) -> List[str]:
+    if not raw or raw.strip() in {"default", "safe"}:
+        return ["smoke", "login", "dashboard_read", "availability_read", "about_read", "search_rank_read"]
+    if raw.strip() == "all-read":
+        return [name for name, spec in ACTIONS.items() if spec.mode == READ_ONLY]
+    if raw.strip() == "all":
+        return list(ACTIONS.keys())
+    return [x.strip() for x in raw.split(",") if x.strip()]
+
+
+def write_action_catalog() -> None:
+    catalog = {
+        name: {"mode": spec.mode, "description": spec.description, "requires_login": spec.requires_login}
+        for name, spec in ACTIONS.items()
+    }
+    (JSON_DIR / "action_catalog.json").write_text(json.dumps(catalog, indent=2), encoding="utf-8")
+
+
+def run(args: argparse.Namespace) -> int:
+    load_dotenv()
+    write_action_catalog()
+    requested = parse_actions(args.actions)
+    unknown = [a for a in requested if a not in ACTIONS]
+    if unknown:
+        print(json.dumps({"status": "failed", "unknown_actions": unknown, "known_actions": sorted(ACTIONS)}), file=sys.stderr)
+        return 2
+
+    driver = build_driver(headless=not args.headed)
+    results: List[ActionResult] = []
+    try:
+        logged_in = False
+        for name in requested:
+            spec = ACTIONS[name]
+            if spec.requires_login and not logged_in:
+                login_result = action_login(driver, args)
+                results.append(login_result)
+                logged_in = login_result.ok
+                if not logged_in:
+                    break
+
+            try:
+                result = spec.fn(driver, args)
+            except Exception as e:
+                tb = traceback.format_exc()
+                result = ActionResult(name, False, spec.mode, "exception", error=str(e), data={"traceback_tail": tb[-4000:]})
+                result = finish(driver, result)
+            results.append(result)
+
+            if result.blocked_reason in {
+                "captcha_or_challenge_detected",
+                "crowdsec_access_control_detected",
+                "human_verification_detected",
+                "access_forbidden_detected",
+            }:
+                break
+
+            time.sleep(float(os.getenv("RM_ACTION_PAUSE_SECONDS", "2.0")))
+
+    finally:
+        driver.quit()
+
+    summary = {
+        "timestamp": now_iso(),
+        "ok": all(r.ok or r.status == "blocked" for r in results),
+        "ledger_valid": LEDGER.verify(),
+        "artifact_dir": str(ARTIFACT_DIR),
+        "requested_actions": requested,
+        "results": [dataclasses.asdict(r) for r in results],
+    }
+    (ARTIFACT_DIR / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return 0 if summary["ledger_valid"] and not any(r.status == "exception" for r in results) else 1
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Approval-gated Selenium CI/CD harness for RM.")
+    parser.add_argument("--actions", default=os.getenv("RM_ACTIONS", "safe"),
+                        help="safe | all-read | all | comma-separated action names")
+    parser.add_argument("--headed", action="store_true", help="Run visible Chrome. CI should stay headless.")
+    parser.add_argument("--allow-mutations", action="store_true",
+                        help="Still requires approved action list. Prefer RM_ENABLE_MUTATIONS=true.")
+    parser.add_argument("--approved-actions-file", default=os.getenv("RM_APPROVED_ACTIONS_FILE", ""),
+                        help="JSON file with {'approved_actions': ['availability_set', ...]}")
+    parser.add_argument("--bio-file", default="", help="Approved bio file for bio_set_approved.")
+    parser.add_argument("--city", default=os.getenv("RM_SEARCH_CITY", "manhattan-ny"))
+    parser.add_argument("--list-actions", action="store_true")
+    args = parser.parse_args()
+
+    if args.list_actions:
+        print(json.dumps({
+            name: {"mode": spec.mode, "description": spec.description, "requires_login": spec.requires_login}
+            for name, spec in ACTIONS.items()
+        }, indent=2))
+        return
+
+    sys.exit(run(args))
+
+
+if __name__ == "__main__":
+    main()

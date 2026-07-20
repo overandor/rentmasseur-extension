@@ -1,0 +1,568 @@
+#!/usr/bin/env python3
+"""
+RM Bio Loop — Ollama-powered bio generation, deployment, and tracking.
+
+Generates multiple bio candidates per day using local Ollama models,
+deploys the best one via Selenium, and tracks visitor counts per bio
+to determine the winner.
+
+Flow:
+  1. Fetch current bio from RM (via Selenium)
+  2. Generate N bio candidates using Ollama (llama3.1, mistral, gemma2)
+  3. Score each candidate (length, keywords, readability, uniqueness)
+  4. Deploy the highest-scoring bio via Selenium
+  5. Record the bio + deployment time in bio_experiments.db
+  6. After a period, compare visitor counts during each bio's active window
+  7. Declare a winner and keep the best-performing bio
+
+Usage:
+  python3 rm_bio_loop.py --generate --count 5
+  python3 rm_bio_loop.py --generate --deploy --count 3
+  python3 rm_bio_loop.py --fetch-current
+  python3 rm_bio_loop.py --score-only
+  python3 rm_bio_loop.py --evaluate
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import random
+import sqlite3
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+
+BASE_DIR = Path(__file__).parent
+ARTIFACTS = BASE_DIR / "artifacts" / "engagement"
+ARTIFACTS.mkdir(parents=True, exist_ok=True)
+BIO_CACHE = ARTIFACTS / "current_bio.json"
+BIO_DB = ARTIFACTS / "bio_experiments.db"
+BIOS_DIR = ARTIFACTS / "bios"
+BIOS_DIR.mkdir(parents=True, exist_ok=True)
+
+OLLAMA_URL = "http://localhost:11434/api/generate"
+
+# Bio generation prompts — varied tones/styles
+BIO_PROMPTS = [
+    {
+        "id": "professional_warm",
+        "prompt": """Write a massage therapist bio for RentMasseur.com. Keep it under 500 characters.
+Tone: Professional yet warm. Include: modalities (Swedish, deep tissue, sports), location (Manhattan NYC),
+availability (incall/outcall), and a welcoming closing line. Do not use emoji. Do not include phone numbers.
+Write only the bio text, nothing else.""",
+    },
+    {
+        "id": "confident_direct",
+        "prompt": """Write a massage therapist bio for RentMasseur.com. Keep it under 500 characters.
+Tone: Confident and direct. Emphasize: experience, technique, results. Mention Manhattan incall/outcall.
+Be concise and punchy. Do not use emoji. Write only the bio text, nothing else.""",
+    },
+    {
+        "id": "relaxed_friendly",
+        "prompt": """Write a massage therapist bio for RentMasseur.com. Keep it under 500 characters.
+Tone: Relaxed, friendly, approachable. Mention: Swedish/deep tissue, Manhattan, clean studio, flexible hours.
+Make the reader feel comfortable reaching out. Do not use emoji. Write only the bio text, nothing else.""",
+    },
+    {
+        "id": "luxury_premium",
+        "prompt": """Write a massage therapist bio for RentMasseur.com. Keep it under 500 characters.
+Tone: Premium, luxury, exclusive. Emphasize: high-end technique, private studio, premium experience.
+Manhattan incall. Do not use emoji. Write only the bio text, nothing else.""",
+    },
+    {
+        "id": "energetic_athletic",
+        "prompt": """Write a massage therapist bio for RentMasseur.com. Keep it under 500 characters.
+Tone: Energetic and athletic. Focus on: sports massage, recovery, deep tissue, active clients.
+Manhattan incall/outcall. Do not use emoji. Write only the bio text, nothing else.""",
+    },
+]
+
+GOOD_KEYWORDS = [
+    "swedish", "deep tissue", "sports", "manhattan", "nyc", "incall", "outcall",
+    "professional", "certified", "experienced", "relaxing", "therapeutic",
+    "clean", "private", "discreet", "available", "booking", "appointment",
+]
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def log(msg: str, level: str = "INFO"):
+    print(f"[BIO-LOOP] [{level}] {msg}")
+
+
+# ─── Bio Experiments DB ──────────────────────────────────────────────
+
+def init_bio_db():
+    conn = sqlite3.connect(str(BIO_DB))
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS bio_experiments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bio_text TEXT NOT NULL,
+            bio_hash TEXT NOT NULL,
+            prompt_id TEXT,
+            model TEXT NOT NULL,
+            score REAL DEFAULT 0,
+            deployed_at TEXT,
+            removed_at TEXT,
+            visitors_during INTEGER DEFAULT 0,
+            contact_clicks_during INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'generated',
+            created_at TEXT NOT NULL
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS bio_scores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bio_hash TEXT NOT NULL,
+            char_count INTEGER,
+            keyword_count INTEGER,
+            readability_score REAL,
+            uniqueness_score REAL,
+            total_score REAL,
+            scored_at TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+    log(f"Bio experiments DB: {BIO_DB}")
+
+
+def save_bio_candidate(bio_text: str, prompt_id: str, model: str, score: float = 0) -> int:
+    conn = sqlite3.connect(str(BIO_DB))
+    bio_hash = hashlib.sha256(bio_text.encode()).hexdigest()[:16]
+    now = now_iso()
+    cur = conn.execute(
+        "INSERT INTO bio_experiments (bio_text, bio_hash, prompt_id, model, score, status, created_at) "
+        "VALUES (?, ?, ?, ?, ?, 'generated', ?)",
+        (bio_text, bio_hash, prompt_id, model, score, now)
+    )
+    bio_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+    return bio_id
+
+
+def deploy_bio(bio_id: int):
+    conn = sqlite3.connect(str(BIO_DB))
+    conn.execute("UPDATE bio_experiments SET deployed_at=?, status='live' WHERE id=?", (now_iso(), bio_id))
+    # Mark previous live bio as removed
+    conn.execute(
+        "UPDATE bio_experiments SET removed_at=?, status='completed' "
+        "WHERE status='live' AND id != ?",
+        (now_iso(), bio_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_current_live_bio() -> Optional[dict]:
+    conn = sqlite3.connect(str(BIO_DB))
+    conn.row_factory = sqlite3.Row
+    row = conn.execute(
+        "SELECT * FROM bio_experiments WHERE status='live' ORDER BY deployed_at DESC LIMIT 1"
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_all_bios() -> list:
+    conn = sqlite3.connect(str(BIO_DB))
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT * FROM bio_experiments ORDER BY created_at DESC LIMIT 50"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def evaluate_bios() -> list:
+    """Compare visitor counts during each bio's active window."""
+    conn = sqlite3.connect(str(BIO_DB))
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT * FROM bio_experiments WHERE status='completed' AND visitors_during > 0 "
+        "ORDER BY visitors_during DESC"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+# ─── Ollama Bio Generation ───────────────────────────────────────────
+
+def call_ollama(prompt: str, model: str = "llama3.1") -> str:
+    """Call local Ollama API to generate text."""
+    import requests
+    try:
+        resp = requests.post(OLLAMA_URL, json={
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.8,
+                "top_p": 0.9,
+                "num_predict": 300,
+            }
+        }, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        text = data.get("response", "").strip()
+        return text
+    except Exception as e:
+        log(f"Ollama error ({model}): {e}", "ERROR")
+        return ""
+
+
+def generate_bios(count: int = 3, models: list = None) -> list:
+    """Generate N bio candidates using Ollama."""
+    if models is None:
+        models = ["llama3.1", "mistral", "gemma2"]
+
+    candidates = []
+    prompts_to_use = BIO_PROMPTS[:count] if count <= len(BIO_PROMPTS) else BIO_PROMPTS * (count // len(BIO_PROMPTS) + 1)
+
+    for i in range(count):
+        prompt_cfg = prompts_to_use[i % len(prompts_to_use)]
+        model = models[i % len(models)]
+
+        log(f"  [{i+1}/{count}] Generating with {model} (style: {prompt_cfg['id']})...")
+        bio_text = call_ollama(prompt_cfg["prompt"], model=model)
+
+        if not bio_text:
+            log(f"  [{i+1}/{count}] Generation failed, skipping", "WARN")
+            continue
+
+        # Clean up the text
+        bio_text = bio_text.strip()
+        # Remove any leading "Here is..." or quotes
+        for prefix in ["Here is", "Here's", "Sure,", "Of course", "```"]:
+            if bio_text.startswith(prefix):
+                lines = bio_text.split("\n")
+                bio_text = "\n".join(lines[1:]).strip()
+        # Strip surrounding quotes
+        if bio_text.startswith('"') and bio_text.endswith('"'):
+            bio_text = bio_text[1:-1].strip()
+        # Truncate to 500 chars (RM limit)
+        if len(bio_text) > 500:
+            bio_text = bio_text[:497] + "..."
+
+        score = score_bio(bio_text)
+        bio_id = save_bio_candidate(bio_text, prompt_cfg["id"], model, score)
+
+        # Save to file
+        bio_file = BIOS_DIR / f"bio_{bio_id:04d}_{prompt_cfg['id']}_{model}.txt"
+        bio_file.write_text(bio_text, encoding="utf-8")
+
+        candidates.append({
+            "id": bio_id,
+            "text": bio_text,
+            "model": model,
+            "prompt_id": prompt_cfg["id"],
+            "score": score,
+            "char_count": len(bio_text),
+            "file": str(bio_file),
+        })
+        log(f"  [{i+1}/{count}] Score: {score:.2f} | {len(bio_text)} chars | saved as bio_{bio_id:04d}")
+
+    return candidates
+
+
+def score_bio(bio_text: str) -> float:
+    """Score a bio candidate. Higher is better."""
+    text_lower = bio_text.lower()
+    char_count = len(bio_text)
+
+    # Keyword score (0-40)
+    keyword_hits = sum(1 for kw in GOOD_KEYWORDS if kw in text_lower)
+    keyword_score = min(keyword_hits * 5, 40)
+
+    # Length score (0-20) — sweet spot is 200-450 chars
+    if 200 <= char_count <= 450:
+        length_score = 20
+    elif 150 <= char_count <= 500:
+        length_score = 15
+    elif 100 <= char_count <= 600:
+        length_score = 10
+    else:
+        length_score = 5
+
+    # Readability (0-20) — short sentences, no run-ons
+    sentences = bio_text.split(".")
+    avg_sentence_len = sum(len(s.split()) for s in sentences) / max(len(sentences), 1)
+    if avg_sentence_len <= 15:
+        readability = 20
+    elif avg_sentence_len <= 20:
+        readability = 15
+    elif avg_sentence_len <= 25:
+        readability = 10
+    else:
+        readability = 5
+
+    # Uniqueness (0-20) — hash-based, compare against existing bios
+    bio_hash = hashlib.sha256(bio_text.encode()).hexdigest()[:16]
+    conn = sqlite3.connect(str(BIO_DB))
+    existing = conn.execute("SELECT COUNT(*) FROM bio_experiments WHERE bio_hash=?", (bio_hash,)).fetchone()[0]
+    conn.close()
+    uniqueness = 20 if existing == 0 else 5
+
+    total = keyword_score + length_score + readability + uniqueness
+    return round(total, 2)
+
+
+# ─── Fetch Current Bio via Selenium ──────────────────────────────────
+
+def fetch_current_bio() -> dict:
+    """Use Selenium to fetch the current bio from RM settings/about page."""
+    from rm_demo_agent import SeleniumAgent, load_env, write_receipt
+
+    load_env()
+    username = os.getenv("RM_USER") or os.getenv("RENTMASSEUR_USERNAME", "")
+    password = os.getenv("RM_PASS") or os.getenv("RENTMASSEUR_PASSWORD", "")
+
+    if not username or not password:
+        log("No credentials for bio fetch", "ERROR")
+        return {"bio": "(no credentials)", "fetched_at": now_iso(), "char_count": 0}
+
+    agent = SeleniumAgent(headed=True)
+    try:
+        agent.start()
+        if not agent.login(username, password):
+            log("Login failed for bio fetch", "ERROR")
+            return {"bio": "(login failed)", "fetched_at": now_iso(), "char_count": 0}
+
+        from selenium.webdriver.common.by import By
+        agent.driver.get(f"https://rentmasseur.com/settings/about")
+        time.sleep(4)
+
+        # Try to find the bio textarea
+        bio_text = ""
+        for sel in ["textarea", "textarea[name*='about']", "textarea[name*='bio']"]:
+            els = agent.driver.find_elements(By.CSS_SELECTOR, sel)
+            for el in els:
+                if el.is_displayed() and len(el.get_attribute("value") or "") > 20:
+                    bio_text = el.get_attribute("value") or ""
+                    break
+            if bio_text:
+                break
+
+        # Also try reading from page text
+        if not bio_text:
+            page_text = agent.page_text()
+            # Look for bio section
+            if "About" in page_text or "Bio" in page_text:
+                lines = page_text.split("\n")
+                for i, line in enumerate(lines):
+                    if "about" in line.lower() or "bio" in line.lower():
+                        bio_text = "\n".join(lines[i+1:i+10]).strip()
+                        break
+
+        result = {
+            "bio": bio_text,
+            "fetched_at": now_iso(),
+            "char_count": len(bio_text),
+            "url": agent.driver.current_url,
+        }
+        BIO_CACHE.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        log(f"Current bio fetched: {len(bio_text)} chars")
+        write_receipt("fetch_bio", "pass", {"char_count": len(bio_text)})
+        return result
+
+    except Exception as e:
+        log(f"Bio fetch error: {e}", "ERROR")
+        return {"bio": f"(error: {e})", "fetched_at": now_iso(), "char_count": 0}
+    finally:
+        agent.stop()
+
+
+# ─── Deploy Bio via Selenium ─────────────────────────────────────────
+
+def deploy_bio_to_rm(bio_text: str, bio_id: int) -> bool:
+    """Deploy a bio to RM via Selenium."""
+    from rm_demo_agent import SeleniumAgent, load_env, write_receipt
+
+    load_env()
+    username = os.getenv("RM_USER") or os.getenv("RENTMASSEUR_USERNAME", "")
+    password = os.getenv("RM_PASS") or os.getenv("RENTMASSEUR_PASSWORD", "")
+
+    if not username or not password:
+        log("No credentials for bio deploy", "ERROR")
+        return False
+
+    agent = SeleniumAgent(headed=True)
+    try:
+        agent.start()
+        if not agent.login(username, password):
+            log("Login failed for bio deploy", "ERROR")
+            return False
+
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.keys import Keys
+
+        agent.driver.get("https://rentmasseur.com/settings/about")
+        time.sleep(4)
+        agent.screenshot(f"bio_deploy_before_{bio_id}")
+
+        # Find the bio textarea
+        textarea = None
+        for sel in ["textarea", "textarea[name*='about']", "textarea[name*='bio']"]:
+            els = agent.driver.find_elements(By.CSS_SELECTOR, sel)
+            for el in els:
+                if el.is_displayed():
+                    textarea = el
+                    break
+            if textarea:
+                break
+
+        if not textarea:
+            log("No bio textarea found", "ERROR")
+            return False
+
+        # Clear and type new bio
+        textarea.click()
+        time.sleep(0.5)
+        textarea.send_keys(Keys.CONTROL, "a")
+        textarea.send_keys(Keys.DELETE)
+        time.sleep(0.5)
+
+        # Type bio human-like
+        for char in bio_text:
+            textarea.send_keys(char)
+            time.sleep(random.uniform(0.02, 0.06))
+
+        time.sleep(1)
+        agent.screenshot(f"bio_deploy_typed_{bio_id}")
+
+        # Find and click save
+        saved = False
+        for sel in ["button[type='submit']", "button:has-text('Save')", "button:has-text('UPDATE')"]:
+            try:
+                btns = agent.driver.find_elements(By.CSS_SELECTOR, sel)
+                for btn in btns:
+                    if btn.is_displayed():
+                        agent.driver.execute_script("arguments[0].click();", btn)
+                        saved = True
+                        break
+            except Exception:
+                continue
+            if saved:
+                break
+
+        if not saved:
+            saved = agent.driver.execute_script("""
+                const btns = document.querySelectorAll('button');
+                for (const btn of btns) {
+                    const text = (btn.textContent || '').toLowerCase();
+                    if ((text.includes('save') || text.includes('update')) && btn.offsetParent !== null) {
+                        btn.click();
+                        return true;
+                    }
+                }
+                return false;
+            """)
+
+        time.sleep(3)
+        agent.screenshot(f"bio_deploy_after_{bio_id}")
+
+        if saved:
+            deploy_bio(bio_id)
+            log(f"Bio {bio_id} deployed successfully!")
+            write_receipt("deploy_bio", "pass", {"bio_id": bio_id, "char_count": len(bio_text)})
+            return True
+        else:
+            log("Could not find save button", "ERROR")
+            write_receipt("deploy_bio", "fail", {"bio_id": bio_id, "reason": "no_save_button"})
+            return False
+
+    except Exception as e:
+        log(f"Bio deploy error: {e}", "ERROR")
+        return False
+    finally:
+        agent.stop()
+
+
+# ─── Main ────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser(description="RM Bio Loop — Ollama-powered bio generation")
+    parser.add_argument("--generate", action="store_true", help="Generate bio candidates")
+    parser.add_argument("--deploy", action="store_true", help="Deploy highest-scoring bio")
+    parser.add_argument("--fetch-current", action="store_true", help="Fetch current bio from RM")
+    parser.add_argument("--score-only", action="store_true", help="Re-score existing bios")
+    parser.add_argument("--evaluate", action="store_true", help="Evaluate completed bio experiments")
+    parser.add_argument("--count", type=int, default=3, help="Number of bios to generate")
+    parser.add_argument("--models", default="llama3.1,mistral,gemma2", help="Comma-separated Ollama models")
+    parser.add_argument("--list", action="store_true", help="List all bio candidates")
+    args = parser.parse_args()
+
+    init_bio_db()
+
+    if args.fetch_current:
+        bio = fetch_current_bio()
+        print(f"\nCurrent bio ({bio['char_count']} chars):")
+        print(bio["bio"][:500])
+        return
+
+    if args.generate:
+        models = args.models.split(",")
+        candidates = generate_bios(count=args.count, models=models)
+
+        log(f"\nGenerated {len(candidates)} candidates:")
+        for c in sorted(candidates, key=lambda x: x["score"], reverse=True):
+            log(f"  #{c['id']} | score={c['score']} | {c['model']} | {c['prompt_id']} | {c['char_count']} chars")
+            log(f"       Preview: {c['text'][:100]}...")
+
+        if args.deploy and candidates:
+            best = max(candidates, key=lambda x: x["score"])
+            log(f"\nDeploying best bio: #{best['id']} (score={best['score']})")
+            success = deploy_bio_to_rm(best["text"], best["id"])
+            if success:
+                log("Bio is now live!")
+            else:
+                log("Deploy failed", "ERROR")
+        return
+
+    if args.score_only:
+        bios = get_all_bios()
+        for b in bios:
+            new_score = score_bio(b["bio_text"])
+            conn = sqlite3.connect(str(BIO_DB))
+            conn.execute("UPDATE bio_experiments SET score=? WHERE id=?", (new_score, b["id"]))
+            conn.commit()
+            conn.close()
+            log(f"  #{b['id']} | score={new_score} | {b['model']}")
+        return
+
+    if args.evaluate:
+        results = evaluate_bios()
+        if not results:
+            log("No completed bio experiments with visitor data yet")
+            return
+        log(f"\nBio experiment results (sorted by visitors):")
+        for r in results:
+            log(f"  #{r['id']} | {r['visitors_during']} visitors | score={r['score']} | {r['model']}")
+            log(f"       Deployed: {r['deployed_at'][:19] if r['deployed_at'] else '?'}")
+            log(f"       Removed: {r['removed_at'][:19] if r['removed_at'] else '?'}")
+            log(f"       Preview: {r['bio_text'][:80]}...")
+        return
+
+    if args.list:
+        bios = get_all_bios()
+        log(f"\nAll bio candidates ({len(bios)}):")
+        for b in bios:
+            log(f"  #{b['id']} | {b['status']:10s} | score={b['score']:5.1f} | {b['model']:10s} | {b['prompt_id']}")
+            log(f"       {b['bio_text'][:80]}...")
+        return
+
+    # Default: generate + deploy
+    parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

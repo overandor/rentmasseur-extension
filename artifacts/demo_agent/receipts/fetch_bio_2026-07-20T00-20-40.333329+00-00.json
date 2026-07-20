@@ -1,0 +1,9 @@
+{
+  "session_id": "64fc68597c95",
+  "action": "fetch_bio",
+  "status": "pass",
+  "timestamp": "2026-07-20T00:20:40.333329+00:00",
+  "elapsed_s": 27.64,
+  "char_count": 280,
+  "receipt_hash": "a9031aba6398a8ac"
+}

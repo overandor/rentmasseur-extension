@@ -1,0 +1,67 @@
+{
+  "session_id": "d7e40e2e0b9c",
+  "action": "scrape_visitors",
+  "status": "pass",
+  "timestamp": "2026-07-20T00:00:05.489236+00:00",
+  "elapsed_s": 26.86,
+  "count": 11,
+  "visitors": [
+    {
+      "name": "summerboyy",
+      "url": "https://rentmasseur.com/summerboyy",
+      "username": "summerboyy"
+    },
+    {
+      "name": "BenClib",
+      "url": "https://rentmasseur.com/BenClib",
+      "username": "BenClib"
+    },
+    {
+      "name": "mikeandrew",
+      "url": "https://rentmasseur.com/mikeandrew",
+      "username": "mikeandrew"
+    },
+    {
+      "name": "Przmarco",
+      "url": "https://rentmasseur.com/Przmarco",
+      "username": "Przmarco"
+    },
+    {
+      "name": "ScottBrearley",
+      "url": "https://rentmasseur.com/ScottBrearley",
+      "username": "ScottBrearley"
+    },
+    {
+      "name": "Birke",
+      "url": "https://rentmasseur.com/Birke",
+      "username": "Birke"
+    },
+    {
+      "name": "barcolet",
+      "url": "https://rentmasseur.com/barcolet",
+      "username": "barcolet"
+    },
+    {
+      "name": "Daffalex",
+      "url": "https://rentmasseur.com/Daffalex",
+      "username": "Daffalex"
+    },
+    {
+      "name": "RobertKH",
+      "url": "https://rentmasseur.com/RobertKH",
+      "username": "RobertKH"
+    },
+    {
+      "name": "ftailor",
+      "url": "https://rentmasseur.com/ftailor",
+      "username": "ftailor"
+    },
+    {
+      "name": "Karpathianwolf",
+      "url": "https://rentmasseur.com/Karpathianwolf",
+      "username": "Karpathianwolf"
+    }
+  ],
+  "screenshot": "artifacts/demo_agent/screenshots/04_whosawme.png",
+  "receipt_hash": "1268b9fbd486a59c"
+}

@@ -1,0 +1,272 @@
+{
+  "login_page_probe": {
+    "url": "https://rentmasseur.com/login",
+    "inputs": [
+      {
+        "xpath": "//input[@id='email' and @name='email' and @type='text']",
+        "type": "text",
+        "name": "email",
+        "id": "email",
+        "placeholder": "Enter your username or email",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//input[@id='password' and @name='password' and @type='password']",
+        "type": "password",
+        "name": "password",
+        "id": "password",
+        "placeholder": "Enter your password",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'LOGIN')]",
+        "text": "LOGIN",
+        "type": "",
+        "class": "jsx-1345806167 button",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": []
+  },
+  "public_profile_probe": {
+    "url": "https://rentmasseur.com/Karpathianwolf",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'VIEW MAP')]",
+        "text": "VIEW MAP",
+        "type": "",
+        "class": "jsx-3172239150 button is-small",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button",
+        "text": "",
+        "type": "",
+        "class": "jsx-3676309080 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/gay-massage/",
+        "text": "Gay Massage"
+      },
+      {
+        "href": "/gay-massage/",
+        "text": "FIND MASSAGE"
+      },
+      {
+        "href": "/stream/",
+        "text": "BLOG"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": ""
+      },
+      {
+        "href": "/Karpathianwolf",
+        "text": "Karpathianwolf"
+      },
+      {
+        "href": "/gay-massage/",
+        "text": "Search"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      }
+    ]
+  },
+  "search_probe": {
+    "url": "https://rentmasseur.com/search/manhattan-ny",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": [],
+    "links_profile": [
+      {
+        "href": "/darrellsbody",
+        "text": ""
+      },
+      {
+        "href": "/darrellsbody",
+        "text": "Darrellsbody"
+      },
+      {
+        "href": "/Eledmuscle",
+        "text": ""
+      },
+      {
+        "href": "/Eledmuscle",
+        "text": "Eledmuscle"
+      },
+      {
+        "href": "/TrevorJames",
+        "text": ""
+      },
+      {
+        "href": "/TrevorJames",
+        "text": "TrevorJames"
+      },
+      {
+        "href": "/Samgl",
+        "text": ""
+      },
+      {
+        "href": "/Samgl",
+        "text": "Samgl"
+      },
+      {
+        "href": "/LatinoStallion",
+        "text": ""
+      },
+      {
+        "href": "/LatinoStallion",
+        "text": "LatinoStallion"
+      },
+      {
+        "href": "/AlexRelaxMassage",
+        "text": ""
+      },
+      {
+        "href": "/AlexRelaxMassage",
+        "text": "AlexRelaxMassage"
+      },
+      {
+        "href": "/BeefyMuscleMan",
+        "text": ""
+      },
+      {
+        "href": "/BeefyMuscleMan",
+        "text": "BeefyMuscleMan"
+      },
+      {
+        "href": "/StrongHnds",
+        "text": ""
+      },
+      {
+        "href": "/StrongHnds",
+        "text": "StrongHnds"
+      },
+      {
+        "href": "/RodrigoDiPietro",
+        "text": ""
+      },
+      {
+        "href": "/RodrigoDiPietro",
+        "text": "RodrigoDiPietro"
+      },
+      {
+        "href": "/LeopardBodywork",
+        "text": ""
+      },
+      {
+        "href": "/LeopardBodywork",
+        "text": "LeopardBodywork"
+      },
+      {
+        "href": "/robxlNYCmassuer",
+        "text": ""
+      },
+      {
+        "href": "/robxlNYCmassuer",
+        "text": "RobxlNYCmassuer"
+      },
+      {
+        "href": "/ZenMen",
+        "text": ""
+      },
+      {
+        "href": "/ZenMen",
+        "text": "ZenMen"
+      },
+      {
+        "href": "/gay-massage/",
+        "text": "Search"
+      },
+      {
+        "href": "/stream/",
+        "text": "Blog"
+      },
+      {
+        "href": "/massages/",
+        "text": "Massages"
+      },
+      {
+        "href": "/about/",
+        "text": "About Us"
+      },
+      {
+        "href": "/topics",
+        "text": "All topics"
+      }
+    ]
+  }
+}

@@ -1,0 +1,99 @@
+name: RM Selenium CI/CD Harness
+
+on:
+  workflow_dispatch:
+    inputs:
+      actions:
+        description: "safe | all-read | all | comma-separated action names"
+        required: false
+        default: "safe"
+      enable_mutations:
+        description: "Allow approved mutation actions. Requires approved action list too."
+        required: false
+        default: "false"
+      approved_actions:
+        description: "Comma-separated approved mutation actions, e.g. availability_set,bio_set_approved"
+        required: false
+        default: ""
+      headed:
+        description: "Run with visible browser using xvfb"
+        required: false
+        default: "false"
+
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  rm-selenium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      RM_BASE_URL: "https://rentmasseur.com"
+      RM_ACTIONS: ${{ github.event_name == 'schedule' && 'safe' || github.event.inputs.actions || 'safe' }}
+      RM_ENABLE_MUTATIONS: ${{ github.event_name == 'schedule' && 'false' || github.event.inputs.enable_mutations || 'false' }}
+      RM_APPROVED_ACTIONS: ${{ github.event_name == 'schedule' && '' || github.event.inputs.approved_actions || '' }}
+      RM_ARTIFACT_DIR: "artifacts/rm_selenium"
+      RM_ACTION_PAUSE_SECONDS: "2.0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve credentials
+        run: |
+          USERNAME="${{ secrets.RENTMASSEUR_USERNAME }}"
+          [ -z "$USERNAME" ] && USERNAME="${{ secrets.RM_USER }}"
+          PASSWORD="${{ secrets.RENTMASSEUR_PASSWORD }}"
+          [ -z "$PASSWORD" ] && PASSWORD="${{ secrets.RM_PASS }}"
+          echo "RM_USER=$USERNAME" >> "$GITHUB_ENV"
+          echo "RM_PASS=$PASSWORD" >> "$GITHUB_ENV"
+          echo "RM_TARGET_USERNAME=$USERNAME" >> "$GITHUB_ENV"
+          if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+            echo "::warning::RentMasseur credentials not found. Set RENTMASSEUR_USERNAME + RENTMASSEUR_PASSWORD or RM_USER + RM_PASS secrets."
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install ChromeDriver
+        uses: nanasess/setup-chromedriver@master
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium python-dotenv
+
+      - name: Compile harness
+        run: |
+          python -m py_compile rm_selenium_cicd.py
+          python rm_selenium_cicd.py --list-actions
+
+      - name: Run safe Selenium harness
+        if: ${{ inputs.headed != 'true' || github.event_name == 'schedule' }}
+        run: |
+          python rm_selenium_cicd.py --actions "$RM_ACTIONS"
+
+      - name: Run headed Selenium harness
+        if: ${{ inputs.headed == 'true' && github.event_name != 'schedule' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          xvfb-run -a python rm_selenium_cicd.py --headed --actions "$RM_ACTIONS"
+
+      - name: Upload evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rm-selenium-evidence-${{ github.run_id }}
+          path: |
+            artifacts/rm_selenium/
+          retention-days: 14

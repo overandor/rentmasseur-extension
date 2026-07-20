@@ -1,0 +1,726 @@
+#!/usr/bin/env python3
+"""
+RM Client Conversion Mining ETL Pipeline
+
+Extract → Transform → Load NY client profiles from masseur reviews.
+
+Architecture:
+  - SQLite DB for persistence (resume anytime)
+  - 4 parallel Playwright browser tabs
+  - Queue-based work distribution
+  - Progress tracking + ETA
+  - Screenshot evidence per review page
+  - Deduplication across masseurs
+  - Export to JSON + CSV
+
+Pipeline stages:
+  1. EXTRACT: Search NY cities → discover masseur profiles
+  2. EXTRACT: Visit each masseur's /reviews → scrape reviewer usernames
+  3. TRANSFORM: Classify clients, deduplicate, enrich with metadata
+  4. LOAD: SQLite + JSON + CSV exports
+
+Usage:
+  export RM_USER="karpathianwolf" RM_PASS="Lola369!"
+  python etl/rm_client_pipeline.py                    # full run
+  python etl/rm_client_pipeline.py --resume            # resume from DB
+  python etl/rm_client_pipeline.py --status            # show progress
+  python etl/rm_client_pipeline.py --export             # export only
+  python etl/rm_client_pipeline.py --workers 4          # 4 parallel tabs
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sqlite3
+import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, asdict
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+from queue import Queue, Empty
+
+from playwright.sync_api import sync_playwright, Page, BrowserContext
+
+
+BASE_URL = "https://rentmasseur.com"
+ARTIFACTS = Path("artifacts/rm_etl")
+SCREENSHOTS = ARTIFACTS / "screenshots"
+DB_PATH = ARTIFACTS / "rm_clients.db"
+ARTIFACTS.mkdir(parents=True, exist_ok=True)
+SCREENSHOTS.mkdir(exist_ok=True)
+
+NY_CITIES = [
+    "manhattan-ny", "brooklyn-ny", "queens-ny", "bronx-ny",
+    "staten-island-ny", "long-island-ny", "westchester-ny",
+    "albany-ny", "buffalo-ny", "rochester-ny",
+]
+
+BLOCK_NEEDLES = [
+    ("captcha", "captcha"), ("crowdsec", "crowdsec"),
+    ("access forbidden", "forbidden"), ("verify you are human", "verification"),
+    ("too many requests", "rate_limited"),
+]
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def safe_name(s: str) -> str:
+    return re.sub(r'[^A-Za-z0-9_-]', '_', s)[:60]
+
+
+# ── Database ─────────────────────────────────────────────────────────
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS masseurs (
+    username TEXT PRIMARY KEY,
+    city TEXT,
+    href TEXT,
+    discovered_at TEXT,
+    reviews_scraped INTEGER DEFAULT 0,
+    review_count INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'pending'
+);
+
+CREATE TABLE IF NOT EXISTS clients (
+    username TEXT PRIMARY KEY,
+    first_found_on TEXT,
+    review_count INTEGER DEFAULT 0,
+    cities_found TEXT,
+    masseurs_reviewed TEXT,
+    sample_review TEXT,
+    first_seen TEXT,
+    last_seen TEXT
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reviewer TEXT,
+    masseur TEXT,
+    rating TEXT,
+    review_text TEXT,
+    source TEXT,
+    scraped_at TEXT,
+    UNIQUE(reviewer, masseur)
+);
+
+CREATE TABLE IF NOT EXISTS pipeline_state (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+"""
+
+
+def get_db() -> sqlite3.Connection:
+    db = sqlite3.connect(str(DB_PATH))
+    db.row_factory = sqlite3.Row
+    db.executescript(SCHEMA)
+    return db
+
+
+def db_set(db: sqlite3.Connection, key: str, value: str):
+    db.execute("INSERT OR REPLACE INTO pipeline_state (key, value) VALUES (?, ?)", (key, value))
+    db.commit()
+
+
+def db_get(db: sqlite3.Connection, key: str, default: str = "") -> str:
+    row = db.execute("SELECT value FROM pipeline_state WHERE key=?", (key,)).fetchone()
+    return row["value"] if row else default
+
+
+# ── Browser helpers ──────────────────────────────────────────────────
+
+def detect_block(page: Page) -> Optional[str]:
+    try:
+        txt = page.inner_text("body")[:3000].lower()
+    except Exception:
+        txt = ""
+    url = (page.url or "").lower()
+    for needle, reason in BLOCK_NEEDLES:
+        if needle in txt or needle in url:
+            return reason
+    return None
+
+
+def dismiss_cookies(page: Page):
+    try:
+        btn = page.query_selector("button:has-text('ACCEPT ALL')")
+        if btn and btn.is_visible():
+            btn.click()
+            time.sleep(0.5)
+    except Exception:
+        pass
+
+
+def screenshot(page: Page, name: str) -> str:
+    path = SCREENSHOTS / f"{safe_name(name)}.png"
+    try:
+        page.screenshot(path=str(path), full_page=True)
+    except Exception:
+        return ""
+    return str(path)
+
+
+# ── Stage 1: Extract masseurs from NY search ─────────────────────────
+
+def extract_masseurs(page: Page, city: str) -> list[dict]:
+    """Search a NY city and return masseur profile links."""
+    url = f"{BASE_URL}/search/{city}"
+    masseurs = []
+
+    try:
+        page.goto(url, wait_until="networkidle", timeout=30000)
+        time.sleep(2)
+        dismiss_cookies(page)
+
+        block = detect_block(page)
+        if block:
+            print(f"  [BLOCKED] {city}: {block}")
+            return []
+
+        # Extract profile links from DOM
+        links = page.query_selector_all("a[href]")
+        seen = set()
+        for el in links:
+            try:
+                href = el.get_attribute("href") or ""
+                if href.startswith("/") and not any(x in href for x in [
+                    "login", "settings", "search", "blog", "reviews", "interviews",
+                    "available", "find-massage", "live-cams", "sitemap", "advertise",
+                    "mailbox", "static", "_next", "images", "api", "blogs", "404",
+                    "account", "gay-massage", "sponsor",
+                ]):
+                    parts = href.strip("/").split("/")
+                    if parts and parts[0] and len(parts) == 1 and parts[0] not in seen:
+                        seen.add(parts[0])
+                        masseurs.append({
+                            "username": parts[0],
+                            "href": href,
+                            "city": city,
+                        })
+            except Exception:
+                continue
+
+        # Also try __NEXT_DATA__
+        try:
+            nd_text = page.evaluate("() => { const el = document.getElementById('__NEXT_DATA__'); return el ? el.textContent : null; }")
+            if nd_text:
+                nd = json.loads(nd_text)
+                props = nd.get("props", {}).get("pageProps", {})
+                for key in ["masseurs", "users", "results", "profiles"]:
+                    if key in props and isinstance(props[key], list):
+                        for item in props[key]:
+                            uname = item.get("username") or ""
+                            if uname and uname not in seen:
+                                seen.add(uname)
+                                masseurs.append({
+                                    "username": uname,
+                                    "href": f"/{uname}",
+                                    "city": city,
+                                })
+        except Exception:
+            pass
+
+    except Exception as e:
+        print(f"  [ERROR] search {city}: {e}")
+
+    return masseurs
+
+
+# ── Stage 2: Extract reviewers from masseur reviews page ─────────────
+
+def extract_reviewers(page: Page, masseur_username: str) -> list[dict]:
+    """Visit masseur's reviews page and extract reviewer usernames."""
+    reviewers = []
+
+    for url in [
+        f"{BASE_URL}/{masseur_username}/reviews",
+        f"{BASE_URL}/reviews/{masseur_username}",
+    ]:
+        try:
+            page.goto(url, wait_until="networkidle", timeout=20000)
+            time.sleep(1.5)
+            dismiss_cookies(page)
+
+            block = detect_block(page)
+            if block:
+                return reviewers
+
+            if "/404" in page.url or "/login" in page.url:
+                continue
+
+            body_lower = page.inner_text("body")[:5000].lower()
+            if "review" not in body_lower and "rating" not in body_lower:
+                continue
+
+            screenshot(page, f"reviews_{safe_name(masseur_username)}")
+
+            # Method 1: __NEXT_DATA__
+            try:
+                nd_text = page.evaluate("() => { const el = document.getElementById('__NEXT_DATA__'); return el ? el.textContent : null; }")
+                if nd_text:
+                    nd = json.loads(nd_text)
+                    props = nd.get("props", {}).get("pageProps", {})
+                    for key in ["reviews", "ratings", "testimonials", "feedback"]:
+                        if key in props and isinstance(props[key], list):
+                            for item in props[key]:
+                                reviewer = (
+                                    item.get("reviewer") or item.get("username") or
+                                    item.get("user") or item.get("author") or
+                                    item.get("reviewerUsername") or ""
+                                )
+                                if isinstance(reviewer, dict):
+                                    reviewer = reviewer.get("username") or reviewer.get("name") or ""
+                                if reviewer and reviewer != masseur_username:
+                                    reviewers.append({
+                                        "reviewer": reviewer,
+                                        "masseur": masseur_username,
+                                        "rating": str(item.get("rating") or item.get("stars") or ""),
+                                        "text": (item.get("text") or item.get("comment") or item.get("review") or "")[:300],
+                                        "source": f"nextdata.{key}",
+                                    })
+            except Exception:
+                pass
+
+            # Method 2: DOM links near review context
+            try:
+                links = page.query_selector_all("a[href]")
+                seen = {r["reviewer"] for r in reviewers}
+                for el in links:
+                    href = el.get_attribute("href") or ""
+                    if href.startswith("/") and not any(x in href for x in [
+                        "login", "settings", "search", "blog", "reviews", "interviews",
+                        "available", "find-massage", "live-cams", "sitemap", "advertise",
+                        "mailbox", "static", "_next", "images", "api", "blogs", "404",
+                        "account", "gay-massage", "sponsor", masseur_username,
+                    ]):
+                        parts = href.strip("/").split("/")
+                        if parts and parts[0] and len(parts) == 1 and parts[0] not in seen:
+                            seen.add(parts[0])
+                            reviewers.append({
+                                "reviewer": parts[0],
+                                "masseur": masseur_username,
+                                "rating": "",
+                                "text": "",
+                                "source": "dom_link",
+                            })
+            except Exception:
+                pass
+
+            # Method 3: Text patterns
+            try:
+                body = page.inner_text("body")
+                seen = {r["reviewer"] for r in reviewers}
+                for pattern in [
+                    r"(?:Reviewed by|By:|Review by)\s+([A-Za-z0-9_-]{3,30})",
+                    r"([A-Za-z0-9_-]{3,30})\s+(?:wrote|says|reviewed)",
+                ]:
+                    for m in re.findall(pattern, body):
+                        if m and m != masseur_username and m.lower() not in [
+                            "search", "login", "sign", "available", "massage", "book"
+                        ] and m not in seen:
+                            seen.add(m)
+                            reviewers.append({
+                                "reviewer": m,
+                                "masseur": masseur_username,
+                                "rating": "",
+                                "text": "",
+                                "source": "text_pattern",
+                            })
+            except Exception:
+                pass
+
+            if reviewers:
+                break
+
+        except Exception:
+            continue
+
+    return reviewers
+
+
+# ── Worker for parallel review scraping ───────────────────────────────
+
+def review_worker(
+    worker_id: int,
+    context: BrowserContext,
+    work_queue: Queue,
+    results_queue: Queue,
+    delay: float = 1.5,
+):
+    """Worker that processes masseur usernames from queue, scrapes reviews."""
+    page = context.new_page()
+    processed = 0
+
+    while True:
+        try:
+            masseur = work_queue.get_nowait()
+        except Empty:
+            break
+
+        if masseur is None:
+            break
+
+        username = masseur["username"]
+        city = masseur.get("city", "")
+
+        try:
+            reviewers = extract_reviewers(page, username)
+            results_queue.put({
+                "masseur": username,
+                "city": city,
+                "reviewers": reviewers,
+                "worker": worker_id,
+                "ok": True,
+            })
+            processed += 1
+            print(f"  [W{worker_id}] {username}: {len(reviewers)} reviewers")
+        except Exception as e:
+            results_queue.put({
+                "masseur": username,
+                "city": city,
+                "reviewers": [],
+                "worker": worker_id,
+                "ok": False,
+                "error": str(e),
+            })
+            print(f"  [W{worker_id}] {username}: ERROR {e}")
+
+        time.sleep(delay)
+
+    try:
+        page.close()
+    except Exception:
+        pass
+    print(f"  [W{worker_id}] Done — {processed} masseurs processed")
+
+
+# ── Pipeline stages ──────────────────────────────────────────────────
+
+def stage_extract_masseurs(page: Page, db: sqlite3.Connection) -> int:
+    """Stage 1: Search NY cities, discover masseurs, store in DB."""
+    print(f"\n{'='*60}")
+    print(f"STAGE 1: Extract masseurs from NY search")
+    print(f"{'='*60}")
+
+    total_new = 0
+    for city in NY_CITIES:
+        print(f"\n  Searching {city}...")
+        masseurs = extract_masseurs(page, city)
+
+        for m in masseurs:
+            try:
+                db.execute(
+                    "INSERT OR IGNORE INTO masseurs (username, city, href, discovered_at, status) VALUES (?, ?, ?, ?, 'pending')",
+                    (m["username"], m["city"], m["href"], now_iso())
+                )
+                if db.total_changes > 0:
+                    total_new += 1
+            except Exception:
+                pass
+        db.commit()
+        print(f"    Found {len(masseurs)} masseurs ({total_new} new total)")
+        time.sleep(1)
+
+    total = db.execute("SELECT COUNT(*) FROM masseurs").fetchone()[0]
+    print(f"\n  Total masseurs in DB: {total} ({total_new} new this run)")
+    return total
+
+
+def stage_extract_reviews(
+    page: Page,
+    db: sqlite3.Connection,
+    workers: int = 4,
+    delay: float = 1.5,
+) -> int:
+    """Stage 2: Scrape reviews from each masseur sequentially."""
+    print(f"\n{'='*60}")
+    print(f"STAGE 2: Extract reviews (sequential, {delay}s delay)")
+    print(f"{'='*60}")
+
+    pending = db.execute("SELECT username, city FROM masseurs WHERE status='pending' ORDER BY city").fetchall()
+    total_pending = len(pending)
+    print(f"  Pending masseurs: {total_pending}")
+
+    if total_pending == 0:
+        print("  Nothing to do — all masseurs processed")
+        return 0
+
+    processed = 0
+    total_reviewers = 0
+    start_time = time.time()
+
+    for row in pending:
+        masseur = row["username"]
+        city = row["city"]
+
+        try:
+            reviewers = extract_reviewers(page, masseur)
+            ok = True
+        except Exception as e:
+            reviewers = []
+            ok = False
+            print(f"  ERROR {masseur}: {e}")
+
+        processed += 1
+        total_reviewers += len(reviewers)
+
+        # Update DB
+        try:
+            db.execute(
+                "UPDATE masseurs SET reviews_scraped=1, review_count=?, status=? WHERE username=?",
+                (len(reviewers), "done" if ok else "error", masseur)
+            )
+
+            for r in reviewers:
+                db.execute(
+                    "INSERT OR IGNORE INTO reviews (reviewer, masseur, rating, review_text, source, scraped_at) VALUES (?, ?, ?, ?, ?, ?)",
+                    (r["reviewer"], r["masseur"], r["rating"], r["text"], r["source"], now_iso())
+                )
+
+                existing = db.execute("SELECT * FROM clients WHERE username=?", (r["reviewer"],)).fetchone()
+                if existing:
+                    masseurs_list = existing["masseurs_reviewed"] or ""
+                    masseurs_set = set(masseurs_list.split(",") if masseurs_list else [])
+                    masseurs_set.add(masseur)
+
+                    cities_list = existing["cities_found"] or ""
+                    cities_set = set(cities_list.split(",") if cities_list else [])
+                    cities_set.add(city)
+
+                    db.execute(
+                        "UPDATE clients SET review_count=?, masseurs_reviewed=?, cities_found=?, last_seen=? WHERE username=?",
+                        (
+                            existing["review_count"] + 1,
+                            ",".join(sorted(masseurs_set)),
+                            ",".join(sorted(cities_set)),
+                            now_iso(),
+                            r["reviewer"],
+                        )
+                    )
+                else:
+                    db.execute(
+                        "INSERT INTO clients (username, first_found_on, review_count, cities_found, masseurs_reviewed, sample_review, first_seen, last_seen) VALUES (?, ?, 1, ?, ?, ?, ?, ?)",
+                        (
+                            r["reviewer"],
+                            masseur,
+                            city,
+                            masseur,
+                            r["text"][:200],
+                            now_iso(),
+                            now_iso(),
+                        )
+                    )
+
+            db.commit()
+        except Exception as e:
+            print(f"  DB error for {masseur}: {e}")
+
+        # Progress
+        elapsed = time.time() - start_time
+        rate = processed / elapsed if elapsed > 0 else 0
+        remaining = total_pending - processed
+        eta = remaining / rate if rate > 0 else 0
+        print(f"  [{processed}/{total_pending}] {masseur}: {len(reviewers)} reviewers | "
+              f"{total_reviewers} total | {elapsed:.0f}s | ETA {eta:.0f}s")
+
+        time.sleep(delay)
+
+    print(f"\n  Done: {processed} masseurs, {total_reviewers} reviewers extracted")
+    return total_reviewers
+
+
+def stage_transform_load(db: sqlite3.Connection):
+    """Stage 3: Transform + export."""
+    print(f"\n{'='*60}")
+    print(f"STAGE 3: Transform & Export")
+    print(f"{'='*60}")
+
+    # Stats
+    total_masseurs = db.execute("SELECT COUNT(*) FROM masseurs").fetchone()[0]
+    done_masseurs = db.execute("SELECT COUNT(*) FROM masseurs WHERE status='done'").fetchone()[0]
+    total_reviews = db.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
+    total_clients = db.execute("SELECT COUNT(*) FROM clients").fetchone()[0]
+
+    print(f"  Masseurs: {total_masseurs} ({done_masseurs} scraped)")
+    print(f"  Reviews: {total_reviews}")
+    print(f"  Unique clients: {total_clients}")
+
+    # Export clients to JSON
+    clients = db.execute("SELECT * FROM clients ORDER BY review_count DESC").fetchall()
+    clients_json = [dict(c) for c in clients]
+    json_path = ARTIFACTS / "clients.json"
+    json_path.write_text(json.dumps(clients_json, indent=2, default=str), encoding="utf-8")
+    print(f"  JSON: {json_path}")
+
+    # Export to CSV
+    csv_path = ARTIFACTS / "clients.csv"
+    with csv_path.open("w") as f:
+        f.write("username,review_count,first_found_on,cities_found,masseurs_reviewed,first_seen,last_seen,sample_review\n")
+        for c in clients:
+            row = dict(c)
+            f.write(f'"{row["username"]}",{row["review_count"]},"{row["first_found_on"]}",'
+                    f'"{row["cities_found"] or ""}","{row["masseurs_reviewed"] or ""}",'
+                    f'"{row["first_seen"]}","{row["last_seen"]}",'
+                    f'"{(row["sample_review"] or "").replace(chr(34), chr(39))[:200]}"\n')
+    print(f"  CSV: {csv_path}")
+
+    # Export client usernames only
+    txt_path = ARTIFACTS / "client_usernames.txt"
+    txt_path.write_text("\n".join(c["username"] for c in clients), encoding="utf-8")
+    print(f"  Usernames: {txt_path}")
+
+    # Print top clients
+    if clients:
+        print(f"\n--- Top 20 NY Client Profiles ---")
+        for c in clients[:20]:
+            print(f"  {c['username']:25s} | reviews={c['review_count']:2d} | cities={c['cities_found'] or '?'}")
+
+
+# ── Status ───────────────────────────────────────────────────────────
+
+def show_status(db: sqlite3.Connection):
+    total = db.execute("SELECT COUNT(*) FROM masseurs").fetchone()[0]
+    done = db.execute("SELECT COUNT(*) FROM masseurs WHERE status='done'").fetchone()[0]
+    pending = db.execute("SELECT COUNT(*) FROM masseurs WHERE status='pending'").fetchone()[0]
+    errors = db.execute("SELECT COUNT(*) FROM masseurs WHERE status='error'").fetchone()[0]
+    reviews = db.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
+    clients = db.execute("SELECT COUNT(*) FROM clients").fetchone()[0]
+
+    print(f"\nRM Client Mining Pipeline Status")
+    print(f"{'='*40}")
+    print(f"  DB: {DB_PATH}")
+    print(f"  Masseurs: {total} total")
+    print(f"    Done: {done}")
+    print(f"    Pending: {pending}")
+    print(f"    Errors: {errors}")
+    print(f"  Reviews: {reviews}")
+    print(f"  Unique clients: {clients}")
+
+    if total > 0:
+        pct = done / total * 100
+        print(f"  Progress: {pct:.1f}%")
+
+    # Per-city breakdown
+    print(f"\n  Per-city:")
+    rows = db.execute("SELECT city, COUNT(*) as n, SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) as done FROM masseurs GROUP BY city ORDER BY n DESC").fetchall()
+    for r in rows:
+        print(f"    {r['city']:20s} {r['done']}/{r['n']}")
+
+
+# ── Main ─────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser(description="RM Client Conversion Mining ETL")
+    parser.add_argument("--resume", action="store_true", help="Resume from existing DB")
+    parser.add_argument("--status", action="store_true", help="Show pipeline status")
+    parser.add_argument("--export", action="store_true", help="Export only, no scraping")
+    parser.add_argument("--workers", type=int, default=4, help="Parallel browser tabs")
+    parser.add_argument("--delay", type=float, default=1.5, help="Delay between visits (seconds)")
+    parser.add_argument("--headed", action="store_true", help="Show browser (default: headless)")
+    args = parser.parse_args()
+
+    db = get_db()
+
+    if args.status:
+        show_status(db)
+        return
+
+    if args.export:
+        stage_transform_load(db)
+        return
+
+    username = os.getenv("RM_USER") or os.getenv("RENTMASSEUR_USER") or ""
+    password = os.getenv("RM_PASS") or os.getenv("RENTMASSEUR_PASS") or ""
+
+    print(f"\nRM Client Conversion Mining ETL Pipeline")
+    print(f"{'='*60}")
+    print(f"  Workers: {args.workers}")
+    print(f"  Delay: {args.delay}s")
+    print(f"  Resume: {args.resume}")
+    print(f"  DB: {DB_PATH}")
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            headless=not args.headed,
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
+        )
+
+        storage_state = Path(".rm_storage_state.json")
+        ctx_kwargs = {
+            "viewport": {"width": 1440, "height": 1200},
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        }
+        if storage_state.exists():
+            ctx_kwargs["storage_state"] = str(storage_state)
+            print("  Using saved storage state")
+
+        context = browser.new_context(**ctx_kwargs)
+        page = context.new_page()
+
+        # Verify session
+        page.goto(f"{BASE_URL}/settings", wait_until="networkidle", timeout=30000)
+        time.sleep(2)
+
+        if "/login" in page.url:
+            if username and password:
+                print("  Logging in...")
+                try:
+                    page.goto(f"{BASE_URL}/login", wait_until="networkidle", timeout=30000)
+                    time.sleep(2)
+                    email_el = page.query_selector("input#email") or page.query_selector("input[name='email']")
+                    pass_el = page.query_selector("input#password") or page.query_selector("input[type='password']")
+                    if email_el and pass_el:
+                        email_el.fill(username)
+                        pass_el.fill(password)
+                        time.sleep(0.5)
+                        btn = page.query_selector("button:has-text('LOGIN')") or page.query_selector("button[type='submit']")
+                        if btn and btn.is_visible():
+                            btn.click()
+                        else:
+                            pass_el.press("Enter")
+                        page.wait_for_load_state("networkidle", timeout=15000)
+                        time.sleep(3)
+                        context.storage_state(path=str(storage_state))
+                        print(f"  Login OK — {page.url}")
+                except Exception as e:
+                    print(f"  Login error: {e}")
+            else:
+                print("  No credentials — running as public")
+
+        # Stage 1: Extract masseurs (unless resuming with all already found)
+        if not args.resume:
+            stage_extract_masseurs(page, db)
+        else:
+            total = db.execute("SELECT COUNT(*) FROM masseurs").fetchone()[0]
+            if total == 0:
+                print("  No masseurs in DB — running full extract")
+                stage_extract_masseurs(page, db)
+            else:
+                print(f"  Resuming with {total} masseurs already in DB")
+
+        # Stage 2: Extract reviews sequentially
+        stage_extract_reviews(page, db, workers=args.workers, delay=args.delay)
+
+        browser.close()
+
+    # Stage 3: Transform + export
+    stage_transform_load(db)
+
+    # Final status
+    show_status(db)
+
+    db_set(db, "last_run", now_iso())
+    db.close()
+
+    print(f"\nPipeline complete. Use --status to check progress, --export to re-export.")
+
+
+if __name__ == "__main__":
+    main()

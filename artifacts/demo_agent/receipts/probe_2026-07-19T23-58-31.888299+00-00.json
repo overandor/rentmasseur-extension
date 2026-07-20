@@ -1,0 +1,14 @@
+{
+  "session_id": "5ba4a3f22659",
+  "action": "probe",
+  "status": "ok",
+  "timestamp": "2026-07-19T23:58:31.888299+00:00",
+  "elapsed_s": 15.58,
+  "page": "profile",
+  "url": "https://rentmasseur.com/Karpathianwolf",
+  "title": "Karpathianwolf - Male Masseur, Gay massage in Manhattan, NY | RentMasseur",
+  "content_hash": "2f5d70e4c33350e4e730a12559b1683a9181a7b6cfcc7ac28e185e5d94340d86",
+  "text_len": 2000,
+  "screenshot": "artifacts/demo_agent/screenshots/probe_profile.png",
+  "receipt_hash": "8bbcf66cb1eeff76"
+}

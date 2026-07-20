@@ -1,0 +1,21 @@
+[
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/search/manhattan-ny",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+    "ts": "2026-07-02T22:28:27.894839+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "[{\"userId\":155695,\"username\":\"TWOBOYSFOURHANDS\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Los Angeles, CA\",\"searchCity\":\"losangeles\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/a8\\/de\\/a8de3cbe-0a5d-4ffb-b7f3-96ac1ad4a7c5--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":236455,\"username\":\"OloSilver\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Los Angeles, CA\",\"searchCity\":\"losangeles\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/b3\\/d6\\/b3d66c13-66c5-4747-9884-b433628e7c0c--w300.jpg\",\"isGold\":1,\"isCertified\":1,\"track\":\"sponsor\"},{\"userId\":296797,\"username\":\"AndysEasternFlow\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Hartford, CT\",\"searchCity\":\"hartford-ct\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/24\\/0d\\/240d1b18-f149-4278-9622-4a2ab21489c9--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":235695,\"username\":\"Leoleehome\",\"status\":{\"isOnline\":false,\"message\":\"47 min ago\"},\"locationId\":0,\"location\":\"Newport Beach, CA\",\"searchCity\":\"newport-ca\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/a8\\/a4\\/a8a4e540-f5e5-44a3-b84f-43debf6a82b5--w300.jpg\",\"isGold\":1,\"isCertified\":1,\"track\":\"sponsor\"},{\"userId\":226881,\"username\":\"GoldenBrownLV\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Las Vegas, NV\",\"searchCity\":\"lasvegas-nv\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/4f\\/7f\\/4f7f6fa0-71d3-47ba-8907-73196b66fa2f--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":236472,\"username\":\"LatinoStallion\",\"",
+    "response_body_len": 3893
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "session_id": "d7e40e2e0b9c",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:00:24.156247+00:00",
+  "elapsed_s": 45.53,
+  "username": "mikeandrew",
+  "url": "https://rentmasseur.com/mikeandrew",
+  "page_title": "Mikeandrew | RentMasseur",
+  "content_hash": "2fb967d885a1863f56c6b733f7c320fc47d8f77f5e2e88dd68c8578c8ebb0fc2",
+  "screenshot": "visit_003_mikeandrew",
+  "visited_at": "2026-07-20T00:00:24.156240+00:00",
+  "receipt_hash": "090a82afb222c7df"
+}

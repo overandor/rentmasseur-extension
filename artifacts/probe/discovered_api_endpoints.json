@@ -1,0 +1,102 @@
+{
+  "login": [
+    {
+      "method": "GET",
+      "url": "https://rentmasseur.com/api/v1/login",
+      "status": 200,
+      "post_data": null,
+      "response_preview": "{\"csrf\":\"M3VXcEQ3V0lKSnZYZmQ3cnVvSWoxdz09\",\"captcha\":\"\",\"message\":\"\"}"
+    }
+  ],
+  "dashboard": [
+    {
+      "method": "GET",
+      "url": "https://rentmasseur.com/api/v1/locations?withMasseurs=1",
+      "status": 200,
+      "post_data": null,
+      "response_preview": "{\"locations\":[{\"locationId\":1277,\"searchCity\":\"freeport-bs\",\"city\":\"Freeport\",\"state\":\"\",\"country\":\"The Bahamas\",\"continent\":\"Central America\",\"keywords\":\"The Bahamas\",\"label\":\"Freeport, The Bahamas\","
+    },
+    {
+      "method": "POST",
+      "url": "https://rentmasseur.com/api/v1/home/masseurs/today",
+      "status": 200,
+      "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\"}",
+      "response_preview": "{\"userCard\":{\"userId\":357720,\"username\":\"ExhaleBrandon\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\""
+    },
+    {
+      "method": "GET",
+      "url": "https://rentmasseur.com/api/v1/home/featured-interview",
+      "status": 200,
+      "post_data": null,
+      "response_preview": "{\"userCard\":{\"userId\":48618,\"username\":\"BeefyMuscleMan\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Fort Lauderdale, FL\",\"searchCity\":\"ftlauderdale\",\"userPhoto\":\"http"
+    }
+  ],
+  "availability": [
+    {
+      "method": "POST",
+      "url": "https://rentmasseur.com/api/v1/home/masseurs/today",
+      "status": 200,
+      "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\"}",
+      "response_preview": "{\"userCard\":{\"userId\":357720,\"username\":\"ExhaleBrandon\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\""
+    },
+    {
+      "method": "GET",
+      "url": "https://rentmasseur.com/api/v1/home/featured-interview",
+      "status": 200,
+      "post_data": null,
+      "response_preview": "{\"userCard\":{\"userId\":48618,\"username\":\"BeefyMuscleMan\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Fort Lauderdale, FL\",\"searchCity\":\"ftlauderdale\",\"userPhoto\":\"http"
+    }
+  ],
+  "about": [
+    {
+      "method": "POST",
+      "url": "https://rentmasseur.com/api/v1/home/masseurs/today",
+      "status": 200,
+      "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\"}",
+      "response_preview": "{\"userCard\":{\"userId\":357720,\"username\":\"ExhaleBrandon\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\""
+    },
+    {
+      "method": "GET",
+      "url": "https://rentmasseur.com/api/v1/home/featured-interview",
+      "status": 200,
+      "post_data": null,
+      "response_preview": "{\"userCard\":{\"userId\":48618,\"username\":\"BeefyMuscleMan\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Fort Lauderdale, FL\",\"searchCity\":\"ftlauderdale\",\"userPhoto\":\"http"
+    }
+  ],
+  "search": [
+    {
+      "method": "POST",
+      "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+      "status": 200,
+      "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+      "response_preview": "[{\"userId\":155695,\"username\":\"TWOBOYSFOURHANDS\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Los Angeles, CA\",\"searchCity\":\"losangeles\",\"userPhoto\":\"https:\\/\\/cdn.rent"
+    }
+  ],
+  "mailbox": [
+    {
+      "method": "POST",
+      "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+      "status": 200,
+      "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+      "response_preview": "[{\"userId\":344440,\"username\":\"youngasian\",\"status\":{\"isOnline\":false,\"message\":\"7 hours ago\"},\"locationId\":0,\"location\":\"Tampa, FL\",\"searchCity\":\"tampa\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rma"
+    }
+  ],
+  "compose": [
+    {
+      "method": "POST",
+      "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+      "status": 200,
+      "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+      "response_preview": "[{\"userId\":358740,\"username\":\"YoungxlOwen\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Dallas, TX\",\"searchCity\":\"dallas\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/r"
+    }
+  ],
+  "profile": [
+    {
+      "method": "POST",
+      "url": "https://rentmasseur.com/api/v1/analytics",
+      "status": 204,
+      "post_data": "{\"track\":\"\",\"username\":\"Karpathianwolf\"}",
+      "response_preview": ""
+    }
+  ]
+}

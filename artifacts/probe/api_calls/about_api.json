@@ -1,0 +1,39 @@
+[
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/home/masseurs/today",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\"}",
+    "ts": "2026-07-02T22:28:23.226358+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "{\"userCard\":{\"userId\":357720,\"username\":\"ExhaleBrandon\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/46\\/62\\/466268ee-b5ff-4da0-9721-eac9ef2d7560--w300.jpg\",\"isGold\":1},\"description\":\"I truly believe so many of us guys are starving for real, quality touch in our busy lives. Between long days, stress, workouts, and everything else, it\\u2019s easy to carry tension in our bodies and miss out on that deep sense of relaxation and connection we all crave.\\n\\nThat\\u2019s why I offer slow, attentive, sensual massage with gentle hands and genuine care. My sessions are designed to help you fully unw...\",\"isCertified\":0,\"privatePhoto\":3,\"track\":\"rmotd\"}",
+    "response_body_len": 795
+  },
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/home/featured-interview",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null,
+    "ts": "2026-07-02T22:28:23.226502+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "{\"userCard\":{\"userId\":48618,\"username\":\"BeefyMuscleMan\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Fort Lauderdale, FL\",\"searchCity\":\"ftlauderdale\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/cd\\/17\\/cd178b0b-b5b0-4613-b8d7-8591dbc6ab6d--w300.jpg\",\"isGold\":1},\"lastUpdated\":\"Sep 06, 2019\",\"question\":\"Is extensive training necessary for a Masseur in order to be successful?\",\"answer\":\"I think training of some kind is crucial.<br \\/>\\n<br \\/>\\nIt doesnt have to be totally formal, but like anything else, you do have to train and practice to achieve. I took a community college training course rather than an official certification course for financial reasons at the time, but I have also learned over 10 years from practice, from mentors, from reading massage sites and (believe it or not) from watching educational massage videos.<br \\/>\\n<br \\/>\\nI do believe in the mantra: practice, practice, pracitice!<br \\/>\\n<br \\/>\\nI always want my art and talent to improve and the only way to do that is to keep learning.\",\"totalAnswers\":13,\"track\":\"featuredInterview\"}",
+    "response_body_len": 1116
+  }
+]

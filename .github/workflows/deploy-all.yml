@@ -1,0 +1,231 @@
+name: Deploy to All Platforms — HF + GitHub + Vercel + Netlify
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_hf:
+        description: 'Skip Hugging Face deploy'
+        required: false
+        default: 'false'
+      skip_vercel:
+        description: 'Skip Vercel deploy'
+        required: false
+        default: 'false'
+      skip_netlify:
+        description: 'Skip Netlify deploy'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  # ── Hugging Face Space ────────────────────────────────────────────
+  deploy-hf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.skip_hf != 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install huggingface_hub requests
+
+      - name: Restore engagement DB
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: engagement-db
+          path: artifacts/engagement/
+
+      - name: Restore bio experiments DB
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: bio-experiments-db
+          path: artifacts/engagement/
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Restore engagement DB from artifact
+          echo "=== Restoring engagement artifacts ==="
+          ls -la artifacts/engagement/ 2>/dev/null || echo "No engagement artifacts found"
+
+          # Add HF remote with token
+          git remote add hf "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/josephrw/rentmasseur-optimizer" 2>/dev/null || \
+            git remote set-url hf "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/josephrw/rentmasseur-optimizer"
+
+          # Push current branch to HF main
+          git push hf main --force 2>&1 || {
+            echo "::error::HF push failed — check HF_TOKEN and space permissions"
+            exit 1
+          }
+
+          echo "=== HF Space deployed ==="
+          echo "URL: https://josephrw-rentmasseur-optimizer.hf.space"
+          echo "Dashboard includes: engagement stats, bio experiments, visitor tracking, iMessage"
+
+  # ── Vercel ────────────────────────────────────────────────────────
+  deploy-vercel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.skip_vercel != 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          HF_SPACE_URL: https://josephrw-rentmasseur-optimizer.hf.space
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::VERCEL_TOKEN not set — skipping Vercel deploy"
+            exit 0
+          fi
+
+          cd vercel
+          # Link project if not already linked
+          echo "{\"orgId\":\"$VERCEL_ORG_ID\",\"projectId\":\"$VERCEL_PROJECT_ID\"}" > .vercel/project.json 2>/dev/null || true
+
+          # Deploy to production
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN" 2>&1 | tee deploy_output.txt
+
+          DEPLOY_URL=$(grep -oP 'https://[^\s]+\.vercel\.app' deploy_output.txt | head -1)
+          echo "vercel_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "=== Vercel deployed: $DEPLOY_URL ==="
+
+  # ── Netlify ───────────────────────────────────────────────────────
+  deploy-netlify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.skip_netlify != 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli@latest
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "::warning::NETLIFY_AUTH_TOKEN not set — skipping Netlify deploy"
+            exit 0
+          fi
+
+          # Deploy netlify_dist as static site with API proxy
+          netlify deploy --prod --dir netlify_dist --auth "$NETLIFY_AUTH_TOKEN" --site "$NETLIFY_SITE_ID" 2>&1 | tee deploy_output.txt
+
+          DEPLOY_URL=$(grep -oP 'https://[^\s]+\.netlify\.app' deploy_output.txt | head -1)
+          echo "netlify_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "=== Netlify deployed: $DEPLOY_URL ==="
+
+  # ── GitHub Pages (backup dashboard) ───────────────────────────────
+  deploy-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url || '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 pyyaml
+
+      - name: Generate static dashboard
+        run: |
+          mkdir -p _site
+          python3 -c "
+          import json, pathlib
+          site = pathlib.Path('_site')
+          site.mkdir(exist_ok=True)
+
+          # Copy netlify_dist if exists
+          src = pathlib.Path('netlify_dist/index.html')
+          if src.exists():
+              (site / 'index.html').write_text(src.read_text())
+          else:
+              (site / 'index.html').write_text('<h1>RentMasseur OS</h1><p>Backup dashboard</p>')
+
+          # Write deployment manifest
+          manifest = {
+              'platforms': {
+                  'huggingface': 'https://josephrw-rentmasseur-optimizer.hf.space',
+                  'github': 'https://github.com/overandor/rentmasseur-extension',
+                  'vercel': 'https://rentmasseur-vercel.vercel.app',
+                  'netlify': 'https://rentmasseur.netlify.app',
+              },
+              'deployed_at': __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
+          }
+          (site / 'manifest.json').write_text(json.dumps(manifest, indent=2))
+          print('Static dashboard generated')
+          "
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ── Summary ───────────────────────────────────────────────────────
+  summary:
+    runs-on: ubuntu-latest
+    needs: [deploy-hf, deploy-vercel, deploy-netlify, deploy-pages]
+    if: always()
+    steps:
+      - run: |
+          echo "=== DEPLOYMENT SUMMARY ==="
+          echo ""
+          echo "Platform       | Status  | URL"
+          echo "---------------|---------|----"
+          echo "HuggingFace    | ${{ needs.deploy-hf.result }}       | https://josephrw-rentmasseur-optimizer.hf.space"
+          echo "  ↳ Dashboard  |         | /api/engagement, /api/bio-experiments, /api/current-bio"
+          echo "Vercel         | ${{ needs.deploy-vercel.result }}       | ${{ needs.deploy-vercel.outputs.vercel_url || 'skipped' }}"
+          echo "Netlify        | ${{ needs.deploy-netlify.result }}       | ${{ needs.deploy-netlify.outputs.netlify_url || 'skipped' }}"
+          echo "GitHub Pages   | ${{ needs.deploy-pages.result }}       | ${{ needs.deploy-pages.outputs.page_url || 'skipped' }}"
+          echo ""
+          echo "All platforms attempted."

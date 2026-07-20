@@ -1,0 +1,388 @@
+{
+  "login": {
+    "url": "https://rentmasseur.com/login",
+    "inputs": [
+      {
+        "xpath": "//input[@id='email' and @name='email' and @type='text']",
+        "type": "text",
+        "name": "email",
+        "id": "email",
+        "placeholder": "Enter your username or email",
+        "aria_label": "",
+        "value_preview": ""
+      },
+      {
+        "xpath": "//input[@id='password' and @name='password' and @type='password']",
+        "type": "password",
+        "name": "password",
+        "id": "password",
+        "placeholder": "Enter your password",
+        "aria_label": "",
+        "value_preview": "***"
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'LOGIN')]",
+        "text": "LOGIN",
+        "type": "",
+        "class": "jsx-1345806167 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  },
+  "dashboard": {
+    "url": "https://rentmasseur.com/",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": "",
+        "value_preview": ""
+      },
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "",
+        "aria_label": "",
+        "value_preview": "twitter.com/rentmasseur"
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP')]",
+        "text": "SIGN UP",
+        "type": "",
+        "class": "jsx-3623478789 button is-primary is-medium",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP NOW')]",
+        "text": "SIGN UP NOW",
+        "type": "",
+        "class": "jsx-221614107 button is-size-5-half",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP NOW')]",
+        "text": "SIGN UP NOW",
+        "type": "",
+        "class": "jsx-221614107 button is-size-5-half",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  },
+  "availability": {
+    "url": "https://rentmasseur.com/",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": "",
+        "value_preview": ""
+      },
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "",
+        "aria_label": "",
+        "value_preview": "twitter.com/rentmasseur"
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP')]",
+        "text": "SIGN UP",
+        "type": "",
+        "class": "jsx-3623478789 button is-primary is-medium",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP NOW')]",
+        "text": "SIGN UP NOW",
+        "type": "",
+        "class": "jsx-221614107 button is-size-5-half",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP NOW')]",
+        "text": "SIGN UP NOW",
+        "type": "",
+        "class": "jsx-221614107 button is-size-5-half",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  },
+  "about": {
+    "url": "https://rentmasseur.com/",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": "",
+        "value_preview": ""
+      },
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "",
+        "aria_label": "",
+        "value_preview": "twitter.com/rentmasseur"
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP')]",
+        "text": "SIGN UP",
+        "type": "",
+        "class": "jsx-3623478789 button is-primary is-medium",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP NOW')]",
+        "text": "SIGN UP NOW",
+        "type": "",
+        "class": "jsx-221614107 button is-size-5-half",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'SIGN UP NOW')]",
+        "text": "SIGN UP NOW",
+        "type": "",
+        "class": "jsx-221614107 button is-size-5-half",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  },
+  "search": {
+    "url": "https://rentmasseur.com/search/manhattan-ny",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": "",
+        "value_preview": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  },
+  "mailbox": {
+    "url": "https://rentmasseur.com/404",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": "",
+        "value_preview": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  },
+  "compose": {
+    "url": "https://rentmasseur.com/mailbox/compose",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": "",
+        "value_preview": ""
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  },
+  "profile": {
+    "url": "https://rentmasseur.com/Karpathianwolf",
+    "inputs": [
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Enter location",
+        "aria_label": "",
+        "value_preview": ""
+      },
+      {
+        "xpath": "//input[@type='text']",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "",
+        "aria_label": "",
+        "value_preview": "https://rentmasseur.com/Karpathianwolf"
+      }
+    ],
+    "textareas": [],
+    "buttons": [
+      {
+        "xpath": "//button[contains(text(),'SEARCH')]",
+        "text": "SEARCH",
+        "type": "",
+        "class": "jsx-1292177893 button",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'VIEW MAP')]",
+        "text": "VIEW MAP",
+        "type": "",
+        "class": "jsx-3172239150 button is-small",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button",
+        "text": "",
+        "type": "",
+        "class": "jsx-3676309080 button is-small",
+        "aria_label": ""
+      },
+      {
+        "xpath": "//button[contains(text(),'ACCEPT ALL')]",
+        "text": "ACCEPT ALL",
+        "type": "",
+        "class": "jsx-428033372 button is-small",
+        "aria_label": ""
+      }
+    ],
+    "selects": [],
+    "contenteditable": []
+  }
+}

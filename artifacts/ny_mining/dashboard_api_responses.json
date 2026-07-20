@@ -1,0 +1,14 @@
+[
+  {
+    "url": "/api/v1/webpush/init",
+    "status": 200,
+    "body_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+    "body_len": 134
+  },
+  {
+    "url": "/api/v1/account/dashboard",
+    "status": 200,
+    "body_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11407},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}",
+    "body_len": 950
+  }
+]

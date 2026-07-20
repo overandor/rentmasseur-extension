@@ -1,0 +1,75 @@
+[
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/settings/about",
+    "url_path": "/api/v1/settings/about",
+    "request_headers_redacted": true,
+    "post_data": null,
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "[REDACTED]",
+      "referer": "https://rentmasseur.com/settings/about",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:2a885638b41beb1f67cf41088c3409c01ab0aab159eb67d032fd2cf9628b2f14",
+    "response_body_len": 6972,
+    "response_preview": "{\"userProps\":{\"assets\":{\"headline\":\"You bring the smile i bring the Wolf\",\"description\":\"75,000+ profile views.\\n\\n\\n\\nYour shoulders are more divided than Congress.\\nYour lower back is holding tension like a dictator holding office.\\nYour traps have been spreading misinformation for years.\\nI apply pressure until the knots accept peaceful transition.\\n\\nDeep tissue, Swedish, therapeutic, and sensual massage in Manhattan. Strong hands, calm energy, clean boundaries, and enough focus to make your nervous system request asylum.\\n\\n\\u201cRooftop pool?\\u201d Optional.\\n\\u201cSauna?\\u201d Diplomatic pressure.\\n\\u201cMassage?\\u201d Regime change for your back.\\n\\nYou arrive stressed, stiff, overworked, and politically unstable.\\nYou leave looser than a campaign promise after election day.\\n\\nNot therapy.\\nNot luxury cosplay.\\nNot weird.\\n\\nJust time, pressure, warmth, and your body finally conceding defeat.\\n\\nText \\/ WhatsApp Joseph.\\nBooking \\/ profile link: \\u201chttp:\\/\\/rebrand.ly\\/carpathianwolf\\u201d\\nIncall and outcall available. Safe, respectful, professional.\",\"isTextUnderReview\":0},\"information\":{\"age\":30,\"height\":4,\"weight\":16,\"ethnicity\":1,\"style\":6,\"pressure\":4,\"bodyType\":2,\"bodyHair\":3,\"experience\":7,\"hivStatus\":3}},\"properties\":{\"age\":[{\"id\":18,\"value\":18},{\"id\":19,\"value\":19},{\"id\":20,\"value\":20},{\"id\":21,\"value\":21},{\"id\":22,\"value\":22},{\"id\":23,\"value\":23},{\"id\":24,\"value\":24},{\"id\":25,\"value\":25},{\"id\":26,\"value\":26},{\"id\":27,\"value\":27},{\"id\":28,\"value\":28},{\"id\":29,\"value\":29},{\"id\":30,\"value\":30},{\"id\":31,\"value\":31},{\"id\":32,\"value\":32},{\"id\":33,\"value\":33},{\"id\":34,\"value\":34},{\"id\":35,\"value\":35},{\"id\":36,\"value\":36},{\"id\":37,\"value\":37},{\"id\":38,\"value\":38},{\"id\":39,\"value\":39},{\"id\":40,\"value\":40},{\"id\":41,\"value\":41},{\"id\":42,\"value\":42},{\"id\":43,\"value\":43},{\"id\":44,\"value\":44},{\"id\":45,\"value\":45},{\"id\":46,\"value\":46},{\"id\":47,\"value\":47},{\"id\":48,\"value\":48},{\"id\":49,\"value\":49},{\"id\":50,\"value\":50},{\"id\":51,\"value\":51},{\"id\":52,\"value\":52}",
+    "response_keys": [
+      "userProps",
+      "properties"
+    ]
+  },
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/users/248479/hashtags",
+    "url_path": "/api/v1/users/248479/hashtags",
+    "request_headers_redacted": true,
+    "post_data": null,
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "[REDACTED]",
+      "referer": "https://rentmasseur.com/settings/about",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "response_body_len": 2,
+    "response_preview": "[]",
+    "response_keys": []
+  },
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/webpush/init",
+    "url_path": "/api/v1/webpush/init",
+    "request_headers_redacted": true,
+    "post_data": "{\"type\":\"sw\"}",
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "[REDACTED]",
+      "referer": "https://rentmasseur.com/settings/about",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+    "response_body_len": 134,
+    "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+    "response_keys": [
+      "vapidPublicKey",
+      "requestPopupTime"
+    ]
+  }
+]

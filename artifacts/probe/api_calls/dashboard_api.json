@@ -1,0 +1,57 @@
+[
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/locations?withMasseurs=1",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null,
+    "ts": "2026-07-02T22:28:11.162063+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "{\"locations\":[{\"locationId\":1277,\"searchCity\":\"freeport-bs\",\"city\":\"Freeport\",\"state\":\"\",\"country\":\"The Bahamas\",\"continent\":\"Central America\",\"keywords\":\"The Bahamas\",\"label\":\"Freeport, The Bahamas\",\"lat\":26.52946854,\"lng\":-78.65010071,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/freeport-bs\\/\"},{\"locationId\":401,\"searchCity\":\"fairbanks-ak\",\"city\":\"Fairbanks\",\"state\":\"AK\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alaska\",\"label\":\"Fairbanks, AK\",\"lat\":64.83777618,\"lng\":-147.71638489,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/fairbanks-ak\\/\"},{\"locationId\":404,\"searchCity\":\"birmingham-al\",\"city\":\"Birmingham\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Birmingham, AL\",\"lat\":33.5206604,\"lng\":-86.80249023,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/birmingham-al\\/\"},{\"locationId\":408,\"searchCity\":\"huntsville-al\",\"city\":\"Huntsville\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Huntsville, AL\",\"lat\":34.73036957,\"lng\":-86.58610535,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/huntsville-al\\/\"},{\"locationId\":409,\"searchCity\":\"mobile-al\",\"city\":\"Mobile\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Mobile, AL\",\"lat\":30.69643974,\"lng\":-88.18035889,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/mobile-al\\/\"},{\"locationId\":410,\"searchCity\":\"montgomery-al\",\"city\":\"Montgomery\",\"state\":\"AL\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Alabama\",\"label\":\"Montgomery, AL\",\"lat\":32.36680603,\"lng\":-86.29997253,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/montgomery-al\\/\"},{\"locationId\":412,\"searchCity\":\"fayetteville-ar\",\"city\":\"Fayetteville\",\"state\":\"AR\",\"country\":\"USA\",\"continent\":\"North America\",\"keywords\":\"Arkansas\",\"label\":\"Fayetteville, AR\",\"lat\":36.06258011,\"lng\":-94.15742493,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/fayetteville-ar\\/\"},{\"locationId\":413,\"searchCity\":\"fortsmith-ar\",\"city\":\"Fort Smith\",\"state\":\"AR\",\"",
+    "response_body_len": 172850
+  },
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/home/masseurs/today",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\"}",
+    "ts": "2026-07-02T22:28:11.408577+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "{\"userCard\":{\"userId\":357720,\"username\":\"ExhaleBrandon\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/46\\/62\\/466268ee-b5ff-4da0-9721-eac9ef2d7560--w300.jpg\",\"isGold\":1},\"description\":\"I truly believe so many of us guys are starving for real, quality touch in our busy lives. Between long days, stress, workouts, and everything else, it\\u2019s easy to carry tension in our bodies and miss out on that deep sense of relaxation and connection we all crave.\\n\\nThat\\u2019s why I offer slow, attentive, sensual massage with gentle hands and genuine care. My sessions are designed to help you fully unw...\",\"isCertified\":0,\"privatePhoto\":3,\"track\":\"rmotd\"}",
+    "response_body_len": 795
+  },
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/home/featured-interview",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": null,
+    "ts": "2026-07-02T22:28:11.408680+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "{\"userCard\":{\"userId\":48618,\"username\":\"BeefyMuscleMan\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Fort Lauderdale, FL\",\"searchCity\":\"ftlauderdale\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/cd\\/17\\/cd178b0b-b5b0-4613-b8d7-8591dbc6ab6d--w300.jpg\",\"isGold\":1},\"lastUpdated\":\"Sep 06, 2019\",\"question\":\"Is extensive training necessary for a Masseur in order to be successful?\",\"answer\":\"I think training of some kind is crucial.<br \\/>\\n<br \\/>\\nIt doesnt have to be totally formal, but like anything else, you do have to train and practice to achieve. I took a community college training course rather than an official certification course for financial reasons at the time, but I have also learned over 10 years from practice, from mentors, from reading massage sites and (believe it or not) from watching educational massage videos.<br \\/>\\n<br \\/>\\nI do believe in the mantra: practice, practice, pracitice!<br \\/>\\n<br \\/>\\nI always want my art and talent to improve and the only way to do that is to keep learning.\",\"totalAnswers\":13,\"track\":\"featuredInterview\"}",
+    "response_body_len": 1116
+  }
+]

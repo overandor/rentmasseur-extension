@@ -1,0 +1,138 @@
+name: Photo Rotation
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'  # Every 12 hours
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'rotate (reorder) | upload (add new photo)'
+        required: false
+        default: 'rotate'
+        type: choice
+        options:
+          - rotate
+          - upload
+
+permissions:
+  contents: write
+
+jobs:
+  rotate-photos:
+    runs-on: ubuntu-latest
+    env:
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests python-dotenv
+
+      - name: Rotate photos via API (reorder)
+        if: ${{ github.event.inputs.mode != 'upload' }}
+        run: |
+          python3 -c "
+          import sys, json
+          sys.path.insert(0, 'rm_traffic')
+          from api_client import RentMasseurAPI
+          import os
+
+          api = RentMasseurAPI(min_request_interval=1.0)
+          if not api.login(os.environ['RENTMASSEUR_USERNAME'], os.environ['RENTMASSEUR_PASSWORD']):
+              print('Login failed')
+              exit(1)
+
+          try:
+              photos_resp = api.get_photos()
+              photos = photos_resp.get('photos', []) or photos_resp.get('data', []) or []
+              print(f'Found {len(photos)} photos')
+
+              if len(photos) < 2:
+                  print('Need 2+ photos to rotate. Skipping.')
+                  exit(0)
+
+              photo_ids = []
+              for p in photos:
+                  pid = p.get('id') or p.get('_id') or p.get('photoId')
+                  if pid:
+                      photo_ids.append(pid)
+
+              if len(photo_ids) < 2:
+                  print('Could not extract photo IDs. Skipping.')
+                  exit(0)
+
+              before = list(photo_ids)
+              rotated = photo_ids[1:] + [photo_ids[0]]
+              print(f'Before: {before}')
+              print(f'After:  {rotated}')
+
+              api.reorder_photos(rotated)
+
+              # Verify
+              after_resp = api.get_photos()
+              after_photos = after_resp.get('photos', []) or after_resp.get('data', []) or []
+              after_ids = [p.get('id') or p.get('_id') or p.get('photoId') for p in after_photos if p.get('id') or p.get('_id') or p.get('photoId')]
+              verified = after_ids == rotated
+              print(f'Verified: {verified}')
+
+              # Write receipt
+              import pathlib, datetime
+              ts = datetime.datetime.now(datetime.timezone.utc)
+              receipt = {
+                  'action': 'photo_rotation_api',
+                  'timestamp': ts.isoformat(),
+                  'before_order': before,
+                  'after_order': after_ids,
+                  'photo_count': len(after_photos),
+                  'verified': verified,
+                  'status': 'success' if verified else 'mismatch',
+              }
+              pathlib.Path('receipts').mkdir(exist_ok=True)
+              path = pathlib.Path(f'receipts/photo_rotation_{ts.strftime(\"%Y%m%d_%H%M%S\")}.json')
+              path.write_text(json.dumps(receipt, indent=2))
+              print(f'Receipt: {path}')
+
+              if not verified:
+                  exit(1)
+          except Exception as e:
+              print(f'Photo rotation error: {e}')
+              exit(1)
+          "
+
+      - name: Upload new photo via Selenium
+        if: ${{ github.event.inputs.mode == 'upload' }}
+        continue-on-error: true
+        run: |
+          pip install selenium undetected-chromedriver
+          python3 photo_rotator.py || echo "Photo upload failed — will retry next run"
+
+      - name: Commit receipts
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/photo_state.json receipts/photo_rotation_*.json || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Photo rotation: $(date -u +%Y-%m-%d-%H:%M)"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: photo-rotation-debug
+          path: |
+            receipts/
+            content/photo_state.json
+          retention-days: 7

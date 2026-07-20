@@ -1,0 +1,63 @@
+[
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/webpush/init",
+    "url_path": "/api/v1/webpush/init",
+    "request_headers_redacted": true,
+    "post_data": "{\"type\":\"sw\"}",
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "[REDACTED]",
+      "referer": "https://rentmasseur.com/settings",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+    "response_body_len": 134,
+    "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+    "response_keys": [
+      "vapidPublicKey",
+      "requestPopupTime"
+    ]
+  },
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/account/dashboard",
+    "url_path": "/api/v1/account/dashboard",
+    "request_headers_redacted": true,
+    "post_data": null,
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "[REDACTED]",
+      "referer": "https://rentmasseur.com/settings",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:e43d49b3bea1b77e653962c05f212a05aa1d22c46f5c76b4dd63d0f338aefc86",
+    "response_body_len": 950,
+    "response_preview": "{\"idRequired\":0,\"banner\":null,\"masseurOfTheDay\":null,\"sponsor\":null,\"featureInterview\":{\"isCompleted\":1,\"isPendingApproved\":0,\"dates\":null},\"userSetting\":{\"visibility\":1,\"sms\":0,\"availability\":{\"available\":1,\"message\":\"Available\",\"validTo\":11565},\"trackActions\":1},\"travels\":[],\"profileStatistics\":null,\"reviewUrl\":\"https:\\/\\/rentmasseur.com\\/Karpathianwolf\\/submit-review\\/\",\"service\":{\"therapeutic\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Therapeutic\"},\"sensual\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Sensual\"},\"swedish\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Swedish\"},\"hotStone\":{\"activated\":true,\"price\":{\"incall\":\"Ask\",\"outcall\":\"Ask\",\"currency\":\"US$\"},\"label\":\"Hot Stone\"},\"deepTissue\":{\"activated\":true,\"price\":{\"incall\":199,\"outcall\":269,\"currency\":\"US$\"},\"label\":\"Deep Tissue\"}},\"twitter\":null,\"onlineBookmarks\":0}",
+    "response_keys": [
+      "idRequired",
+      "banner",
+      "masseurOfTheDay",
+      "sponsor",
+      "featureInterview",
+      "userSetting",
+      "travels",
+      "profileStatistics",
+      "reviewUrl",
+      "service",
+      "twitter",
+      "onlineBookmarks"
+    ]
+  }
+]

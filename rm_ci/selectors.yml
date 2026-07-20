@@ -1,0 +1,67 @@
+# RM UI selectors — discovered and verified via dry-run, used by approved mutation.
+# Updated by bio_field_detect / availability_form_discovery dry-run actions.
+
+login:
+  email_input:
+    - "input[type='email']"
+    - "input[name*='email' i]"
+    - "input[name*='user' i]"
+    - "input[type='text']"
+  password_input:
+    - "input[type='password']"
+    - "input[name*='pass' i]"
+  submit_button:
+    - "button[type='submit']"
+    - "button[contains(text(),'LOG')]"
+    - "button[contains(text(),'Log')]"
+
+dashboard:
+  url: "/settings"
+  signals:
+    - "availability"
+    - "profile"
+    - "statistics"
+    - "views"
+    - "messages"
+    - "mailbox"
+
+availability:
+  url: "/settings?availability=1"
+  toggle_label: "available"
+  save_button:
+    - "button[contains(text(),'Save')]"
+    - "button[contains(text(),'Apply')]"
+    - "button[type='submit']"
+
+bio_about:
+  url: "/settings/about"
+  textarea:
+    - "textarea[name*='description' i]"
+    - "textarea[name*='bio' i]"
+    - "textarea"
+    - "[contenteditable='true']"
+  save_button:
+    - "button[contains(text(),'Save')]"
+    - "button[contains(text(),'Update')]"
+    - "button[type='submit']"
+
+search:
+  url_pattern: "/search/{city}"
+  profile_link_selector: "a[href]"
+
+mailbox:
+  url: "/mailbox"
+  compose_url: "/mailbox/compose"
+  recipient_field:
+    - "input[name*='recipient' i]"
+    - "input[name*='to' i]"
+    - "input[placeholder*='username' i]"
+  subject_field:
+    - "input[name*='subject' i]"
+    - "input[name*='title' i]"
+  body_field:
+    - "textarea"
+    - "[contenteditable='true']"
+  send_button:
+    - "button[contains(text(),'Send')]"
+    - "button[type='submit']"

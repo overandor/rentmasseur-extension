@@ -1,0 +1,60 @@
+{
+  "session_id": "d7e40e2e0b9c",
+  "engine": "selenium",
+  "actions": [
+    {
+      "action": "login",
+      "success": true
+    }
+  ],
+  "visitors_found": 11,
+  "visited": [
+    {
+      "username": "summerboyy",
+      "url": "https://rentmasseur.com/summerboyy",
+      "status": "ok",
+      "page_title": "Summerboyy | RentMasseur",
+      "content_hash": "6836a58edd0053cab142f906c1dccab6a0744567ee579baf5c8eab854d324a24",
+      "screenshot": "visit_001_summerboyy",
+      "visited_at": "2026-07-20T00:00:10.497952+00:00"
+    },
+    {
+      "username": "BenClib",
+      "url": "https://rentmasseur.com/BenClib",
+      "status": "ok",
+      "page_title": "BenClib | RentMasseur",
+      "content_hash": "6d8e11e5f9e3e73963d0baf740169905722f5d3087575e4d9989e9ed1563391c",
+      "screenshot": "visit_002_BenClib",
+      "visited_at": "2026-07-20T00:00:18.015476+00:00"
+    },
+    {
+      "username": "mikeandrew",
+      "url": "https://rentmasseur.com/mikeandrew",
+      "status": "ok",
+      "page_title": "Mikeandrew | RentMasseur",
+      "content_hash": "2fb967d885a1863f56c6b733f7c320fc47d8f77f5e2e88dd68c8578c8ebb0fc2",
+      "screenshot": "visit_003_mikeandrew",
+      "visited_at": "2026-07-20T00:00:24.156240+00:00"
+    },
+    {
+      "username": "Przmarco",
+      "url": "https://rentmasseur.com/Przmarco",
+      "status": "ok",
+      "page_title": "Przmarco | RentMasseur",
+      "content_hash": "108ef89087fb81bd48cb9d0fdd26cd50218698b67fd202c55a66dcbe6ae845ce",
+      "screenshot": "visit_004_Przmarco",
+      "visited_at": "2026-07-20T00:00:32.420885+00:00"
+    },
+    {
+      "username": "ScottBrearley",
+      "url": "https://rentmasseur.com/ScottBrearley",
+      "status": "ok",
+      "page_title": "ScottBrearley | RentMasseur",
+      "content_hash": "27726cc20f12fb959719e79184d11f44e4b36ba998e5441f756fc1ceccb612c8",
+      "screenshot": "visit_005_ScottBrearley",
+      "visited_at": "2026-07-20T00:00:38.339351+00:00"
+    }
+  ],
+  "end_time": "2026-07-20T00:00:41.505947+00:00",
+  "total_elapsed_s": 62.88
+}

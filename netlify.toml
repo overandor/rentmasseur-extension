@@ -1,0 +1,25 @@
+[build]
+  command = "pip install -r requirements.txt"
+  publish = "netlify_dist"
+
+[build.environment]
+  PYTHON_VERSION = "3.11"
+
+# Proxy API calls to Hugging Face Space
+[[redirects]]
+  from = "/api/*"
+  to = "https://josephrw-rentmasseur-optimizer.hf.space/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/os/*"
+  to = "https://josephrw-rentmasseur-optimizer.hf.space/api/os/:splat"
+  status = 200
+  force = true
+
+# Serve dashboard as fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

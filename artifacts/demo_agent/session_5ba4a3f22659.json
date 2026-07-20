@@ -1,0 +1,35 @@
+{
+  "session_id": "5ba4a3f22659",
+  "engine": "playwright",
+  "actions": [
+    {
+      "page": "login",
+      "url": "https://rentmasseur.com/login",
+      "status": "ok",
+      "title": "Login - RentMasseur",
+      "content_hash": "50643fe2e49446aa1b61efa4751254853abf52f822b140b38e919376722994b5",
+      "text_len": 253,
+      "screenshot": "artifacts/demo_agent/screenshots/probe_login.png"
+    },
+    {
+      "page": "search",
+      "url": "https://rentmasseur.com/search/manhattan-ny",
+      "status": "ok",
+      "title": "404 Not Found | RentMasseur.com",
+      "content_hash": "6ee41dad2839377571318b308056e0ff33cf08de2896fbaf0e4b751aadb604b9",
+      "text_len": 1158,
+      "screenshot": "artifacts/demo_agent/screenshots/probe_search.png"
+    },
+    {
+      "page": "profile",
+      "url": "https://rentmasseur.com/Karpathianwolf",
+      "status": "ok",
+      "title": "Karpathianwolf - Male Masseur, Gay massage in Manhattan, NY | RentMasseur",
+      "content_hash": "2f5d70e4c33350e4e730a12559b1683a9181a7b6cfcc7ac28e185e5d94340d86",
+      "text_len": 2000,
+      "screenshot": "artifacts/demo_agent/screenshots/probe_profile.png"
+    }
+  ],
+  "end_time": "2026-07-19T23:58:33.447623+00:00",
+  "total_elapsed_s": 17.13
+}

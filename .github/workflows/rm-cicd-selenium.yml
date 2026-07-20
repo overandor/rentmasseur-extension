@@ -1,0 +1,131 @@
+name: RM CI/CD Selenium Automator
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        required: true
+        default: "proof"
+        type: choice
+        options:
+          - proof
+          - live_readonly
+          - approved_mutation
+      function:
+        description: "Function name or all_safe"
+        required: true
+        default: "all_safe"
+      candidate_file:
+        description: "Approved candidate JSON path (approved_mutation only)"
+        required: false
+        default: ""
+      approval_token:
+        description: "ADMIN_TOKEN (approved_mutation only)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: rm-cicd-selenium-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  selenium-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      RM_MODE: ${{ github.event.inputs.mode || 'proof' }}
+      RM_FUNCTION: ${{ github.event.inputs.function || 'all_safe' }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CANDIDATE_FILE: ${{ github.event.inputs.candidate_file || '' }}
+      APPROVAL_TOKEN: ${{ github.event.inputs.approval_token || '' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve credentials
+        run: |
+          USERNAME="${{ secrets.RENTMASSEUR_USERNAME }}"
+          [ -z "$USERNAME" ] && USERNAME="${{ secrets.RM_USER }}"
+          PASSWORD="${{ secrets.RENTMASSEUR_PASSWORD }}"
+          [ -z "$PASSWORD" ] && PASSWORD="${{ secrets.RM_PASS }}"
+          ADMIN="${{ secrets.ADMIN_TOKEN }}"
+          echo "RM_USERNAME=$USERNAME" >> "$GITHUB_ENV"
+          echo "RM_PASSWORD=$PASSWORD" >> "$GITHUB_ENV"
+          echo "ADMIN_TOKEN=$ADMIN" >> "$GITHUB_ENV"
+          if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+            echo "::warning::RentMasseur credentials not found. Set RENTMASSEUR_USERNAME + RENTMASSEUR_PASSWORD or RM_USER + RM_PASS secrets."
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver xvfb
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium pyyaml requests beautifulsoup4 python-dotenv
+
+      - name: Build local control plane if present
+        run: |
+          if [ -f cpp_os_server.cpp ]; then
+            g++ -std=c++17 -O2 cpp_os_server.cpp -o rm_control_plane || true
+          fi
+
+      - name: Start local control plane
+        run: |
+          if [ -f rm_control_plane ]; then
+            nohup ./rm_control_plane > control_plane.log 2>&1 &
+            sleep 3
+          elif [ -f server.py ]; then
+            nohup python server.py > control_plane.log 2>&1 &
+            sleep 3
+          fi
+
+      - name: Run Selenium RM automator
+        run: |
+          xvfb-run -a python rm_ci/selenium_runner.py \
+            --registry rm_ci/function_registry.yml \
+            --mode "$RM_MODE" \
+            --function "$RM_FUNCTION" \
+            --candidate-file "$CANDIDATE_FILE" \
+            --approval-token "$APPROVAL_TOKEN" \
+            --artifacts artifacts
+
+      - name: Upload RM artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rm-cicd-selenium-artifacts
+          path: |
+            artifacts/
+            debug/
+            control_plane.log
+          retention-days: 14
+
+      - name: Commit receipts and evidence
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add artifacts/receipts/ artifacts/reports/ debug/ screenshots/ || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "RM CI/CD evidence: $RM_MODE $RM_FUNCTION"
+            git push
+          else
+            echo "No evidence changes"
+          fi

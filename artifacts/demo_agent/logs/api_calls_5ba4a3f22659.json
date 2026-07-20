@@ -1,0 +1,65 @@
+[
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/login",
+    "ts": "2026-07-19T23:58:17.897795+00:00",
+    "post_data": null,
+    "status": 200,
+    "response_len": 69,
+    "response_preview": "{\"csrf\":\"WnNybWlWTXJTM0JWdWNmWjR5c0k3QT09\",\"captcha\":\"\",\"message\":\"\"}"
+  },
+  {
+    "method": "POST",
+    "url": "https://analytics.ahrefs.com/api/event",
+    "ts": "2026-07-19T23:58:18.061169+00:00",
+    "post_data": "{\"n\":\"pageview\",\"u\":\"https://rentmasseur.com/login\",\"l\":[\"en-US\",\"en\"],\"k\":\"r2WLDdzrwqYOTKWyNf8Bvg\",\"r\":null,\"sw\":1440,\"sh\":900,\"sr\":1,\"t\":\"Login - RentMasseur\"}",
+    "status": 200,
+    "response_len": 11,
+    "response_preview": "[\"Ok\",null]"
+  },
+  {
+    "method": "GET",
+    "url": "https://rentmasseur.com/api/v1/locations?withMasseurs=1",
+    "ts": "2026-07-19T23:58:23.142389+00:00",
+    "post_data": null,
+    "status": 200,
+    "response_len": 175025,
+    "response_preview": "{\"locations\":[{\"locationId\":1277,\"searchCity\":\"freeport-bs\",\"city\":\"Freeport\",\"state\":\"\",\"country\":\"The Bahamas\",\"continent\":\"Central America\",\"keywords\":\"The Bahamas\",\"label\":\"Freeport, The Bahamas\",\"lat\":26.52946854,\"lng\":-78.65010071,\"url\":\"https:\\/\\/rentmasseur.com\\/gay-massage\\/freeport-bs\\/\"},"
+  },
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+    "ts": "2026-07-19T23:58:23.142610+00:00",
+    "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+    "status": 200,
+    "response_len": 3877,
+    "response_preview": "[{\"userId\":259958,\"username\":\"Salvxdor\",\"status\":{\"isOnline\":false,\"message\":\"6 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/0f\\/6e\\/0f6e147a-c2db-4fc2-ae20-e5b3deb09eb0--w300.jpg\",\"isGold\":1,\"isCertified"
+  },
+  {
+    "method": "POST",
+    "url": "https://analytics.ahrefs.com/api/event",
+    "ts": "2026-07-19T23:58:23.151359+00:00",
+    "post_data": "{\"n\":\"pageview\",\"u\":\"https://rentmasseur.com/search/manhattan-ny\",\"l\":[\"en-US\",\"en\"],\"k\":\"r2WLDdzrwqYOTKWyNf8Bvg\",\"r\":null,\"sw\":1440,\"sh\":900,\"sr\":1,\"t\":\"404 Not Found | RentMasseur.com\"}",
+    "status": 200,
+    "response_len": 11,
+    "response_preview": "[\"Ok\",null]"
+  },
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/analytics",
+    "ts": "2026-07-19T23:58:28.384744+00:00",
+    "post_data": "{\"track\":\"\",\"username\":\"Karpathianwolf\"}",
+    "status": 204,
+    "response_len": 0,
+    "response_preview": ""
+  },
+  {
+    "method": "POST",
+    "url": "https://analytics.ahrefs.com/api/event",
+    "ts": "2026-07-19T23:58:28.419484+00:00",
+    "post_data": "{\"n\":\"pageview\",\"u\":\"https://rentmasseur.com/Karpathianwolf\",\"l\":[\"en-US\",\"en\"],\"k\":\"r2WLDdzrwqYOTKWyNf8Bvg\",\"r\":null,\"sw\":1440,\"sh\":900,\"sr\":1,\"t\":\"Karpathianwolf - Male Masseur, Gay massage in Manhattan, NY | RentMasseur\"}",
+    "status": 200,
+    "response_len": 11,
+    "response_preview": "[\"Ok\",null]"
+  }
+]

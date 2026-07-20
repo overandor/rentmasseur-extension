@@ -1,0 +1,14 @@
+{
+  "session_id": "5ba4a3f22659",
+  "action": "probe",
+  "status": "ok",
+  "timestamp": "2026-07-19T23:58:21.890823+00:00",
+  "elapsed_s": 5.58,
+  "page": "login",
+  "url": "https://rentmasseur.com/login",
+  "title": "Login - RentMasseur",
+  "content_hash": "50643fe2e49446aa1b61efa4751254853abf52f822b140b38e919376722994b5",
+  "text_len": 253,
+  "screenshot": "artifacts/demo_agent/screenshots/probe_login.png",
+  "receipt_hash": "f0913c2a5c5054e1"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "rentmasseur-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RentMasseur OS — Vercel serverless backend proxy",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {},
+  "env": {
+    "HF_SPACE_URL": "https://josephrw-rentmasseur-optimizer.hf.space"
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" }
+  ]
+}

@@ -1,0 +1,21 @@
+[
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://rentmasseur.com/mailbox/compose",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "post_data": "{\"lat\":0,\"lng\":0,\"searchCity\":\"\",\"limit\":12}",
+    "ts": "2026-07-02T22:28:36.093821+00:00",
+    "status": 200,
+    "status_text": "",
+    "response_body": "[{\"userId\":358740,\"username\":\"YoungxlOwen\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Dallas, TX\",\"searchCity\":\"dallas\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/f4\\/c7\\/f4c7530e-8db5-431e-8001-1103e5c60f29--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":293899,\"username\":\"JacobAA\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"West Hollywood, CA\",\"searchCity\":\"west-hollywood-ca\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/b8\\/ca\\/b8ca9a78-fae6-4e2f-980e-d5eb040efa46--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":42198,\"username\":\"Asian_greathands\",\"status\":{\"isOnline\":false,\"message\":\"2 min ago\"},\"locationId\":0,\"location\":\"New York City, NY\",\"searchCity\":\"newyork\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c5\\/ca\\/c5cabe2a-165e-409c-93fe-73c76bd8b28b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/0d\\/06\\/0d065776-a6ed-43ae-8eaf-7f6bad85cfb8--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":168679,\"username\":\"YoungGuyOldSoul\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"New York City, NY\",\"searchCity\":\"newyork\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/48\\/56\\/485667d4-f881-4b91-b835-9c73d071343b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":155695,\"username\":\"TWOBOYSFOURHANDS\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Los Angeles, CA\",\"searchCity\":\"losangeles\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/a8\\/de\\/a8de3cbe-0a5d-4ffb-b7f3-96ac1ad4a7c5--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":297522,\"username\":\"AlexisXiao\",\"st",
+    "response_body_len": 3907
+  }
+]

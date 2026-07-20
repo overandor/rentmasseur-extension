@@ -1,0 +1,350 @@
+{
+  "timestamp": "2026-07-02T22:42:40.809935+00:00",
+  "account": "karpathianwolf",
+  "summary": {
+    "total_visitors": 17,
+    "profiles_checked": 17,
+    "masseurs": 16,
+    "clients": 1,
+    "ny_clients": 1
+  },
+  "all_visitors": [
+    {
+      "username": "BullLatin",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/BullLatin",
+        "text": ""
+      }
+    },
+    {
+      "username": "GoodVibesGuy",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/GoodVibesGuy",
+        "text": ""
+      }
+    },
+    {
+      "username": "RodrigoDiPietro",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/RodrigoDiPietro",
+        "text": ""
+      }
+    },
+    {
+      "username": "Samgl",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/Samgl",
+        "text": ""
+      }
+    },
+    {
+      "username": "Fredericodedeus",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/Fredericodedeus",
+        "text": ""
+      }
+    },
+    {
+      "username": "Will_Xavier",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/Will_Xavier",
+        "text": ""
+      }
+    },
+    {
+      "username": "AngelStrong",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/AngelStrong",
+        "text": ""
+      }
+    },
+    {
+      "username": "darrellsbody",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/darrellsbody",
+        "text": ""
+      }
+    },
+    {
+      "username": "youngasian",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/youngasian",
+        "text": ""
+      }
+    },
+    {
+      "username": "StrongHnds",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/StrongHnds",
+        "text": ""
+      }
+    },
+    {
+      "username": "Asian_greathands",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/Asian_greathands",
+        "text": ""
+      }
+    },
+    {
+      "username": "TWOBOYSFOURHANDS",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/TWOBOYSFOURHANDS",
+        "text": ""
+      }
+    },
+    {
+      "username": "stream",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/stream/",
+        "text": "Blog"
+      }
+    },
+    {
+      "username": "massages",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/massages/",
+        "text": "Massages"
+      }
+    },
+    {
+      "username": "about",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/about/",
+        "text": "About Us"
+      }
+    },
+    {
+      "username": "topics",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/topics",
+        "text": "All topics"
+      }
+    },
+    {
+      "username": "Karpathianwolf",
+      "location": "",
+      "source": "dom_link",
+      "raw": {
+        "href": "/Karpathianwolf",
+        "text": "My Profile"
+      }
+    }
+  ],
+  "checked_profiles": [
+    {
+      "username": "BullLatin",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nBullLatin\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:10\n1\nBullLatin\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n2.37mi\nGay Massage in Manhattan, NY\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nBullLatin is a Gold Member\nSponsor\nBullLatin is a Sponsor\nAppearance\nAge:\n",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_BullLatin.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "GoodVibesGuy",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nGoodVibesGuy\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nGoodVibesGuy\nLast online: 10 hours ago\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n4.66mi\nGay Massage in Manhattan, NY\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nGoodVibesGuy is a Gold Member\nSponsor\nGoodVibesGuy is a ",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_GoodVibesGuy.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "RodrigoDiPietro",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nRodrigoDiPietro\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nRodrigoDiPietro\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n3.6mi\nGay Massage in Manhattan, NY\nMy Travel Schedule\nMarbella, Spain\n01 Aug 2026 - 08 Aug 2026\n+ 1 more\nContact Me\nCall me\nEmail me\nMap me\nGold ",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_RodrigoDiPietro.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "Samgl",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nSamgl\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nSamgl\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n4.51mi\nGay Massage in Manhattan, NY\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nSamgl is a Gold Member\nSponsor\nSamgl is a Sponsor\nAppearance\nAge:\n37\nEthnicity:\nMe",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_Samgl.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "Fredericodedeus",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nFredericodedeus\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nFredericodedeus\nLast online: Today, 09:22\nMy Location\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n3.99mi\nGay Massage in Manhattan, NY\nMy Travel Schedule\nNear travels:\nJersey City, NJ\n+ 1 more\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nF",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_Fredericodedeus.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "Will_Xavier",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nWill_Xavier\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nWill_Xavier\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n1.04mi\nGay Massage in Manhattan, NY\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nWill_Xavier is a Gold Member\nSponsor\nWill_Xavier is a Sponsor\nAppearan",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_Will_Xavier.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "AngelStrong",
+      "is_masseur": false,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nAngelStrong\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nAngelStrong\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n4.34mi\nGay Massage in Manhattan, NY\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nAngelStrong is a Gold Member\nSponsor\nAngelStrong is a Sponsor\nVerified",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_AngelStrong.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "darrellsbody",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nDarrellsbody\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nDarrellsbody\nLast online: 2 hours ago\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n4.65mi\nGay Massage in Manhattan, NY\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nDarrellsbody is a Gold Member\nSponsor\nDarrellsbody is a S",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_darrellsbody.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "youngasian",
+      "is_masseur": true,
+      "location": "",
+      "is_ny": false,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Tampa, FL\nYoungasian\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nYoungasian\nLast online: 7 hours ago\nMy Location\nVIEW MAP\nHome:\nTampa, FL\nGPS:\nTampa, FL\nDistance:\n1011.26mi\nGay Massage in Tampa, FL\nMy Travel Schedule\nTampa, FL\n28 Jun 2026 - 02 Jul 2026\n+ 1 more\nNear travels:\nSt. Petersburg, FL\n+ 2 more\nContact Me\nCall",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_youngasian.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "StrongHnds",
+      "is_masseur": true,
+      "location": "",
+      "is_ny": false,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Wilton Manors, FL\nStrongHnds\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nStrongHnds\nLast online: 2 hours ago\nMy Location\nVIEW MAP\nHome:\nWilton Manors, FL\nGPS:\nWilton Manors, FL\nDistance:\n1072.28mi\nGay Massage in Wilton Manors, FL\nMy Travel Schedule\nNear travels:\nFort Lauderdale, FL\nContact Me\nCall me\nEmail me\nMap me\nG",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_StrongHnds.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "Asian_greathands",
+      "is_masseur": true,
+      "location": "Male Massage in New York City, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in New York City, NY\nAsian_greathands\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nAsian_greathands\nLast online: 6 min ago\nMy Location\nVIEW MAP\nHome:\nNew York City, NY\nGPS:\nNew York City, NY\nDistance:\n7.22mi\nGay Massage in New York City, NY\nMy Travel Schedule\nNear travels:\nManhattan, NY\n+ 2 more\nContact Me\nCall me\nEmail m",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_Asian_greathands.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "TWOBOYSFOURHANDS",
+      "is_masseur": true,
+      "location": "",
+      "is_ny": false,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Los Angeles, CA\nTWOBOYSFOURHANDS\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:08\n1\nTWOBOYSFOURHANDS\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nLos Angeles, CA\nGPS:\nLos Angeles, CA\nDistance:\n2451.71mi\nGay Massage in Los Angeles, CA\nMy Travel Schedule\nNear travels:\nWest Hollywood, CA\n+ 3 more\nContact Me\nCall me\nEmail me\nMap me\n",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_TWOBOYSFOURHANDS.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "stream",
+      "is_masseur": true,
+      "location": "Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage Blog\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:08\n1\nMassage Blog\n44425 Blogs found\nThe Difference a High Quality Massage Service Make\nPublished by\u00a0EnjoyandRelease\u00a0on 56 min ago\nEnjoyandRelease\nLos Angeles, CA\n\nIn today\u2019s fast paced world, a truly high quality massage is about much more than relaxation. It is an investment in your physic",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_stream.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "massages",
+      "is_masseur": true,
+      "location": "Acupressure massage is a time-honored healing art rooted in traditional Chinese medicine principles.",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:08\n1\nAbout\nAbout us\nHelp\nFAQ\nContact us\nFeatures\nPrices\nMassages\nLegal\nDMCA Notice\nTerms of Use\nPhishing Scams\nPrivacy Policy\nImprint\nCancelation & Refund\nComplaints Policy\nContent Agreement\nAnti-Trafficking Statement\nModern Slavery Policy\nRecurring Payment\nCookies Policy\nMassages\nSensual\n\nSensual massage is a u",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_massages.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "about",
+      "is_masseur": true,
+      "location": "",
+      "is_ny": false,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:08\n1\nAbout\nAbout us\nHelp\nFAQ\nContact us\nFeatures\nPrices\nMassages\nLegal\nDMCA Notice\nTerms of Use\nPhishing Scams\nPrivacy Policy\nImprint\nCancelation & Refund\nComplaints Policy\nContent Agreement\nAnti-Trafficking Statement\nModern Slavery Policy\nRecurring Payment\nCookies Policy\nAbout RentMasseur\nYour Trusted Destinati",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_about.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "topics",
+      "is_masseur": true,
+      "location": "",
+      "is_ny": false,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nTopics\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:08\n1\nTopics\nGay Massage \u2013 The Complete Guide\nGay Massage Near Me\nMen\u2019s Sexual Health and Wellbeing\nGay Sauna and Spa Etiquette\nMassage Etiquette and Safety Tips\nBenefits of Gay Massage\nGay Massage Etiquette for Clients\nGay Massage for First Timers\nGay Massage vs Erotic Massage\nHow to Book Safely\nHow ",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_topics.png",
+      "error": null,
+      "source": "dom_link"
+    },
+    {
+      "username": "Karpathianwolf",
+      "is_masseur": true,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nKarpathianwolf\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:08\n1\nKarpathianwolf\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nGay Massage in Manhattan, NY\nMy Travel Schedule\nNear travels:\nNew York City, NY\n+ 1 more\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nKarpathianwolf is a G",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_Karpathianwolf.png",
+      "error": null,
+      "source": "dom_link"
+    }
+  ],
+  "ny_clients": [
+    {
+      "username": "AngelStrong",
+      "is_masseur": false,
+      "location": "Male Massage in Manhattan, NY",
+      "is_ny": true,
+      "profile_text": "Get real-time browser notifications from RentMasseur. Never miss important communication from a client.\nNOT NOW\nYES\nHome\nGay Massage\nMale Massage in Manhattan, NY\nAngelStrong\nSEARCH\nFIND MASSAGE\nAVAILABLE NOW\nREVIEWS\nINTERVIEWS\nBLOG\nLIVE CAMS\n03:09\n1\nAngelStrong\nAvailable Now\nMy Location\nVIEW MAP\nHome:\nManhattan, NY\nGPS:\nManhattan, NY\nDistance:\n4.34mi\nGay Massage in Manhattan, NY\nContact Me\nCall me\nEmail me\nMap me\nGold Member\nAngelStrong is a Gold Member\nSponsor\nAngelStrong is a Sponsor\nVerified",
+      "screenshot": "artifacts/ny_mining/screenshots/profile_AngelStrong.png",
+      "error": null,
+      "source": "dom_link"
+    }
+  ]
+}

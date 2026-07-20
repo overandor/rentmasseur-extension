@@ -1,0 +1,62 @@
+[
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/home/top-sponsors",
+    "url_path": "/api/v1/home/top-sponsors",
+    "request_headers_redacted": true,
+    "post_data": "{\"searchCity\":\"manhattan-ny\",\"limit\":12}",
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "[REDACTED]",
+      "referer": "https://rentmasseur.com/mailbox/compose",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:3c4db57d7f66d0d4feac8c9256db227fbe6c20aa3db28a9fb27ab67e6739d6e2",
+    "response_body_len": 3888,
+    "response_preview": "[{\"userId\":362811,\"username\":\"RodrigoDiPietro\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/0d\\/06\\/0d065776-a6ed-43ae-8eaf-7f6bad85cfb8--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":139732,\"username\":\"AngelStrong\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/99\\/c5\\/99c5a3b1-551d-4222-9426-cd8b8d4bd18b--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":70662,\"username\":\"Samgl\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/c6\\/0c\\/c60c3b05-1e51-43a7-b25f-29810de12bd6--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":11709,\"username\":\"darrellsbody\",\"status\":{\"isOnline\":false,\"message\":\"2 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/69\\/7e\\/697ed48b-3e34-437d-a374-5ba73514ae82--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":48638,\"username\":\"Will_Xavier\",\"status\":{\"available\":1,\"message\":\"Available Now\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/80\\/5e\\/805e69b8-37a8-4179-adf9-aff1c558786d--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":301774,\"username\":\"GoodVibesGuy\",\"status\":{\"isOnline\":false,\"message\":\"10 hours ago\"},\"locationId\":0,\"location\":\"Manhattan, NY\",\"searchCity\":\"manhattan-ny\",\"userPhoto\":\"https:\\/\\/cdn.rentmasseur.com\\/rmass\\/photos\\/ba\\/c4\\/bac4cbd4-77a7-4c97-a8be-54dab7e9faab--w300.jpg\",\"isGold\":1,\"isCertified\":0,\"track\":\"sponsor\"},{\"userId\":364805,\"username\":\"BullLatin\",\"status\":{\"avai",
+    "response_keys": [
+      "userId",
+      "username",
+      "status",
+      "locationId",
+      "location",
+      "searchCity",
+      "userPhoto",
+      "isGold",
+      "isCertified",
+      "track"
+    ]
+  },
+  {
+    "method": "POST",
+    "url": "https://rentmasseur.com/api/v1/webpush/init",
+    "url_path": "/api/v1/webpush/init",
+    "request_headers_redacted": true,
+    "post_data": "{\"type\":\"sw\"}",
+    "request_headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "[REDACTED]",
+      "referer": "https://rentmasseur.com/mailbox/compose",
+      "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json"
+    },
+    "status": 200,
+    "status_text": "",
+    "response_body_hash": "sha256:6aaefc172f910bbcb5a2c8661e4b0a8b9d7b8348f57024ff4d2ddf9c55fa40a8",
+    "response_body_len": 134,
+    "response_preview": "{\"vapidPublicKey\":\"BBnew1anv09onTbduZF-2XhsBVwZSRL3Ua37rFMGuU_KI27VbgXTxGsBmmYJByj040ljzPf9KaIA0Aj0KDbclX8\",\"requestPopupTime\":604800}",
+    "response_keys": [
+      "vapidPublicKey",
+      "requestPopupTime"
+    ]
+  }
+]

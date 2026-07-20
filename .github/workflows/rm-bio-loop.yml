@@ -1,0 +1,141 @@
+name: RM Bio Loop — Ollama Bio Generation + Deploy
+
+on:
+  schedule:
+    - cron: '0 6,12,18 * * *'  # 3x/day — generate + deploy new bio
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'Number of bios to generate'
+        required: false
+        default: '3'
+      deploy:
+        description: 'Deploy best bio after generation'
+        required: false
+        default: 'true'
+      fetch_current:
+        description: 'Fetch current bio first'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+
+jobs:
+  bio-loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RM_USER: ${{ secrets.RENTMASSEUR_USERNAME || secrets.RM_USER }}
+      RM_PASS: ${{ secrets.RENTMASSEUR_PASSWORD || secrets.RM_PASS }}
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME || secrets.RM_USER }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD || secrets.RM_PASS }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install undetected-chromedriver selenium requests fastapi uvicorn
+
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+          ollama pull llama3.1
+          echo "Ollama ready"
+
+      - name: Restore bio experiments DB
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: bio-experiments-db
+          path: artifacts/engagement/
+
+      - name: Fetch current bio
+        if: github.event.inputs.fetch_current != 'false'
+        run: |
+          python3 rm_bio_loop.py --fetch-current 2>&1 | tee bio_fetch.log
+
+      - name: Generate + deploy bios
+        id: bio
+        continue-on-error: true
+        run: |
+          COUNT="${{ github.event.inputs.count || '3' }}"
+          DEPLOY_FLAG=""
+          if [ "${{ github.event.inputs.deploy || 'true' }}" = "true" ]; then
+            DEPLOY_FLAG="--deploy"
+          fi
+
+          python3 rm_bio_loop.py --generate --count "$COUNT" $DEPLOY_FLAG 2>&1 | tee bio_generate.log
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+      - name: List all bios
+        if: always()
+        run: python3 rm_bio_loop.py --list
+
+      - name: Commit bio artifacts
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add artifacts/engagement/bio_experiments.db artifacts/engagement/current_bio.json artifacts/engagement/bios/ 2>/dev/null || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "bio-loop: $(date -u +%Y-%m-%d-%H:%M) [skip-ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Upload bio DB
+        uses: actions/upload-artifact@v4
+        with:
+          name: bio-experiments-db
+          path: artifacts/engagement/bio_experiments.db
+          retention-days: 90
+
+      - name: Upload all artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rm-bio-loop-${{ github.run_id }}
+          path: |
+            artifacts/engagement/bios/
+            artifacts/engagement/current_bio.json
+            bio_fetch.log
+            bio_generate.log
+          retention-days: 30
+
+      - name: Create issue on failure
+        if: steps.bio.outputs.exit_code != '0' && steps.bio.outputs.exit_code != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let logPreview = '';
+            try {
+              logPreview = fs.readFileSync('bio_generate.log', 'utf8').slice(-2000);
+            } catch (e) {}
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[RM-Bio-Loop] Failure — run ${context.runId}`,
+              body: `## Bio Loop Failure\n\n**Run**: ${context.runId}\n**Exit code**: '${{ steps.bio.outputs.exit_code }}'\n\n### Log:\n\`\`\`\n${logPreview}\n\`\`\``,
+              labels: ['bio-loop-failure', 'needs-investigation'],
+            });

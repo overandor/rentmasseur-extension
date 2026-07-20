@@ -1,0 +1,93 @@
+name: RM Client Mining ETL
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "full | resume | export"
+        required: true
+        default: "resume"
+        type: choice
+        options:
+          - full
+          - resume
+          - export
+      workers:
+        description: "Parallel browser tabs (1-4)"
+        required: false
+        default: "4"
+      delay:
+        description: "Delay between visits (seconds)"
+        required: false
+        default: "2.0"
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: rm-client-mining
+  cancel-in-progress: false
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      RM_USER: ${{ secrets.RENTMASSEUR_USERNAME || secrets.RM_USER }}
+      RM_PASS: ${{ secrets.RENTMASSEUR_PASSWORD || secrets.RM_PASS }}
+      WORKERS: ${{ github.event.inputs.workers || '4' }}
+      DELAY: ${{ github.event.inputs.delay || '2.0' }}
+      MODE: ${{ github.event.inputs.mode || 'resume' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
+
+      - name: Run ETL pipeline
+        run: |
+          ARGS=""
+          if [ "$MODE" = "resume" ]; then
+            ARGS="--resume --workers $WORKERS --delay $DELAY"
+          elif [ "$MODE" = "full" ]; then
+            ARGS="--workers $WORKERS --delay $DELAY"
+          elif [ "$MODE" = "export" ]; then
+            ARGS="--export"
+          fi
+          python etl/rm_client_pipeline.py $ARGS
+
+      - name: Show status
+        run: python etl/rm_client_pipeline.py --status
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rm-clients-${{ github.run_id }}
+          path: |
+            artifacts/rm_etl/
+          retention-days: 30
+
+      - name: Commit client data
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add artifacts/rm_etl/clients.json artifacts/rm_etl/clients.csv artifacts/rm_etl/client_usernames.txt artifacts/rm_etl/rm_clients.db || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "RM ETL: client mining update $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "No changes to commit"
+          fi

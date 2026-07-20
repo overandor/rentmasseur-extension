@@ -1,0 +1,14 @@
+{
+  "session_id": "d7e40e2e0b9c",
+  "action": "visit_profile",
+  "status": "ok",
+  "timestamp": "2026-07-20T00:00:10.497961+00:00",
+  "elapsed_s": 31.87,
+  "username": "summerboyy",
+  "url": "https://rentmasseur.com/summerboyy",
+  "page_title": "Summerboyy | RentMasseur",
+  "content_hash": "6836a58edd0053cab142f906c1dccab6a0744567ee579baf5c8eab854d324a24",
+  "screenshot": "visit_001_summerboyy",
+  "visited_at": "2026-07-20T00:00:10.497952+00:00",
+  "receipt_hash": "f75248dcdf7dc62d"
+}
