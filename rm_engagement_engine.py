@@ -436,7 +436,9 @@ class EngagementEngine:
         log("Browser closed")
 
     def screenshot(self, name: str) -> str:
-        path = SCREENSHOTS / f"{name}.png"
+        ts = time.strftime("%Y%m%d_%H%M%S", time.gmtime())
+        fname = f"{ts}_{SESSION_ID}_{name}.png"
+        path = SCREENSHOTS / fname
         try:
             self.driver.save_screenshot(str(path))
         except Exception:
@@ -446,14 +448,16 @@ class EngagementEngine:
     def screenshot_compressed(self, name: str) -> dict:
         """Take screenshot, compress to thumbnail, delete original PNG.
         Returns dict with thumbnail_base64, thumbnail_kb, original_size_kb."""
-        path = SCREENSHOTS / f"{name}.png"
+        ts = time.strftime("%Y%m%d_%H%M%S", time.gmtime())
+        fname = f"{ts}_{SESSION_ID}_{name}"
+        path = SCREENSHOTS / f"{fname}.png"
         try:
             self.driver.save_screenshot(str(path))
             orig_kb = round(path.stat().st_size / 1024, 1)
             thumb_b64, thumb_kb = compress_screenshot(path)
             return {
                 "thumbnail_b64": thumb_b64[:500] if thumb_b64 else "",  # truncated for receipt
-                "thumbnail_file": f"{name}.jpg",
+                "thumbnail_file": f"{fname}.jpg",
                 "thumbnail_kb": thumb_kb,
                 "original_kb": orig_kb,
                 "compression_ratio": round(thumb_kb / orig_kb, 3) if orig_kb > 0 else 0,
@@ -704,11 +708,7 @@ class EngagementEngine:
                 log(f"  404 on {uname}", "WARN")
                 return {"username": uname, "status": "404", "url": current_url}
 
-            # Take compressed screenshot
-            ss_name = f"visit_{idx+1:03d}_{uname}"
-            ss_info = self.screenshot_compressed(ss_name)
-
-            # Extract profile metadata
+            # Extract profile metadata first
             meta = self.driver.execute_script(r"""
                 const text = document.body ? document.body.innerText : '';
                 const result = {};
@@ -732,15 +732,29 @@ class EngagementEngine:
                 // Available status
                 result.available = text.toLowerCase().includes('available now');
 
-                // Profile text hash
-                let hash = 0;
-                for (let i = 0; i < text.length; i++) {
-                    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
-                }
-                result.profile_hash = hash.toString();
-
                 return result;
             """)
+
+            # Take proof screenshot with ZK verification chain
+            import rm_proof
+            ss_name = f"visit_{idx+1:03d}_{uname}"
+            page_text_full = self.page_text()
+            proof_receipt = rm_proof.capture_proof(
+                driver=self.driver,
+                url=current_url,
+                page_text=page_text_full,
+                session_id=SESSION_ID,
+                action="visit_back",
+                api_data=meta,
+                name_prefix=ss_name,
+            )
+            ss_info = {
+                "thumbnail_file": proof_receipt.get("screenshot_file", ""),
+                "thumbnail_kb": 0,
+                "original_kb": 0,
+                "compression_ratio": 0,
+                "proof_hash": proof_receipt.get("proof_hash", ""),
+            }
 
             page_text = self.page_text()[:1000]
             content_hash = sha256_text(page_text)
@@ -772,6 +786,9 @@ class EngagementEngine:
                 "screenshot_kb": ss_info.get("thumbnail_kb", 0),
                 "original_screenshot_kb": ss_info.get("original_kb", 0),
                 "compression_ratio": ss_info.get("compression_ratio", 0),
+                "proof_hash": ss_info.get("proof_hash", ""),
+                "proof_screenshot": proof_receipt.get("screenshot_file", ""),
+                "proof_chain_index": proof_receipt.get("chain_index", -1),
                 "visited_at": now_iso(),
                 "verified_utc_timestamp": now_iso(),
                 "last_online": meta.get("last_online"),
@@ -836,10 +853,39 @@ class EngagementEngine:
                     break
 
             if not textarea:
+                # Debug: dump page source to find the actual form structure
+                page_src = self.driver.page_source[:3000] if self.driver.page_source else ""
                 log(f"  No message field found for {username}", "WARN")
-                write_receipt("message_visitor", "fail", {"username": username, "reason": "no_message_field"})
-                record_message(username, message_text, "no_field", template_idx)
-                return {"username": username, "status": "no_field"}
+                log(f"  Page URL: {self.driver.current_url}", "WARN")
+                log(f"  Page title: {self.driver.title}", "WARN")
+                # Check for iframes
+                iframes = self.driver.find_elements(By.TAG_NAME, "iframe")
+                log(f"  Iframes on page: {len(iframes)}", "WARN")
+                if iframes:
+                    for i, iframe in enumerate(iframes):
+                        src = iframe.get_attribute("src") or ""
+                        log(f"    iframe[{i}] src={src[:100]}", "WARN")
+                    # Try switching to first iframe and looking for textarea
+                    try:
+                        self.driver.switch_to.frame(iframes[0])
+                        for sel in ["textarea", "[contenteditable='true']", "input[type='text']"]:
+                            els = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                            for el in els:
+                                if el.is_displayed():
+                                    textarea = el
+                                    log(f"  Found textarea in iframe[0] via {sel}", "INFO")
+                                    break
+                            if textarea:
+                                break
+                        self.driver.switch_to.default_content()
+                    except Exception as e:
+                        log(f"  iframe switch failed: {e}", "WARN")
+                        self.driver.switch_to.default_content()
+                if not textarea:
+                    log(f"  Page source (first 2000 chars): {page_src[:2000]}", "DEBUG")
+                    write_receipt("message_visitor", "fail", {"username": username, "reason": "no_message_field", "page_url": self.driver.current_url, "page_title": self.driver.title, "iframe_count": len(iframes)})
+                    record_message(username, message_text, "no_field", template_idx)
+                    return {"username": username, "status": "no_field"}
 
             # Type message human-like
             log("  Typing message (human-like)...")

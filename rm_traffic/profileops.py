@@ -645,7 +645,46 @@ class ProfileOps:
                 "available": dash.get("userSetting", {}).get("availability", {}).get("available"),
                 "headline": assets.get("headline"),
             }
-            receipt("collect_stats", True, "Traffic stats collected")
+
+            # Write telemetry snapshot with actual API data for verification
+            import json as _json
+            telemetry_snapshot = {
+                "timestamp": _json.dumps(None),  # will be set below
+                "views": prof_stats.get("totalPageViews"),
+                "contacts": prof_stats.get("totalContactClicks"),
+                "visits": keep.get("newVisits"),
+                "bookmarks": dash.get("onlineBookmarks"),
+                "new_emails": keep.get("newEmails"),
+                "is_ad_hidden": keep.get("isAdHidden"),
+                "available": dash.get("userSetting", {}).get("availability", {}).get("available"),
+                "headline": assets.get("headline"),
+                "raw_api": {
+                    "dashboard": dash,
+                    "stats": stats,
+                    "keeponline": keep,
+                    "mailbox_count": len(mail.get("messages", [])) if isinstance(mail, dict) else 0,
+                },
+            }
+            from datetime import datetime, timezone as _tz
+            telemetry_snapshot["timestamp"] = datetime.now(_tz.utc).isoformat()
+
+            # Write to content/ for HF Space pickup
+            import os as _os
+            _os.makedirs("content", exist_ok=True)
+            with open("content/telemetry_latest.json", "w") as _f:
+                _json.dump(telemetry_snapshot, _f, indent=2)
+            with open("content/telemetry.jsonl", "a") as _f:
+                _f.write(_json.dumps(telemetry_snapshot, separators=(",", ":")) + "\n")
+
+            # Receipt with actual data — not just "collected"
+            receipt("collect_stats", True,
+                    f"views={prof_stats.get('totalPageViews')} "
+                    f"contacts={prof_stats.get('totalContactClicks')} "
+                    f"visits={keep.get('newVisits')} "
+                    f"emails={keep.get('newEmails')} "
+                    f"bookmarks={dash.get('onlineBookmarks')} "
+                    f"hidden={keep.get('isAdHidden')} "
+                    f"available={dash.get('userSetting', {}).get('availability', {}).get('available')}")
         except Exception as e:
             receipt("collect_stats", False, str(e))
             log.error("Stats collection failed: %s", e)
