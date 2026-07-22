@@ -1,66 +1,120 @@
-name: RM Bio Loop — Ollama Bio Generation + Deploy
+from pathlib import Path
+
+workflow = r"""name: RM Bio Loop — Ollama Bio Generation + Deploy
 
 on:
   schedule:
-    - cron: '0 6,12,18 * * *'  # 3x/day — generate + deploy new bio
+    - cron: "0 6,12,18 * * *"
   workflow_dispatch:
     inputs:
       count:
-        description: 'Number of bios to generate'
+        description: "Number of bios to generate"
         required: false
-        default: '3'
+        default: "3"
       deploy:
-        description: 'Deploy best bio after generation'
+        description: "Deploy best bio after generation"
         required: false
-        default: 'true'
+        default: "true"
       fetch_current:
-        description: 'Fetch current bio first'
+        description: "Fetch current bio first"
         required: false
-        default: 'true'
+        default: "true"
 
 permissions:
   contents: write
   actions: write
   issues: write
 
+concurrency:
+  group: rm-bio-loop
+  cancel-in-progress: false
+
 jobs:
   bio-loop:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
+
     env:
       RM_USER: ${{ secrets.RENTMASSEUR_USERNAME || secrets.RM_USER }}
       RM_PASS: ${{ secrets.RENTMASSEUR_PASSWORD || secrets.RM_PASS }}
       RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME || secrets.RM_USER }}
       RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD || secrets.RM_PASS }}
 
+      OLLAMA_HOST: http://127.0.0.1:11434
+      OLLAMA_MODEL: llama3.2:3b
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_KEEP_ALIVE: "0"
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
+          cache: pip
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install undetected-chromedriver selenium requests fastapi uvicorn
+          pip install \
+            undetected-chromedriver \
+            selenium \
+            requests \
+            fastapi \
+            uvicorn
 
-      - name: Install Chrome
+      - name: Install Google Chrome
         run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo mkdir -p /etc/apt/keyrings
+          wget -qO- https://dl.google.com/linux/linux_signing_key.pub \
+            | sudo gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
+            | sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y --no-install-recommends google-chrome-stable
+          google-chrome --version
 
       - name: Install Ollama
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
-          ollama pull llama3.1
-          echo "Ollama ready"
+          nohup ollama serve > ollama.log 2>&1 &
 
-      - name: Restore bio experiments DB
+          for attempt in $(seq 1 45); do
+            if curl -fsS "${OLLAMA_HOST}/api/tags" >/dev/null; then
+              echo "Ollama server is ready"
+              break
+            fi
+
+            if [ "$attempt" -eq 45 ]; then
+              echo "Ollama server failed to start"
+              cat ollama.log || true
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          ollama pull "${OLLAMA_MODEL}"
+          ollama list
+
+      - name: Show runner resources
+        run: |
+          echo "CPU cores:"
+          nproc
+          echo
+          echo "Memory:"
+          free -h
+          echo
+          echo "Disk:"
+          df -h /
+          echo
+          echo "Ollama models:"
+          ollama list
+
+      - name: Restore bio experiments database
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -72,30 +126,47 @@ jobs:
         run: |
           python3 rm_bio_loop.py --fetch-current 2>&1 | tee bio_fetch.log
 
-      - name: Generate + deploy bios
+      - name: Generate and optionally deploy bios
         id: bio
         continue-on-error: true
+        shell: bash
         run: |
+          set +e
+
           COUNT="${{ github.event.inputs.count || '3' }}"
           DEPLOY_FLAG=""
+
           if [ "${{ github.event.inputs.deploy || 'true' }}" = "true" ]; then
             DEPLOY_FLAG="--deploy"
           fi
 
-          python3 rm_bio_loop.py --generate --count "$COUNT" $DEPLOY_FLAG 2>&1 | tee bio_generate.log
+          python3 rm_bio_loop.py \
+            --generate \
+            --count "$COUNT" \
+            $DEPLOY_FLAG \
+            2>&1 | tee bio_generate.log
+
           EXIT_CODE=${PIPESTATUS[0]}
-          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: List all bios
         if: always()
-        run: python3 rm_bio_loop.py --list
+        run: |
+          python3 rm_bio_loop.py --list || true
 
       - name: Commit bio artifacts
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add artifacts/engagement/bio_experiments.db artifacts/engagement/current_bio.json artifacts/engagement/bios/ 2>/dev/null || true
+
+          git add \
+            artifacts/engagement/bio_experiments.db \
+            artifacts/engagement/current_bio.json \
+            artifacts/engagement/bios/ \
+            2>/dev/null || true
+
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "bio-loop: $(date -u +%Y-%m-%d-%H:%M) [skip-ci]"
             git push
@@ -103,14 +174,17 @@ jobs:
             echo "No changes to commit"
           fi
 
-      - name: Upload bio DB
+      - name: Upload bio database
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bio-experiments-db
           path: artifacts/engagement/bio_experiments.db
+          if-no-files-found: warn
           retention-days: 90
 
-      - name: Upload all artifacts
+      - name: Upload run artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rm-bio-loop-${{ github.run_id }}
@@ -119,6 +193,8 @@ jobs:
             artifacts/engagement/current_bio.json
             bio_fetch.log
             bio_generate.log
+            ollama.log
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Create issue on failure
@@ -126,16 +202,42 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            let logPreview = '';
+            const fs = require("fs");
+
+            let logPreview = "";
             try {
-              logPreview = fs.readFileSync('bio_generate.log', 'utf8').slice(-2000);
-            } catch (e) {}
+              logPreview = fs
+                .readFileSync("bio_generate.log", "utf8")
+                .slice(-4000);
+            } catch (error) {
+              logPreview = "bio_generate.log was not available.";
+            }
 
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `[RM-Bio-Loop] Failure — run ${context.runId}`,
-              body: `## Bio Loop Failure\n\n**Run**: ${context.runId}\n**Exit code**: '${{ steps.bio.outputs.exit_code }}'\n\n### Log:\n\`\`\`\n${logPreview}\n\`\`\``,
-              labels: ['bio-loop-failure', 'needs-investigation'],
+              body: [
+                "## Bio Loop Failure",
+                "",
+                `**Run:** ${context.runId}`,
+                `**Exit code:** ${{ steps.bio.outputs.exit_code }}`,
+                "",
+                "### Log",
+                "```text",
+                logPreview,
+                "```",
+              ].join("\n"),
+              labels: ["bio-loop-failure", "needs-investigation"],
             });
+
+      - name: Fail workflow when generation or deployment failed
+        if: steps.bio.outputs.exit_code != '0' && steps.bio.outputs.exit_code != ''
+        run: |
+          echo "rm_bio_loop.py failed with exit code ${{ steps.bio.outputs.exit_code }}"
+          exit 1
+"""
+
+out = Path("/mnt/data/rm-bio-loop.yml")
+out.write_text(workflow, encoding="utf-8")
+print(out)
