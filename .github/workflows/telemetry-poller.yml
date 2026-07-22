@@ -1,0 +1,65 @@
+name: RM Telemetry Poller
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  telemetry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RENTMASSEUR_USERNAME: ${{ secrets.RENTMASSEUR_USERNAME }}
+      RENTMASSEUR_PASSWORD: ${{ secrets.RENTMASSEUR_PASSWORD }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq chromium chromium-driver xvfb
+          wget -q https://chromedriver.storage.googleapis.com/$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip
+          unzip -q chromedriver_linux64.zip
+          sudo mv chromedriver /usr/bin/chromedriver
+          sudo chmod +x /usr/bin/chromedriver
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium undetected-chromedriver python-dotenv
+
+      - name: Run telemetry poller (10 min, 60s interval)
+        run: |
+          python3 rm_telemetry_poller.py --duration 600 --interval 60
+
+      - name: Commit telemetry data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/telemetry_latest.json content/telemetry.jsonl receipts/telemetry_* 2>/dev/null || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Telemetry poll: $(date -u +%Y-%m-%d-%H:%M) UTC"
+            git push
+          else
+            echo "No telemetry changes to commit"
+          fi
+
+      - name: Upload telemetry artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: telemetry-$(date -u +%Y%m%d-%H%M)
+          path: |
+            content/telemetry_latest.json
+            content/telemetry.jsonl
+            receipts/telemetry_*
+          retention-days: 7
