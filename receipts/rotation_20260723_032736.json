@@ -1,0 +1,17 @@
+{
+  "action": "master-rotator",
+  "timestamp": "2026-07-23T03:27:36Z",
+  "run_id": "29976798159",
+  "dry_run": "true",
+  "components": "all",
+  "preflight_passed": true,
+  "gate_decision": {
+  "status": "blocked_missing_real_inputs",
+  "reason": "Real first-party metrics and candidate TSV are required before a live profile decision.",
+  "live_update_allowed": false,
+  "dry_run": "true",
+  "run_id": "29976798159"
+},
+  "content_changed": " M content/decisions/latest_decision.json ?? content/ab_tests/results_20260723.json ?? content/blog_posts/20260723_seasonal_stress_survival.md ?? content/blog_posts/20260723_why_price_doesnt_equal_value.md ?? content/interview_questions/20260723_dream_client.md ?? content/interview_questions/20260723_morning_routine.md ?? production_control_loop ?? receipts/rotation_20260723_032736.json ",
+  "status": "completed"
+}

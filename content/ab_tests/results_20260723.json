@@ -1,0 +1,499 @@
+{
+  "date": "2026-07-23T03:26:45.810346+00:00",
+  "total_variants": 30,
+  "competitors_analyzed": 0,
+  "all_scores": [
+    {
+      "strategy": "transformation_story",
+      "length": 874,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_transformation_story.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 85,
+        "length_optimal": 90,
+        "beats_competitors": 92,
+        "overall_score": 91,
+        "reasoning": "This bio effectively combines a strong emotional hook, urgent call-to-action, and unique personal story to outshine competitors."
+      }
+    },
+    {
+      "strategy": "local_hustle",
+      "length": 845,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_local_hustle.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 85,
+        "seo_keywords": 70,
+        "uniqueness": 60,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio effectively combines a strong call-to-action, sense of urgency, and emotional appeal, making it a compelling and competitive profile."
+      }
+    },
+    {
+      "strategy": "night_owl",
+      "length": 861,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_night_owl.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 85,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio effectively combines a strong emotional hook, sense of urgency, and clear call-to-action, making it a compelling and unique profile that likely beats most competitors."
+      }
+    },
+    {
+      "strategy": "spiritual_healer",
+      "length": 867,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_spiritual_healer.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 85,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio stands out from competitors with its poetic language, strong emotional hook, and effective urgency, making it a compelling and transformative experience for potential clients."
+      }
+    },
+    {
+      "strategy": "traveler_companion",
+      "length": 876,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_traveler_companion.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 90,
+        "seo_keywords": 70,
+        "uniqueness": 80,
+        "length_optimal": 90,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio effectively combines a strong phone call-to-action, emotional appeal, and uniqueness, making it a compelling choice that beats the top competitor bios."
+      }
+    },
+    {
+      "strategy": "medical_referral",
+      "length": 919,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_medical_referral.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 85,
+        "seo_keywords": 70,
+        "uniqueness": 60,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio scores high due to its strong call-to-action, sense of urgency, and emotional appeal, effectively outshining its competitors with a well-structured and persuasive narrative."
+      }
+    },
+    {
+      "strategy": "seasonal_special",
+      "length": 963,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_seasonal_special.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 90,
+        "seo_keywords": 70,
+        "uniqueness": 80,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio effectively combines a strong emotional hook, sense of urgency, and clear call-to-action, making it a compelling and effective massage therapy profile that beats the competition."
+      }
+    },
+    {
+      "strategy": "couples_duo",
+      "length": 1021,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_couples_duo.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 85,
+        "length_optimal": 90,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio effectively combines a strong emotional hook, sense of urgency, and unique selling proposition, making it a compelling choice that beats most competitors."
+      }
+    },
+    {
+      "strategy": "bodybuilder_therapy",
+      "length": 1012,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_bodybuilder_therapy.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 85,
+        "seo_keywords": 70,
+        "uniqueness": 95,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio stands out for its unique blend of athletic focus, technical expertise, and persuasive language, making it a top contender among competitors."
+      }
+    },
+    {
+      "strategy": "yoga_fusion",
+      "length": 904,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_yoga_fusion.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 90,
+        "seo_keywords": 70,
+        "uniqueness": 80,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio effectively combines a strong emotional hook, clear call-to-action, and sense of urgency, making it a compelling and competitive profile that likely outperforms its competitors."
+      }
+    },
+    {
+      "strategy": "office_relief",
+      "length": 897,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_office_relief.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 85,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio stands out for its compelling narrative, strong emotional hook, and effective call-to-action, making it a top contender that surpasses most competitors."
+      }
+    },
+    {
+      "strategy": "dancer_flexibility",
+      "length": 960,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_dancer_flexibility.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 60,
+        "emotional_hook": 70,
+        "seo_keywords": 80,
+        "uniqueness": 90,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio stands out from competitors due to its unique specialization in dancers and performers, and its ability to effectively convey a sense of expertise and tailored services."
+      }
+    },
+    {
+      "strategy": "quick_lunch",
+      "length": 973,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_quick_lunch.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 85,
+        "length_optimal": 95,
+        "beats_competitors": 90,
+        "overall_score": 88,
+        "reasoning": "This bio effectively combines a strong emotional hook, sense of urgency, and clear call-to-action, making it a compelling and well-structured profile that beats most competitors."
+      }
+    },
+    {
+      "strategy": "ceo_executive",
+      "length": 911,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_ceo_executive.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 85,
+        "seo_keywords": 70,
+        "uniqueness": 80,
+        "length_optimal": 90,
+        "beats_competitors": 90,
+        "overall_score": 87,
+        "reasoning": "This bio stands out from competitors with its strong phone call-to-action, sense of urgency, and emotional hooks, making it highly effective at attracting potential clients."
+      }
+    },
+    {
+      "strategy": "military_veteran",
+      "length": 871,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_military_veteran.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 60,
+        "emotional_hook": 90,
+        "seo_keywords": 70,
+        "uniqueness": 80,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 87,
+        "reasoning": "This bio effectively combines a strong emotional hook, unique selling proposition, and clear call-to-action, making it a compelling and competitive profile."
+      }
+    },
+    {
+      "strategy": "sensory_luxury",
+      "length": 770,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_sensory_luxury.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 60,
+        "emotional_hook": 90,
+        "seo_keywords": 40,
+        "uniqueness": 70,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 85,
+        "reasoning": "This bio effectively transports the reader to a serene environment, evoking strong emotions and creating a sense of urgency, while also standing out from competitors with its vivid descriptions and calls to action."
+      }
+    },
+    {
+      "strategy": "luxury_concierge",
+      "length": 802,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_luxury_concierge.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 70,
+        "seo_keywords": 60,
+        "uniqueness": 80,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 85,
+        "reasoning": "This bio effectively combines a strong phone call-to-action, sense of urgency, and unique selling points to outshine its competitors."
+      }
+    },
+    {
+      "strategy": "lgbtq_pride",
+      "length": 991,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_lgbtq_pride.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 70,
+        "emotional_hook": 90,
+        "seo_keywords": 60,
+        "uniqueness": 80,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 85,
+        "reasoning": "This bio stands out for its inclusive and compassionate tone, effectively targeting a specific community and offering a unique value proposition that likely surpasses its competitors."
+      }
+    },
+    {
+      "strategy": "weekly_ritual",
+      "length": 986,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_weekly_ritual.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 85,
+        "seo_keywords": 70,
+        "uniqueness": 60,
+        "length_optimal": 80,
+        "beats_competitors": 90,
+        "overall_score": 85,
+        "reasoning": "This bio stands out for its strong phone call-to-action, sense of urgency, and emotional hook, making it a compelling choice that exceeds the quality of top competitor bios."
+      }
+    },
+    {
+      "strategy": "mystery_desire",
+      "length": 786,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_mystery_desire.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 90,
+        "length_optimal": 85,
+        "beats_competitors": 85,
+        "overall_score": 82,
+        "reasoning": "This bio scores high due to its unique and emotive language, strong phone call to action, and sense of urgency, but may lack in explicitly highlighting specific massage techniques and SEO keywords compared to top competitors."
+      }
+    },
+    {
+      "strategy": "artist_soul",
+      "length": 795,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_artist_soul.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 95,
+        "seo_keywords": 60,
+        "uniqueness": 85,
+        "length_optimal": 90,
+        "beats_competitors": 80,
+        "overall_score": 82,
+        "reasoning": "This bio scores high due to its emotional hooks, urgency, and phone call-to-action, but may not clearly outshine all competitors without more specific SEO keywords and a slightly more unique approach."
+      }
+    },
+    {
+      "strategy": "recovery_addiction",
+      "length": 948,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_recovery_addiction.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 85,
+        "seo_keywords": 70,
+        "uniqueness": 60,
+        "length_optimal": 80,
+        "beats_competitors": 85,
+        "overall_score": 82,
+        "reasoning": "This bio effectively creates a sense of urgency and emotional connection, while also incorporating strong calls-to-action and showcasing the therapist's expertise, making it a compelling and competitive profile."
+      }
+    },
+    {
+      "strategy": "meditation_guide",
+      "length": 773,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_meditation_guide.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 95,
+        "seo_keywords": 70,
+        "uniqueness": 85,
+        "length_optimal": 90,
+        "beats_competitors": 85,
+        "overall_score": 82,
+        "reasoning": "This bio effectively combines a strong emotional hook, sense of urgency, and unique selling proposition, but may not fully optimize for SEO keywords to clearly outrank all competitors."
+      }
+    },
+    {
+      "strategy": "discrete_confidential",
+      "length": 915,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_discrete_confidential.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 90,
+        "seo_keywords": 70,
+        "uniqueness": 60,
+        "length_optimal": 80,
+        "beats_competitors": 70,
+        "overall_score": 78,
+        "reasoning": "This bio effectively creates a serene atmosphere and emphasizes discretion, but its uniqueness and SEO keyword usage are not standout enough to surpass all top competitors."
+      }
+    },
+    {
+      "strategy": "birthday_gift",
+      "length": 802,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_birthday_gift.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 85,
+        "seo_keywords": 70,
+        "uniqueness": 60,
+        "length_optimal": 80,
+        "beats_competitors": 70,
+        "overall_score": 78,
+        "reasoning": "This bio effectively creates a sense of urgency and emotional connection, but its uniqueness and SEO keyword usage are not exceptional enough to surpass all competitors."
+      }
+    },
+    {
+      "strategy": "senior_gentle",
+      "length": 980,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_senior_gentle.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 70,
+        "seo_keywords": 60,
+        "uniqueness": 50,
+        "length_optimal": 80,
+        "beats_competitors": 70,
+        "overall_score": 74,
+        "reasoning": "This bio effectively targets a specific demographic and creates a sense of urgency, but its uniqueness and SEO keyword usage could be improved to surpass all competitors."
+      }
+    },
+    {
+      "strategy": "hot_stone_specialist",
+      "length": 762,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_hot_stone_specialist.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 90,
+        "emotional_hook": 90,
+        "seo_keywords": 70,
+        "uniqueness": 60,
+        "length_optimal": 80,
+        "beats_competitors": 70,
+        "overall_score": 74,
+        "reasoning": "The bio effectively uses emotional hooks and creates a sense of urgency, but its uniqueness and SEO keyword usage could be improved to surpass top competitors."
+      }
+    },
+    {
+      "strategy": "athlete_recovery",
+      "length": 909,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_athlete_recovery.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 60,
+        "emotional_hook": 70,
+        "seo_keywords": 80,
+        "uniqueness": 50,
+        "length_optimal": 90,
+        "beats_competitors": 40,
+        "overall_score": 60,
+        "reasoning": "The bio is well-structured and effectively uses keywords, but it lacks a unique selling proposition and doesn't significantly differentiate itself from top competitors."
+      }
+    },
+    {
+      "strategy": "first_timer",
+      "length": 828,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_first_timer.md",
+      "score": {
+        "phone_cta_strength": 80,
+        "urgency": 70,
+        "emotional_hook": 90,
+        "seo_keywords": 60,
+        "uniqueness": 50,
+        "length_optimal": 80,
+        "beats_competitors": 40,
+        "overall_score": 60,
+        "reasoning": "The bio effectively creates a serene atmosphere and has a strong emotional hook, but its uniqueness and SEO keywords are lacking, and it does not significantly stand out from the competitors."
+      }
+    },
+    {
+      "strategy": "therapeutic_expert",
+      "length": 865,
+      "file": "/home/runner/work/rentmasseur-extension/rentmasseur-extension/content/bios/20260723_therapeutic_expert.md",
+      "score": {
+        "phone_cta_strength": 90,
+        "urgency": 80,
+        "emotional_hook": 70,
+        "seo_keywords": 60,
+        "uniqueness": 50,
+        "length_optimal": 80,
+        "beats_competitors": 40,
+        "overall_score": 40,
+        "reasoning": "The bio is well-structured and clear, but it lacks a strong unique selling point and doesn't significantly differentiate itself from top competitor bios."
+      }
+    }
+  ],
+  "winner": "transformation_story",
+  "winner_score": {
+    "phone_cta_strength": 90,
+    "urgency": 80,
+    "emotional_hook": 95,
+    "seo_keywords": 70,
+    "uniqueness": 85,
+    "length_optimal": 90,
+    "beats_competitors": 92,
+    "overall_score": 91,
+    "reasoning": "This bio effectively combines a strong emotional hook, urgent call-to-action, and unique personal story to outshine competitors."
+  }
+}
