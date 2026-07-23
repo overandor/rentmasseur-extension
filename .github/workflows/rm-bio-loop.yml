@@ -1,6 +1,4 @@
-from pathlib import Path
-
-workflow = r"""name: RM Bio Loop — Ollama Bio Generation + Deploy
+name: RM Bio Loop — Ollama Bio Generation + Deploy
 
 on:
   schedule:
@@ -236,8 +234,3 @@ jobs:
         run: |
           echo "rm_bio_loop.py failed with exit code ${{ steps.bio.outputs.exit_code }}"
           exit 1
-"""
-
-out = Path("/mnt/data/rm-bio-loop.yml")
-out.write_text(workflow, encoding="utf-8")
-print(out)
