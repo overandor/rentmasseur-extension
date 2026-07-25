@@ -5,12 +5,14 @@ Credentials are loaded from a .env file or environment variables.
 """
 
 import argparse
+import json
+import os
 import sys
 import time
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
-import os
 
 from dotenv import load_dotenv
 try:
@@ -603,6 +605,70 @@ def _dump_debug(driver: webdriver.Chrome, label: str) -> None:
         logger.error("Failed to save page source: %s", e)
 
 
+def scrape_profile_metrics(driver: webdriver.Chrome) -> dict:
+    """Scrape visitor metrics from /settings/whosawme while already logged in."""
+    metrics = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "source": "selenium_whosawme",
+        "profile_views": 0,
+        "unique_visitors": 0,
+        "repeat_visitors": 0,
+    }
+    try:
+        logger.info("Navigating to visitor metrics: https://rentmasseur.com/settings/whosawme")
+        driver.set_page_load_timeout(60)
+        driver.get("https://rentmasseur.com/settings/whosawme")
+        time.sleep(5)
+        dismiss_popups(driver)
+
+        visitors = driver.execute_script("""
+            const seen = new Set();
+            const result = [];
+            const imgs = document.querySelectorAll('img[alt="Profile photo"], img[alt="profile-picture"]');
+            for (const img of imgs) {
+                const a = img.closest('a');
+                if (a && a.href) {
+                    const path = new URL(a.href).pathname.replace('/', '');
+                    if (path && !seen.has(path) && !path.includes('settings')) {
+                        seen.add(path);
+                        result.push(path);
+                    }
+                }
+            }
+            const links = Array.from(document.querySelectorAll('a[href]'));
+            for (const a of links) {
+                if (!a.href.startsWith('https://rentmasseur.com/')) continue;
+                const path = new URL(a.href).pathname;
+                if (path && path !== '/' && path.split('/').length === 2) {
+                    const user = path.replace('/', '');
+                    if (user && !seen.has(user) && !user.startsWith('_') && user.length > 2) {
+                        seen.add(user);
+                        result.push(user);
+                    }
+                }
+            }
+            return result;
+        """) or []
+
+        metrics["profile_views"] = len(visitors)
+        metrics["unique_visitors"] = len(visitors)
+        logger.info("Scraped %d visitor(s) from Who Saw Me", len(visitors))
+
+        # Persist to metrics pipeline files
+        content_dir = Path("content")
+        content_dir.mkdir(exist_ok=True)
+        ingest_path = content_dir / "metrics_ingest.jsonl"
+        with open(ingest_path, "a") as f:
+            f.write(json.dumps(metrics) + "\n")
+        live_path = content_dir / "live_metrics.json"
+        with open(live_path, "w") as f:
+            json.dump(metrics, f, indent=2)
+        logger.info("Wrote metrics to %s and %s", ingest_path, live_path)
+    except Exception as e:
+        logger.error("Failed to scrape profile metrics: %s", e)
+    return metrics
+
+
 def set_availability_24_7(driver: webdriver.Chrome) -> bool:
     """Navigate to availability settings and enable 24/7 availability."""
     try:
@@ -710,6 +776,8 @@ def run_once(headless: bool = True) -> bool:
                 _write_availability_json(False, "login_failed")
                 return False
         success = set_availability_24_7(driver)
+        if success:
+            scrape_profile_metrics(driver)
         _write_availability_json(success, "set_24_7" if success else "set_failed")
         return success
     except Exception as e:
