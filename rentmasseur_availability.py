@@ -707,14 +707,37 @@ def run_once(headless: bool = True) -> bool:
         if not brute_force_login(driver, max_retries=3):
             logger.warning("Brute-force login failed, trying alternate login method")
             if not login(driver):
+                _write_availability_json(False, "login_failed")
                 return False
-        return set_availability_24_7(driver)
+        success = set_availability_24_7(driver)
+        _write_availability_json(success, "set_24_7" if success else "set_failed")
+        return success
     except Exception as e:
         logger.error("Unexpected error: %s", e)
+        _write_availability_json(False, f"exception: {e}")
         return False
     finally:
         if driver:
             driver.quit()
+
+
+def _write_availability_json(success: bool, reason: str) -> None:
+    """Write availability.json so the workflow can commit it."""
+    import json
+    data = {
+        "availability_enforced": success,
+        "automated_login": True,
+        "availability_updated": success,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "reason": reason,
+    }
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "availability.json")
+    try:
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+        logger.info("Wrote availability.json: %s", json.dumps(data))
+    except Exception as e:
+        logger.error("Failed to write availability.json: %s", e)
 
 
 def main() -> None:
