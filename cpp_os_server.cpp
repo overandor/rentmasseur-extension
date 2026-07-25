@@ -126,8 +126,8 @@ static CommandResult run_command_evidence(const std::string& cmd) {
     std::string output;
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
         output += buffer;
-        if (output.size() > 6000) {
-            output = output.substr(output.size() - 6000);
+        if (output.size() > 20000) {
+            output = output.substr(output.size() - 20000);
         }
     }
     int status = pclose(pipe);
@@ -881,7 +881,7 @@ static void handle_client(int client_socket) {
     } else if (path == "/api/cicd/list") {
         response = gh_api("GET", "actions/workflows");
     } else if (path == "/api/cicd/runs") {
-        response = gh_api("GET", "actions/runs?per_page=10");
+        response = gh_api("GET", "actions/runs?per_page=5");
     } else if (path.rfind("/api/cicd/trigger/", 0) == 0) {
         std::string wf = path.substr(18);
         std::string raw = gh_api("POST", "actions/workflows/" + url_encode_workflow(wf) + "/dispatches", "{\"ref\":\"main\"}");
