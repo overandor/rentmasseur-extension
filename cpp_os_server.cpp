@@ -881,7 +881,11 @@ static void handle_client(int client_socket) {
     } else if (path == "/api/cicd/list") {
         response = gh_api("GET", "actions/workflows");
     } else if (path == "/api/cicd/runs") {
-        response = gh_api("GET", "actions/runs?per_page=5");
+        {
+            std::string cmd = "curl -sS -X GET -H \"Authorization: Bearer " + GH_TOKEN + "\" -H \"Accept: application/vnd.github+json\" -H \"X-GitHub-Api-Version: 2022-11-28\" \"https://api.github.com/repos/" + GH_REPO + "/actions/runs?per_page=5\" | jq '{workflow_runs: [.workflow_runs[] | {name: .name, status: .status, conclusion: .conclusion, created_at: .created_at, html_url: .html_url}]}'";
+            CommandResult r = run_command_evidence(cmd);
+            response = r.output.empty() ? "{\"status\":\"error\",\"exit_code\":" + std::to_string(r.exit_code) + "}" : r.output;
+        }
     } else if (path.rfind("/api/cicd/trigger/", 0) == 0) {
         std::string wf = path.substr(18);
         std::string raw = gh_api("POST", "actions/workflows/" + url_encode_workflow(wf) + "/dispatches", "{\"ref\":\"main\"}");
