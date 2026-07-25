@@ -1,1 +1,7 @@
-{"status":"blocked_missing_metrics","rl_state":{"status":"missing_real_data","name":"rl_state","path":"./content/rl_state.json"},"ga_state":{"status":"missing_real_data","name":"ga_state","path":"./content/ga_rl_state.json"},"availability":{"status":"missing_real_data","name":"availability","path":"./availability.json"},"content_counts":{"bios":0,"receipts":1284},"live_profile_update_allowed":false,"timestamp":"2026-07-25T23:19:21Z"}
+{"status":"blocked_missing_metrics","rl_state":{"status":"missing_real_data","name":"rl_state","path":"./content/rl_state.json"},"ga_state":{"status":"missing_real_data","name":"ga_state","path":"./content/ga_rl_state.json"},"availability":{
+  "availability_enforced": false,
+  "automated_login": true,
+  "availability_updated": false,
+  "timestamp": "2026-07-25T23:19:21.049081Z",
+  "reason": "login_failed"
+},"content_counts":{"bios":0,"receipts":1300},"live_profile_update_allowed":false,"timestamp":"2026-07-25T23:50:33Z"}
