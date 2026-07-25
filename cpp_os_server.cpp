@@ -882,7 +882,7 @@ static void handle_client(int client_socket) {
         response = gh_api("GET", "actions/workflows");
     } else if (path == "/api/cicd/runs") {
         {
-            std::string cmd = "curl -sS -X GET -H \"Authorization: Bearer " + GH_TOKEN + "\" -H \"Accept: application/vnd.github+json\" -H \"X-GitHub-Api-Version: 2022-11-28\" \"https://api.github.com/repos/" + GH_REPO + "/actions/runs?per_page=5\" | jq '{workflow_runs: [.workflow_runs[] | {name: .name, status: .status, conclusion: .conclusion, created_at: .created_at, html_url: .html_url}]}'";
+            std::string cmd = "curl -sS -X GET -H \"Authorization: Bearer " + GH_TOKEN + "\" -H \"Accept: application/vnd.github+json\" -H \"X-GitHub-Api-Version: 2022-11-28\" \"https://api.github.com/repos/" + GH_REPO + "/actions/runs?per_page=5\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(json.dumps({'workflow_runs':[{'name':r['name'],'status':r['status'],'conclusion':r.get('conclusion'),'created_at':r['created_at']} for r in d.get('workflow_runs',[])]}))\"";
             CommandResult r = run_command_evidence(cmd);
             response = r.output.empty() ? "{\"status\":\"error\",\"exit_code\":" + std::to_string(r.exit_code) + "}" : r.output;
         }
