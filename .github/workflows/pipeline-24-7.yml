@@ -64,9 +64,9 @@ jobs:
       # ═══════════════════════════════════════════════════════════
       - name: Keep availability 24/7
         continue-on-error: true
-        timeout-minutes: 5
+        timeout-minutes: 8
         run: |
-          timeout 240 python3 rentmasseur_availability.py --headless true || echo "Availability keeper failed - will retry next cycle"
+          timeout 420 python3 rentmasseur_availability.py --headless true --once || echo "Availability keeper failed - will retry next cycle"
 
       # ═══════════════════════════════════════════════════════════
       # MONEY LOOP — metrics, KPIs, optimization

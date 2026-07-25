@@ -607,11 +607,28 @@ def set_availability_24_7(driver: webdriver.Chrome) -> bool:
     """Navigate to availability settings and enable 24/7 availability."""
     try:
         logger.info("Navigating to availability settings: %s", AVAILABILITY_URL)
+        driver.set_page_load_timeout(90)
         driver.get(AVAILABILITY_URL)
-        time.sleep(3)  # Let page render
 
-        # Dismiss any popups that could block the availability controls
-        dismiss_popups(driver)
+        # Wait for SPA to render — use increasing delays with retry
+        for wait_round in range(1, 4):
+            time.sleep(8 + (wait_round * 5))  # 13s, 18s, 23s
+            logger.info("Availability page wait round %d — checking for selects...", wait_round)
+
+            # Dismiss any popups that could block the availability controls
+            dismiss_popups(driver)
+
+            # Check if selects have rendered
+            select_count = driver.execute_script("return document.querySelectorAll('select').length;") or 0
+            button_count = driver.execute_script("return document.querySelectorAll('button').length;") or 0
+            logger.info("Page has %d selects, %d buttons", select_count, button_count)
+
+            if select_count > 0:
+                break
+
+            if wait_round < 3:
+                logger.warning("No selects found yet — waiting longer for SPA to render")
+                _dump_debug(driver, f"availability_no_selects_round{wait_round}")
 
         # Do everything in JS since the two selects share identical classes
         ok = driver.execute_script("""
@@ -623,7 +640,7 @@ def set_availability_24_7(driver: webdriver.Chrome) -> bool:
                 const opts = Array.from(s.options).map(o => o.text.toLowerCase());
                 return opts.includes('available') || opts.includes('not set');
             });
-            if (!statusSelect) return {error: 'no_status_select'};
+            if (!statusSelect) return {error: 'no_status_select', select_count: selects.length, button_count: buttons.length};
             
             // Select 'Available' (skip 'Not Available')
             const availOpt = Array.from(statusSelect.options).find(
@@ -653,24 +670,25 @@ def set_availability_24_7(driver: webdriver.Chrome) -> bool:
             
             // Find and click SET button
             const setBtn = buttons.find(b => /set|save|apply/i.test(b.innerText));
-            if (!setBtn) return {error: 'no_set_button'};
+            if (!setBtn) return {error: 'no_set_button', button_texts: buttons.map(b => b.innerText.slice(0, 30))};
             setBtn.click();
             
             return {ok: true};
         """)
         
         if isinstance(ok, dict) and ok.get('error'):
-            logger.error("Availability JS automation failed: %s", ok['error'])
+            logger.error("Availability JS automation failed: %s", ok)
             scan_page(driver)
             _dump_debug(driver, f"availability_{ok['error']}")
             return False
         
         logger.info("Availability set via JS automation")
-        time.sleep(2)
+        time.sleep(3)
         return True
         
     except TimeoutException:
         logger.error("Availability page timed out")
+        _dump_debug(driver, "availability_timeout")
         return False
     except WebDriverException as e:
         logger.error("WebDriver error setting availability: %s", e)
@@ -682,8 +700,11 @@ def run_once(headless: bool = True) -> bool:
     driver: Optional[webdriver.Chrome] = None
     try:
         driver = setup_driver(headless=headless)
-        if not login(driver):
-            return False
+        # Try brute_force_login first (more robust for SPAs), fall back to login()
+        if not brute_force_login(driver, max_retries=3):
+            logger.warning("Brute-force login failed, trying alternate login method")
+            if not login(driver):
+                return False
         return set_availability_24_7(driver)
     except Exception as e:
         logger.error("Unexpected error: %s", e)
