@@ -59,6 +59,9 @@ jobs:
             --exclude='production_control_loop' \
             . hf-space/
           rm -rf hf-space/.env hf-space/debug hf-space/.github hf-space/artifacts hf-space/rm_traffic
+          # Remove any remaining binary/executable files that HF would reject
+          find hf-space -type f -executable ! -name "*.py" ! -name "*.sh" -delete 2>/dev/null || true
+          find hf-space -type f \( -name "*.o" -o -name "*.so" -o -name "*.dylib" \) -delete 2>/dev/null || true
 
       - name: Set HF Space secrets via API
         run: |
