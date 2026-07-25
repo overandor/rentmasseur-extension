@@ -638,6 +638,13 @@ function setTag(id, text, cls) {
   el.className = 'tag ' + cls;
 }
 
+const state = document.getElementById('state');
+const metricsPanel = document.getElementById('metrics-panel');
+const candidatesPanel = document.getElementById('candidates-panel');
+const decisionPanel = document.getElementById('decision-panel');
+const jobsPanel = document.getElementById('jobs-panel');
+const cicdPanel = document.getElementById('cicd-panel');
+
 fetch('/api/health').then(r=>r.json()).then(j=>{
   setTag('tag-health', 'HEALTH: ' + (j.status||'?'), j.status==='GREEN_REAL' ? 'tag-green' : 'tag-red');
 }).catch(()=>setTag('tag-health','HEALTH: OFFLINE','tag-red'));
