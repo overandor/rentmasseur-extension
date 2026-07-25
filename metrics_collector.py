@@ -18,6 +18,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from fingerprint import stamp_receipt
+
 CONTENT_DIR = Path("content")
 AVAILABILITY_FILE = Path("availability.json")
 METRICS_INGEST = CONTENT_DIR / "metrics_ingest.jsonl"
@@ -103,10 +105,12 @@ def generate_proof():
     proof["summary"] = summary
 
     proof_path = receipts_dir / f"metrics_{timestamp}.json"
+    proof = stamp_receipt(proof)
     with open(proof_path, "w") as f:
         json.dump(proof, f, indent=2)
 
     print(f"[proof] Receipt written: {proof_path}")
+    print(f"[proof] Fingerprint: {proof.get('fingerprint', '?')[:16]}")
     return proof
 
 

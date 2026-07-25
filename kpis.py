@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Optional
 
+from fingerprint import stamp_receipt
+
 CONTENT_DIR = Path(__file__).parent / "content"
 METRICS_PATH = CONTENT_DIR / "metrics_ingest.jsonl"
 KPI_DIR = CONTENT_DIR / "kpis"
@@ -254,9 +256,11 @@ def write_receipt(kpi_packet: Dict) -> Path:
         "action": "hourly_kpi_computation",
         "data": kpi_packet,
     }
+    receipt = stamp_receipt(receipt)
     path = RECEIPTS_DIR / f"kpi_{ts.replace(':', '-').replace('+', '-')}.json"
     with path.open("w") as f:
         json.dump(receipt, f, indent=2)
+    print(f"[receipt] Fingerprint: {receipt.get('fingerprint', '?')[:16]}")
     return path
 
 
