@@ -1,6 +1,19 @@
 name: Deploy to Hugging Face Space
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'availability.json'
+      - 'content/**'
+      - 'cpp_os_server.cpp'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - 'index.html'
+      - '**.py'
+      - '!receipts/**'
+      - '!.github/workflows/*'
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
