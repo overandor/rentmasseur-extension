@@ -611,36 +611,39 @@ def set_availability_24_7(driver: webdriver.Chrome) -> bool:
         driver.get(AVAILABILITY_URL)
 
         # Wait for SPA to render — use increasing delays with retry
-        for wait_round in range(1, 4):
-            time.sleep(8 + (wait_round * 5))  # 13s, 18s, 23s
-            logger.info("Availability page wait round %d — checking for selects...", wait_round)
+        for wait_round in range(1, 5):
+            time.sleep(10 + (wait_round * 5))  # 15s, 20s, 25s, 30s
+            logger.info("Availability page wait round %d — checking for controls...", wait_round)
 
             # Dismiss any popups that could block the availability controls
             dismiss_popups(driver)
 
-            # Check if selects have rendered
+            # Check if selects OR custom dropdowns have rendered
             select_count = driver.execute_script("return document.querySelectorAll('select').length;") or 0
             button_count = driver.execute_script("return document.querySelectorAll('button').length;") or 0
-            logger.info("Page has %d selects, %d buttons", select_count, button_count)
+            dropdown_count = driver.execute_script("return document.querySelectorAll('[class*=\"dropdown\"], [class*=\"select\"], [role=\"listbox\"], [role=\"combobox\"]').length;") or 0
+            link_count = driver.execute_script("return document.querySelectorAll('a').length;") or 0
+            logger.info("Page has %d selects, %d buttons, %d dropdowns, %d links", select_count, button_count, dropdown_count, link_count)
 
-            if select_count > 0:
+            if select_count > 0 or dropdown_count > 0:
                 break
 
-            if wait_round < 3:
-                logger.warning("No selects found yet — waiting longer for SPA to render")
+            if wait_round < 4:
+                logger.warning("No selects/dropdowns found yet — waiting longer for SPA to render")
                 _dump_debug(driver, f"availability_no_selects_round{wait_round}")
 
         # Do everything in JS since the two selects share identical classes
         ok = driver.execute_script("""
             const selects = Array.from(document.querySelectorAll('select'));
             const buttons = Array.from(document.querySelectorAll('button'));
+            const allText = document.body ? document.body.innerText.slice(0, 3000) : '';
             
             // Find availability status select (options contain 'Available' / 'Not Set')
             const statusSelect = selects.find(s => {
                 const opts = Array.from(s.options).map(o => o.text.toLowerCase());
                 return opts.includes('available') || opts.includes('not set');
             });
-            if (!statusSelect) return {error: 'no_status_select', select_count: selects.length, button_count: buttons.length};
+            if (!statusSelect) return {error: 'no_status_select', select_count: selects.length, button_count: buttons.length, page_text: allText};
             
             // Select 'Available' (skip 'Not Available')
             const availOpt = Array.from(statusSelect.options).find(

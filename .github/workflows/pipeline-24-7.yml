@@ -64,9 +64,9 @@ jobs:
       # ═══════════════════════════════════════════════════════════
       - name: Keep availability 24/7
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 12
         run: |
-          timeout 420 python3 rentmasseur_availability.py --headless true --once || echo "Availability keeper failed - will retry next cycle"
+          timeout 600 python3 rentmasseur_availability.py --headless true --once || echo "Availability keeper failed - will retry next cycle"
 
       # ═══════════════════════════════════════════════════════════
       # MONEY LOOP — metrics, KPIs, optimization
@@ -140,11 +140,13 @@ jobs:
           fi
 
       - name: Upload debug on failure
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pipeline-debug
           path: |
             content/
             receipts/
+            debug/
           retention-days: 7
+          if-no-files-found: ignore
