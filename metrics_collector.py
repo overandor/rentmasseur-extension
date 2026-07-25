@@ -79,6 +79,29 @@ def process_ingested_metrics():
     with open(CONTENT_DIR / "metrics_summary.json", "w") as f:
         json.dump(summary, f, indent=2)
 
+    # Always write live_metrics.json so the dashboard sees data
+    live_metrics = summary.get("latest_metrics", {})
+    if not live_metrics and AVAILABILITY_FILE.exists():
+        try:
+            with open(AVAILABILITY_FILE) as f:
+                avail = json.load(f)
+            live_metrics = {
+                "timestamp": avail.get("timestamp", datetime.now(timezone.utc).isoformat()),
+                "source": "availability_keeper",
+                "availability_enforced": avail.get("availability_enforced", False),
+                "availability_updated": avail.get("availability_updated", False),
+                "automated_login": avail.get("automated_login", False),
+                "reason": avail.get("reason", "unknown"),
+            }
+        except Exception as e:
+            print(f"[metrics] Could not read availability for live_metrics: {e}")
+            live_metrics = {}
+
+    if live_metrics:
+        with open(CONTENT_DIR / "live_metrics.json", "w") as f:
+            json.dump(live_metrics, f, indent=2)
+        print("[metrics] Wrote content/live_metrics.json")
+
     print(f"[metrics] Processed {len(metrics)} ingested metric entries.")
     return summary
 
