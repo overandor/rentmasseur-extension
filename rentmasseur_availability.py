@@ -7,12 +7,15 @@ Credentials are loaded from a .env file or environment variables.
 import argparse
 import json
 import os
+import re
 import sys
 import time
 import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+import requests
 
 from dotenv import load_dotenv
 try:
@@ -606,49 +609,50 @@ def _dump_debug(driver: webdriver.Chrome, label: str) -> None:
 
 
 def scrape_profile_metrics(driver: webdriver.Chrome) -> dict:
-    """Scrape visitor metrics from /settings/whosawme while already logged in."""
+    """Scrape visitor metrics from /settings/whosawme while already logged in.
+
+    Uses a fast requests GET with Selenium cookies rather than driver.get,
+    because the RM SPA can hang Selenium page loads past their timeouts.
+    """
     metrics = {
         "timestamp": datetime.utcnow().isoformat() + "Z",
-        "source": "selenium_whosawme",
+        "source": "requests_whosawme",
         "profile_views": 0,
         "unique_visitors": 0,
         "repeat_visitors": 0,
     }
     try:
-        logger.info("Navigating to visitor metrics: https://rentmasseur.com/settings/whosawme")
-        driver.set_page_load_timeout(60)
-        driver.get("https://rentmasseur.com/settings/whosawme")
-        time.sleep(5)
-        dismiss_popups(driver)
+        logger.info("Fetching visitor metrics via requests: https://rentmasseur.com/settings/whosawme")
+        cookies = {c["name"]: c["value"] for c in driver.get_cookies()}
+        resp = requests.get(
+            "https://rentmasseur.com/settings/whosawme",
+            cookies=cookies,
+            headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
+            timeout=20,
+        )
+        resp.raise_for_status()
+        html = resp.text
 
-        visitors = driver.execute_script("""
-            const seen = new Set();
-            const result = [];
-            const imgs = document.querySelectorAll('img[alt="Profile photo"], img[alt="profile-picture"]');
-            for (const img of imgs) {
-                const a = img.closest('a');
-                if (a && a.href) {
-                    const path = new URL(a.href).pathname.replace('/', '');
-                    if (path && !seen.has(path) && !path.includes('settings')) {
-                        seen.add(path);
-                        result.push(path);
-                    }
-                }
-            }
-            const links = Array.from(document.querySelectorAll('a[href]'));
-            for (const a of links) {
-                if (!a.href.startsWith('https://rentmasseur.com/')) continue;
-                const path = new URL(a.href).pathname;
-                if (path && path !== '/' && path.split('/').length === 2) {
-                    const user = path.replace('/', '');
-                    if (user && !seen.has(user) && !user.startsWith('_') && user.length > 2) {
-                        seen.add(user);
-                        result.push(user);
-                    }
-                }
-            }
-            return result;
-        """) or []
+        # Visitor profile links are typically /{username}
+        seen = set()
+        visitors = []
+        for href in re.findall(r'href=["\'](https://rentmasseur\.com/[^"\']+)["\']', html):
+            path = href.split("rentmasseur.com/", 1)[1]
+            if path in ("", "settings", "whosawme") or path.startswith(("settings/", "about/", "login")):
+                continue
+            user = path.split("/")[0]
+            if user and user not in seen and len(user) > 2:
+                seen.add(user)
+                visitors.append(user)
+
+        # Also look for relative links
+        for href in re.findall(r'href=["\'](/[^"\']+)["\']', html):
+            user = href.strip("/").split("/")[0]
+            if user in ("", "settings", "whosawme") or user.startswith(("settings/", "about/", "login")):
+                continue
+            if user and user not in seen and len(user) > 2:
+                seen.add(user)
+                visitors.append(user)
 
         metrics["profile_views"] = len(visitors)
         metrics["unique_visitors"] = len(visitors)
@@ -776,9 +780,9 @@ def run_once(headless: bool = True) -> bool:
                 _write_availability_json(False, "login_failed")
                 return False
         success = set_availability_24_7(driver)
+        _write_availability_json(success, "set_24_7" if success else "set_failed")
         if success:
             scrape_profile_metrics(driver)
-        _write_availability_json(success, "set_24_7" if success else "set_failed")
         return success
     except Exception as e:
         logger.error("Unexpected error: %s", e)
