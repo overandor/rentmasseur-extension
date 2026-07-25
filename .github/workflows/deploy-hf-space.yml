@@ -45,13 +45,20 @@ jobs:
             --exclude='*.jpeg' \
             --exclude='*.gif' \
             --exclude='*.mp4' \
+            --exclude='*.webm' \
             --exclude='*.zip' \
             --exclude='*.tar.gz' \
             --exclude='*.db' \
-            --exclude='artifacts/*/screenshots' \
-            --exclude='artifacts/*/thumbnails' \
+            --exclude='*.dmg' \
+            --exclude='*.bin' \
+            --exclude='artifacts/' \
+            --exclude='rm_traffic/' \
+            --exclude='cpp_os_server' \
+            --exclude='rotator_engine' \
+            --exclude='ga_rl_optimizer' \
+            --exclude='production_control_loop' \
             . hf-space/
-          rm -rf hf-space/.env hf-space/debug hf-space/.github
+          rm -rf hf-space/.env hf-space/debug hf-space/.github hf-space/artifacts hf-space/rm_traffic
 
       - name: Set HF Space secrets via API
         run: |
