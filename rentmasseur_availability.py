@@ -316,16 +316,9 @@ def brute_force_login(driver: webdriver.Chrome, max_retries: int = 5) -> bool:
 
             # Check for captcha / anti-bot page
             if _is_captcha_page(driver):
-                logger.warning("Captcha/anti-bot page detected on attempt %d — refreshing", attempt)
-                if attempt < max_retries:
-                    time.sleep(10)
-                    driver.refresh()
-                    time.sleep(10)
-                    continue
-                else:
-                    logger.error("Captcha blocking login after %d attempts", max_retries)
-                    _dump_debug(driver, "login_captcha_final")
-                    return False
+                logger.warning("CrowdSec/anti-bot page detected on attempt %d — aborting (same IP, refresh will not help)", attempt)
+                _dump_debug(driver, "login_crowdsec_blocked")
+                return False
 
             # Dismiss cookie/GPS banners and other popups
             dismiss_popups(driver)
@@ -532,23 +525,11 @@ def login(driver: webdriver.Chrome) -> bool:
         driver.get(LOGIN_URL)
         time.sleep(6)
 
-        # Check for CAPTCHA
-        captcha = driver.execute_script("""
-            return !!document.querySelector('.g-recaptcha, #captcha, iframe[src*="recaptcha"]');
-        """)
-        if captcha:
-            logger.warning("CAPTCHA detected on attempt %d — waiting", attempt)
-            time.sleep(10)
-            captcha = driver.execute_script("""
-                return !!document.querySelector('.g-recaptcha, #captcha, iframe[src*="recaptcha"]');
-            """)
-            if captcha:
-                logger.error("CAPTCHA still present after wait")
-                _dump_debug(driver, f"login_captcha_attempt{attempt}")
-                if attempt < 3:
-                    time.sleep(10)
-                    continue
-                return False
+        # Check for CAPTCHA / anti-bot
+        if _is_captcha_page(driver):
+            logger.warning("CrowdSec/anti-bot page detected on alternate login attempt %d — aborting", attempt)
+            _dump_debug(driver, f"login_crowdsec_attempt{attempt}")
+            return False
 
         # Dismiss popups
         dismiss_popups(driver)
