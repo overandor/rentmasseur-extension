@@ -25,10 +25,34 @@ AVAILABILITY_FILE = Path("availability.json")
 METRICS_INGEST = CONTENT_DIR / "metrics_ingest.jsonl"
 
 
+def _write_live_metrics_from_availability():
+    """Write content/live_metrics.json from availability.json when no metrics ingested."""
+    if not AVAILABILITY_FILE.exists():
+        return
+    try:
+        with open(AVAILABILITY_FILE) as f:
+            avail = json.load(f)
+        live_metrics = {
+            "timestamp": avail.get("timestamp", datetime.now(timezone.utc).isoformat()),
+            "source": "availability_keeper",
+            "availability_enforced": avail.get("availability_enforced", False),
+            "availability_updated": avail.get("availability_updated", False),
+            "automated_login": avail.get("automated_login", False),
+            "reason": avail.get("reason", "unknown"),
+        }
+        CONTENT_DIR.mkdir(exist_ok=True)
+        with open(CONTENT_DIR / "live_metrics.json", "w") as f:
+            json.dump(live_metrics, f, indent=2)
+        print("[metrics] Wrote content/live_metrics.json from availability.json")
+    except Exception as e:
+        print(f"[metrics] Could not write live_metrics from availability: {e}")
+
+
 def process_ingested_metrics():
     """Read all ingested metrics and produce a summary."""
     if not METRICS_INGEST.exists():
         print("[metrics] No ingested metrics file found.")
+        _write_live_metrics_from_availability()
         return {"status": "no_data", "message": "No metrics ingested yet."}
 
     metrics = []

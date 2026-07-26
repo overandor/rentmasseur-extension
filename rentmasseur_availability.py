@@ -49,6 +49,7 @@ load_dotenv()
 # Configuration from environment
 RENTMASSEUR_USERNAME = os.getenv("RENTMASSEUR_USERNAME", "")
 RENTMASSEUR_PASSWORD = os.getenv("RENTMASSEUR_PASSWORD", "")
+PROXY_URL = os.getenv("PROXY_URL", "")
 AVAILABILITY_URL = "https://rentmasseur.com/settings?availability=1"
 LOGIN_URL = "https://rentmasseur.com/login"
 
@@ -56,6 +57,14 @@ LOGIN_URL = "https://rentmasseur.com/login"
 IMPLICIT_WAIT = 10
 PAGE_TIMEOUT = 30
 CHECK_INTERVAL_MINUTES = 5
+
+
+def _proxy_arg(proxy_url: str) -> str:
+    """Return a Chrome --proxy-server argument for http/socks5 proxies."""
+    p = proxy_url.strip()
+    if p.startswith(("http://", "https://", "socks5://", "socks4://")):
+        return f"--proxy-server={p}"
+    return f"--proxy-server=http://{p}"
 
 
 def setup_driver(headless: bool = True) -> webdriver.Chrome:
@@ -68,6 +77,9 @@ def setup_driver(headless: bool = True) -> webdriver.Chrome:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--window-size=1920,1080")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        if PROXY_URL:
+            logger.info("Using proxy for Chrome: %s", PROXY_URL)
+            chrome_options.add_argument(_proxy_arg(PROXY_URL))
         try:
             import subprocess, re
             chrome_ver_out = subprocess.check_output(["google-chrome", "--version"], stderr=subprocess.DEVNULL).decode().strip()
@@ -93,6 +105,9 @@ def setup_driver(headless: bool = True) -> webdriver.Chrome:
         chrome_options.add_argument(
             "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
         )
+        if PROXY_URL:
+            logger.info("Using proxy for Chrome: %s", PROXY_URL)
+            chrome_options.add_argument(_proxy_arg(PROXY_URL))
         driver = webdriver.Chrome(options=chrome_options)
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         driver.implicitly_wait(IMPLICIT_WAIT)
@@ -274,6 +289,7 @@ def _is_captcha_page(driver: webdriver.Chrome) -> bool:
             "crowdsec", "captcha", "checking your browser", "please wait",
             "ddos protection", "access denied", "are you human", "verify you are",
             "challenge", "cloudflare", "just a moment", "enable javascript",
+            "access forbidden", "unable to visit", "security check",
         ]
         text_lower = page_text.lower() + page_src.lower()
         return any(ind in text_lower for ind in indicators)
