@@ -81,11 +81,20 @@ def setup_driver(headless: bool = True) -> webdriver.Chrome:
             logger.info("Using proxy for Chrome: %s", PROXY_URL)
             chrome_options.add_argument(_proxy_arg(PROXY_URL))
         try:
-            import subprocess, re
-            chrome_ver_out = subprocess.check_output(["google-chrome", "--version"], stderr=subprocess.DEVNULL).decode().strip()
+            import subprocess, re, shutil, platform
+            chrome_cmd = "google-chrome"
+            if not shutil.which(chrome_cmd):
+                mac_chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+                if platform.system() == "Darwin" and os.path.exists(mac_chrome):
+                    chrome_cmd = mac_chrome
+            if not shutil.which(chrome_cmd) and not os.path.exists(chrome_cmd):
+                chrome_cmd = "chromium-browser"
+            chrome_ver_out = subprocess.check_output([chrome_cmd, "--version"], stderr=subprocess.DEVNULL).decode().strip()
             chrome_major = int(re.search(r'(\d+)\.', chrome_ver_out).group(1))
+            logger.info("Detected Chrome major version: %d", chrome_major)
             driver = uc.Chrome(options=chrome_options, version_main=chrome_major)
-        except Exception:
+        except Exception as e:
+            logger.warning("Could not detect Chrome version, letting uc pick driver: %s", e)
             driver = uc.Chrome(options=chrome_options)
         driver.implicitly_wait(IMPLICIT_WAIT)
         driver.set_page_load_timeout(PAGE_TIMEOUT)
