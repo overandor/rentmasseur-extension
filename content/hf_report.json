@@ -1,7 +1,7 @@
 {"status":"real_data_present","rl_state":{"status":"missing_real_data","name":"rl_state","path":"./content/rl_state.json"},"ga_state":{"status":"missing_real_data","name":"ga_state","path":"./content/ga_rl_state.json"},"availability":{
-  "availability_enforced": false,
+  "availability_enforced": true,
   "automated_login": true,
-  "availability_updated": false,
-  "timestamp": "2026-07-25T23:19:21.049081Z",
-  "reason": "login_failed"
-},"content_counts":{"bios":0,"receipts":1307},"live_profile_update_allowed":false,"timestamp":"2026-07-26T00:28:17Z"}
+  "availability_updated": true,
+  "timestamp": "2026-07-26T00:30:51.590931Z",
+  "reason": "set_24_7"
+},"content_counts":{"bios":0,"receipts":1310},"live_profile_update_allowed":false,"timestamp":"2026-07-26T04:31:09Z"}
