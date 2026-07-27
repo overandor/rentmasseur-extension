@@ -1,7 +1,1 @@
-{"status":"real_data_present","rl_state":{"status":"missing_real_data","name":"rl_state","path":"./content/rl_state.json"},"ga_state":{"status":"missing_real_data","name":"ga_state","path":"./content/ga_rl_state.json"},"availability":{
-  "availability_enforced": true,
-  "automated_login": true,
-  "availability_updated": true,
-  "timestamp": "2026-07-27T06:32:10.439715Z",
-  "reason": "set_24_7"
-},"content_counts":{"bios":0,"receipts":1387},"live_profile_update_allowed":false,"timestamp":"2026-07-27T13:44:48Z"}
+The space is paused, ask a maintainer to restart it
