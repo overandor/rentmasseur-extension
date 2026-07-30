@@ -1,0 +1,14 @@
+{
+  "session_id": "46826b6cb03f",
+  "action": "visit_back_summary",
+  "status": "pass",
+  "timestamp": "2026-07-30T11:22:24.376057+00:00",
+  "elapsed_s": 118.04,
+  "total_in_queue": 10,
+  "visited_count": 0,
+  "skipped_today": 10,
+  "blocked_count": 0,
+  "error_count": 0,
+  "404_count": 0,
+  "receipt_hash": "c506510fe43dc69f"
+}
