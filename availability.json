@@ -1,7 +1,7 @@
 {
-  "availability_enforced": false,
+  "availability_enforced": true,
   "automated_login": true,
-  "availability_updated": false,
-  "timestamp": "2026-07-29T22:57:16.479982Z",
-  "reason": "exception: you cannot reuse the ChromeOptions object"
+  "availability_updated": true,
+  "timestamp": "2026-07-30T00:06:27.212640Z",
+  "reason": "set_24_7"
 }
