@@ -1,0 +1,12 @@
+{
+  "session_id": "5a2ddd5fa397",
+  "action": "message_summary",
+  "status": "pass",
+  "timestamp": "2026-07-31T14:33:22.523173+00:00",
+  "elapsed_s": 116.07,
+  "messaged_count": 0,
+  "sent_count": 0,
+  "blocked_count": 0,
+  "error_count": 0,
+  "receipt_hash": "b14ad89fcbb177d6"
+}
