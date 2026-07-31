@@ -1,0 +1,13 @@
+{
+  "session_id": "25ffaef062f7",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-07-31T03:59:37.880053+00:00",
+  "elapsed_s": 734.98,
+  "username": "fulmer",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=fulmer",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "70cd9090404de205"
+}
