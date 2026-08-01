@@ -1,0 +1,13 @@
+{
+  "session_id": "9b624a283236",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-08-01T19:41:37.704639+00:00",
+  "elapsed_s": 664.67,
+  "username": "Vippostam",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=Vippostam",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "16fab53e68c63c49"
+}
