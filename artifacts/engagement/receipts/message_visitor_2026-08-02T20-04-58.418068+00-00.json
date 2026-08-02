@@ -1,0 +1,13 @@
+{
+  "session_id": "2f032db5239d",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-08-02T20:04:58.418068+00:00",
+  "elapsed_s": 652.32,
+  "username": "ftailor",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=ftailor",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "bf12f06104a433f4"
+}
