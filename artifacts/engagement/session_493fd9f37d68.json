@@ -1,0 +1,113 @@
+{
+  "session_id": "493fd9f37d68",
+  "actions": [],
+  "login": true,
+  "visitors_found": 301,
+  "visited": [
+    {
+      "username": "Browncash",
+      "url": "https://rentmasseur.com/Browncash",
+      "status": "ok",
+      "page_title": "Browncash | RentMasseur",
+      "content_hash": "da15ef0deea1c5fb984544713db027be5f99decb385a0e17b9cde0d0644cdc69",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260804_170329_482460_493fd9f37d68_visit_001_Browncash.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "ea49a76e4203a1b39eff687506ac4af645062681af8a0152bb4ef941c5430378",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260804_170329_482460_493fd9f37d68_visit_001_Browncash.png",
+      "proof_chain_index": 0,
+      "visited_at": "2026-08-04T17:03:29.852731+00:00",
+      "verified_utc_timestamp": "2026-08-04T17:03:29.852739+00:00",
+      "last_online": null,
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "493fd9f37d68",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "Evanwantsmassage",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "EnergyAlex",
+      "url": "https://rentmasseur.com/EnergyAlex",
+      "status": "ok",
+      "page_title": "EnergyAlex - Male Masseur, Gay massage in New York City, NY | RentMasseur",
+      "content_hash": "4f0520e9e61cd7463644353979028c0e235d1daa4c65a3c6e8d5c140eee76f32",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260804_170336_835212_493fd9f37d68_visit_003_EnergyAlex.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "1604332a0b39665b379c07a0830dba7643f26a2c5b445ea5c18ed5246dbe9c01",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260804_170336_835212_493fd9f37d68_visit_003_EnergyAlex.png",
+      "proof_chain_index": 1,
+      "visited_at": "2026-08-04T17:03:37.461971+00:00",
+      "verified_utc_timestamp": "2026-08-04T17:03:37.461979+00:00",
+      "last_online": null,
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "VIEW MAP",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "493fd9f37d68",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "Gabrielwalking",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "JakeyD",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Jeandre",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "CocosDaddy",
+      "url": "https://rentmasseur.com/CocosDaddy",
+      "status": "ok",
+      "page_title": "CocosDaddy | RentMasseur",
+      "content_hash": "4d23fb50a299ae4c656d7b301477b9e9de0ba55dc945eb54fbaef3fc1295c0a2",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260804_170353_339354_493fd9f37d68_visit_007_CocosDaddy.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "05afed281b2a33e4bc5c2ead47e447716873ecd2509d001f472920a392a6ff03",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260804_170353_339354_493fd9f37d68_visit_007_CocosDaddy.png",
+      "proof_chain_index": 2,
+      "visited_at": "2026-08-04T17:03:53.696602+00:00",
+      "verified_utc_timestamp": "2026-08-04T17:03:53.696610+00:00",
+      "last_online": "4 min ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "493fd9f37d68",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "Captainkock",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "JCDISC",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "nycerik",
+      "status": "skipped_daily"
+    }
+  ],
+  "end_time": "2026-08-04T17:03:59.544157+00:00",
+  "total_elapsed_s": 155.19
+}
