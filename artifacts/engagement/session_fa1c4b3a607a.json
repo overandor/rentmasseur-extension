@@ -1,0 +1,85 @@
+{
+  "session_id": "fa1c4b3a607a",
+  "actions": [],
+  "login": true,
+  "visitors_found": 301,
+  "visited": [
+    {
+      "username": "RogerA",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Fridolf",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "jaymal",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "wowrenatoo",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Traveledone",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Garbagemanco",
+      "url": "https://rentmasseur.com/Garbagemanco",
+      "status": "ok",
+      "page_title": "Garbagemanco | RentMasseur",
+      "content_hash": "1ca695e4d3d42949bd50c953dbd25b1f7aca495150623883a131ff5db86cfc23",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260805_195311_985419_fa1c4b3a607a_visit_006_Garbagemanco.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "0b73d6bf9a3ca1e086aa90d82846417dd79dd1fe3263b4d4061cfb18a36cd3ec",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260805_195311_985419_fa1c4b3a607a_visit_006_Garbagemanco.png",
+      "proof_chain_index": 0,
+      "visited_at": "2026-08-05T19:53:12.372875+00:00",
+      "verified_utc_timestamp": "2026-08-05T19:53:12.372882+00:00",
+      "last_online": "17 min ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "fa1c4b3a607a",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "aaggdd",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "IkkerHands",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Newer",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Rigid",
+      "status": "skipped_daily"
+    }
+  ],
+  "messaged": [
+    {
+      "username": "leonleo",
+      "status": "no_field"
+    },
+    {
+      "username": "JamieNYC",
+      "status": "no_field"
+    },
+    {
+      "username": "Wbsgold",
+      "status": "no_field"
+    }
+  ],
+  "end_time": "2026-08-05T19:54:32.034432+00:00",
+  "total_elapsed_s": 198.35
+}
