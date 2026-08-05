@@ -1,7 +1,8 @@
 {
-  "timestamp": "2026-08-05T14:02:42.208259Z",
-  "source": "requests_whosawme",
-  "profile_views": 15,
-  "unique_visitors": 15,
-  "repeat_visitors": 0
+  "timestamp": "2026-08-05T16:00:09.696160Z",
+  "source": "availability_keeper",
+  "availability_enforced": false,
+  "availability_updated": false,
+  "automated_login": true,
+  "reason": "exception: you cannot reuse the ChromeOptions object"
 }
