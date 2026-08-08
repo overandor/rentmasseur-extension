@@ -1,0 +1,113 @@
+{
+  "session_id": "b6db76b3dedd",
+  "actions": [],
+  "login": true,
+  "visitors_found": 301,
+  "visited": [
+    {
+      "username": "Ligaymale",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "ShortandSweet",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Stevelar",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Puckey",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Operakev",
+      "url": "https://rentmasseur.com/Operakev",
+      "status": "ok",
+      "page_title": "Operakev | RentMasseur",
+      "content_hash": "a626c843bf3c1581ba8ecbb0b184d517ba415d040b2e5cc7310998b3a289bf3b",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260808_071252_340645_b6db76b3dedd_visit_005_Operakev.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "448d809bac58655be2d157f930c1c7c3723f01ff8773ac5ae824f00fc90c1922",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260808_071252_340645_b6db76b3dedd_visit_005_Operakev.png",
+      "proof_chain_index": 0,
+      "visited_at": "2026-08-08T07:12:52.728750+00:00",
+      "verified_utc_timestamp": "2026-08-08T07:12:52.728757+00:00",
+      "last_online": "2 hours ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "b6db76b3dedd",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "Queermatt",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Scottbtx",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "tomozade",
+      "url": "https://rentmasseur.com/tomozade",
+      "status": "ok",
+      "page_title": "Tomozade | RentMasseur",
+      "content_hash": "cf9eb05abbb8331ecedf61367680d539104de9160cc84f789bcf5752c1d45419",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260808_071259_047439_b6db76b3dedd_visit_008_tomozade.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "7cc3a7c5e611ddb68abe6da3e8eaffccca433a58b029edd1ad2c68ccb42b6688",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260808_071259_047439_b6db76b3dedd_visit_008_tomozade.png",
+      "proof_chain_index": 1,
+      "visited_at": "2026-08-08T07:12:59.398571+00:00",
+      "verified_utc_timestamp": "2026-08-08T07:12:59.398579+00:00",
+      "last_online": "3 hours ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "b6db76b3dedd",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "Necrosage",
+      "url": "https://rentmasseur.com/Necrosage",
+      "status": "ok",
+      "page_title": "Necrosage | RentMasseur",
+      "content_hash": "449d109ab36f543804d4b1c04a90076af0818fb6ef659debe321c9aaf259532b",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260808_071323_666876_b6db76b3dedd_visit_009_Necrosage.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "c770753462ed6bbab67543f233803f73b62bbd37cab9a009f469e4866497e010",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260808_071323_666876_b6db76b3dedd_visit_009_Necrosage.png",
+      "proof_chain_index": 2,
+      "visited_at": "2026-08-08T07:13:24.015300+00:00",
+      "verified_utc_timestamp": "2026-08-08T07:13:24.015309+00:00",
+      "last_online": "11 min ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "b6db76b3dedd",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "rozata",
+      "status": "skipped_daily"
+    }
+  ],
+  "end_time": "2026-08-08T07:13:26.651416+00:00",
+  "total_elapsed_s": 160.33
+}
