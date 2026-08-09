@@ -2,6 +2,6 @@
   "availability_enforced": false,
   "automated_login": true,
   "availability_updated": false,
-  "timestamp": "2026-08-08T23:23:41.634928Z",
-  "reason": "exception: you cannot reuse the ChromeOptions object"
+  "timestamp": "2026-08-09T01:15:27.567532Z",
+  "reason": "login_failed"
 }
