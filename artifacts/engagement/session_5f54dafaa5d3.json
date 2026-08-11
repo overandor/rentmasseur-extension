@@ -1,0 +1,71 @@
+{
+  "session_id": "5f54dafaa5d3",
+  "actions": [],
+  "login": true,
+  "visitors_found": 301,
+  "visited": [
+    {
+      "username": "Benalsteph",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Crosmm",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "TeddyATX",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Zackr",
+      "url": "https://rentmasseur.com/Zackr",
+      "status": "ok",
+      "page_title": "Zackr | RentMasseur",
+      "content_hash": "fc5b785dab61f7246d436fcd723e3f80cdd0eacb72483b82c8a60d3111df503b",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260811_220417_390149_5f54dafaa5d3_visit_004_Zackr.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "26c45c3bf83077578ff87fad77072fcf624bde0706e284cc5c028c670b527f1f",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260811_220417_390149_5f54dafaa5d3_visit_004_Zackr.png",
+      "proof_chain_index": 0,
+      "visited_at": "2026-08-11T22:04:18.026427+00:00",
+      "verified_utc_timestamp": "2026-08-11T22:04:18.026435+00:00",
+      "last_online": "2 hours ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "5f54dafaa5d3",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "Gtownhairguy",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "llkkbbc",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "AquaticGuy",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "AlexUWS",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "biobaselex",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "FriendHenry",
+      "status": "skipped_daily"
+    }
+  ],
+  "end_time": "2026-08-11T22:04:21.069251+00:00",
+  "total_elapsed_s": 126.21
+}
