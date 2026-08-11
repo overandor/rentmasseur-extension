@@ -1,0 +1,71 @@
+{
+  "session_id": "3d273ebdd673",
+  "actions": [],
+  "login": true,
+  "visitors_found": 191,
+  "visited": [
+    {
+      "username": "bicoast",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "jjjjjmailinator",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "llkkbbc",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "biobaselex",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Kohmasse",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "TeddyATX",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Scottinohio",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "FriendHenry",
+      "url": "https://rentmasseur.com/FriendHenry",
+      "status": "ok",
+      "page_title": "FriendHenry | RentMasseur",
+      "content_hash": "d3852ef603538e4f29c373495496fd96417d0c8965736aaf94b5fe10f63d8982",
+      "screenshot_thumbnail": "artifacts/proofs/screenshots/20260811_140707_371297_3d273ebdd673_visit_008_FriendHenry.png",
+      "screenshot_kb": 0,
+      "original_screenshot_kb": 0,
+      "compression_ratio": 0,
+      "proof_hash": "ff253dd20b6dad1ebf1a7c1ddc1c934c8197bb2bd835fa1c5d8e05d04cc70af8",
+      "proof_screenshot": "artifacts/proofs/screenshots/20260811_140707_371297_3d273ebdd673_visit_008_FriendHenry.png",
+      "proof_chain_index": 0,
+      "visited_at": "2026-08-11T14:07:07.744337+00:00",
+      "verified_utc_timestamp": "2026-08-11T14:07:07.744347+00:00",
+      "last_online": "2 hours ago",
+      "last_visited_you": null,
+      "visit_count_profile": null,
+      "location": "Home:",
+      "available_now": true,
+      "url_verified": true,
+      "agent": "rm_engagement_engine",
+      "agent_session": "3d273ebdd673",
+      "agent_ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    },
+    {
+      "username": "montoewellmax",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Crosmm",
+      "status": "skipped_daily"
+    }
+  ],
+  "end_time": "2026-08-11T14:07:10.021875+00:00",
+  "total_elapsed_s": 91.05
+}
