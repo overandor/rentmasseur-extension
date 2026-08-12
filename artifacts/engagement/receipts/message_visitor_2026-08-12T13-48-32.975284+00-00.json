@@ -1,0 +1,13 @@
+{
+  "session_id": "5a6e0d25ec42",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-08-12T13:48:32.975284+00:00",
+  "elapsed_s": 478.58,
+  "username": "PobRom",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=PobRom",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "f15274b5bcbcb1c3"
+}

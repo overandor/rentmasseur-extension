@@ -1,0 +1,13 @@
+{
+  "session_id": "5a6e0d25ec42",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-08-12T13:45:37.119502+00:00",
+  "elapsed_s": 302.73,
+  "username": "MartinFW",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=MartinFW",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "4863e5b3518e6a1c"
+}
