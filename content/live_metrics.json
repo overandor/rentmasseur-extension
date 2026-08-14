@@ -1,7 +1,8 @@
 {
-  "timestamp": "2026-08-14T08:19:06.860715Z",
-  "source": "requests_whosawme",
-  "profile_views": 15,
-  "unique_visitors": 15,
-  "repeat_visitors": 0
+  "timestamp": "2026-08-14T09:55:02.061617Z",
+  "source": "availability_keeper",
+  "availability_enforced": false,
+  "availability_updated": false,
+  "automated_login": true,
+  "reason": "login_failed"
 }
