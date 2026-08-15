@@ -1,0 +1,26 @@
+{
+  "action": "metrics-collector",
+  "timestamp": "2026-08-15T18:27:57.347920+00:00",
+  "source": "first_party_extension_or_manual",
+  "automated_login": false,
+  "captcha_bypassed": false,
+  "metrics_processed": 1,
+  "availability_updated": true,
+  "status": "completed",
+  "summary": {
+    "status": "ok",
+    "total_ingested": 1,
+    "latest_timestamp": "2026-08-15T18:27:55.378694Z",
+    "latest_metrics": {
+      "timestamp": "2026-08-15T18:27:55.378694Z",
+      "source": "requests_whosawme",
+      "profile_views": 15,
+      "unique_visitors": 15,
+      "repeat_visitors": 0
+    },
+    "processed_at": "2026-08-15T18:27:57.347983+00:00"
+  },
+  "prev_fingerprint": "4511dcef503635a6f80a1f1181c1e4306e7cb28782156f9bdbca5be4af06b318",
+  "chain_index": 1198,
+  "fingerprint": "f102226e0a33a07f8a5144ae7bc270cf8723617b48efc67f094c3176f9bbf75a"
+}
