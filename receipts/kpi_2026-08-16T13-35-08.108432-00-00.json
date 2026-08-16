@@ -1,0 +1,44 @@
+{
+  "id": "kpi_1786887308",
+  "timestamp": "2026-08-16T13:35:08.108432+00:00",
+  "action": "hourly_kpi_computation",
+  "data": {
+    "packet_type": "rm_hourly_kpis",
+    "timestamp": "2026-08-16T13:35:08.108336+00:00",
+    "immortality": {
+      "score": 0.125,
+      "grade": "DECLINING",
+      "components": {
+        "days_online": 0,
+        "views_per_day": 0,
+        "profile_age_score": 0,
+        "views_per_day_trend": 0.5,
+        "visibility_persistence": 0.0,
+        "availability_stability": 0.0,
+        "retention_score": 0
+      }
+    },
+    "virality": {
+      "score": 0.0,
+      "grade": "STAGNANT",
+      "components": {
+        "profile_views": 0,
+        "views_velocity": 0,
+        "views_acceleration": 0,
+        "contact_clicks": 0,
+        "contact_click_velocity": 0,
+        "new_visits": 0,
+        "new_visitor_rate": 0,
+        "online_bookmarks": 0,
+        "bookmark_rate": 0,
+        "new_emails": 0,
+        "email_rate": 0,
+        "contact_click_rate": 0
+      }
+    },
+    "metrics_snapshots_used": 1
+  },
+  "prev_fingerprint": "b3e59ae5302dceeaaebba1504c6137c0c79aff8abbbf390f592ee10f60cada90",
+  "chain_index": 1269,
+  "fingerprint": "ae8a1e086776b9b41c678a47255575352ac5cbc5a95026c3b3cf81247d3d6a42"
+}
