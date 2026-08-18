@@ -1,7 +1,7 @@
 {
-  "availability_enforced": false,
+  "availability_enforced": true,
   "automated_login": true,
-  "availability_updated": false,
-  "timestamp": "2026-08-18T17:22:02.290532Z",
-  "reason": "login_failed"
+  "availability_updated": true,
+  "timestamp": "2026-08-18T18:37:49.135889Z",
+  "reason": "set_24_7"
 }
