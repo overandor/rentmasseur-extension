@@ -1,0 +1,23 @@
+{
+  "id": "kpi_1787283945",
+  "timestamp": "2026-08-21T03:45:45.285854+00:00",
+  "action": "hourly_kpi_computation",
+  "data": {
+    "packet_type": "rm_hourly_kpis",
+    "timestamp": "2026-08-21T03:45:45.285791+00:00",
+    "immortality": {
+      "score": 0,
+      "grade": "NO_DATA",
+      "components": {}
+    },
+    "virality": {
+      "score": 0,
+      "grade": "NO_DATA",
+      "components": {}
+    },
+    "metrics_snapshots_used": 0
+  },
+  "prev_fingerprint": "50fa73850cc91e3af7d2a0d4d384bae53f879d0ea73fa608a3ef345981db9218",
+  "chain_index": 1669,
+  "fingerprint": "6665ee4b0505519cc448d61ef0e380d2a5f040039c9049ef4772f5dbdfd3c0a8"
+}
