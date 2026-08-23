@@ -1,13 +1,13 @@
 {
   "status": "ok",
   "total_ingested": 1,
-  "latest_timestamp": "2026-08-23T15:25:22.526728Z",
+  "latest_timestamp": "2026-08-23T16:26:13.541452Z",
   "latest_metrics": {
-    "timestamp": "2026-08-23T15:25:22.526728Z",
+    "timestamp": "2026-08-23T16:26:13.541452Z",
     "source": "requests_whosawme",
     "profile_views": 15,
     "unique_visitors": 15,
     "repeat_visitors": 0
   },
-  "processed_at": "2026-08-23T15:25:24.241176+00:00"
+  "processed_at": "2026-08-23T16:26:15.666713+00:00"
 }
