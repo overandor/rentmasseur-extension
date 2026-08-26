@@ -1,0 +1,13 @@
+{
+  "session_id": "ec6eb443c275",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-08-26T02:01:31.403811+00:00",
+  "elapsed_s": 236.41,
+  "username": "BenClib",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=BenClib",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "688699084cb71d21"
+}
