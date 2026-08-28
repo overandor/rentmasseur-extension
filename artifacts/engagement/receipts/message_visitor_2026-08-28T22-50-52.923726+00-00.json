@@ -1,0 +1,13 @@
+{
+  "session_id": "fce93ac5b5c4",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-08-28T22:50:52.923726+00:00",
+  "elapsed_s": 583.33,
+  "username": "biobaselex",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=biobaselex",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "9330ab95ae7d7d49"
+}
