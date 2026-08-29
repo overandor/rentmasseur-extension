@@ -1,0 +1,50 @@
+{
+  "session_id": "6a54946d86c3",
+  "actions": [],
+  "login": true,
+  "visitors_found": 301,
+  "visited": [
+    {
+      "username": "Federiico",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Ontheroadagain",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "LatinoPapiNyc",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "PatrickJakeway",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "JLNYCC",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Drakemakes",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "CRSLCY",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "ActualCMT",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "aRobert",
+      "status": "skipped_daily"
+    },
+    {
+      "username": "Kohmasse",
+      "status": "skipped_daily"
+    }
+  ],
+  "end_time": "2026-08-29T03:11:16.803451+00:00",
+  "total_elapsed_s": 111.29
+}
