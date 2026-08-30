@@ -1,0 +1,9 @@
+{
+  "session_id": "fbc09c5b9325",
+  "action": "login",
+  "status": "blocked",
+  "timestamp": "2026-08-30T14:24:54.742277+00:00",
+  "elapsed_s": 6.45,
+  "reason": "crowdsec_detected",
+  "receipt_hash": "c80311c34f4c9f77"
+}
