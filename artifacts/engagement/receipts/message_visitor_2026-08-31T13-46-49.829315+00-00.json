@@ -1,0 +1,13 @@
+{
+  "session_id": "b2a250e70f25",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-08-31T13:46:49.829315+00:00",
+  "elapsed_s": 533.5,
+  "username": "Whereinli",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=Whereinli",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "3dceb89d165b1005"
+}
