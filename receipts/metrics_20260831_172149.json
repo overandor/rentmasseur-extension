@@ -1,0 +1,17 @@
+{
+  "action": "metrics-collector",
+  "timestamp": "2026-08-31T17:21:49.656814+00:00",
+  "source": "first_party_extension_or_manual",
+  "automated_login": false,
+  "captcha_bypassed": false,
+  "metrics_processed": 0,
+  "availability_updated": true,
+  "status": "completed",
+  "summary": {
+    "status": "no_data",
+    "message": "No metrics ingested yet."
+  },
+  "prev_fingerprint": "2898c6e452d420ddfc57a87e6465c8797cab38b212ed8faea30dec6dd0389176",
+  "chain_index": 2262,
+  "fingerprint": "1645415ea5f1e82587ca2decaf398da5d3f60fc817234effa0332cb443bda692"
+}
