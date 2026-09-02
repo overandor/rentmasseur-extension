@@ -1,0 +1,13 @@
+{
+  "session_id": "e3121bd1c30c",
+  "action": "message_visitor",
+  "status": "fail",
+  "timestamp": "2026-09-02T11:49:15.967868+00:00",
+  "elapsed_s": 308.11,
+  "username": "Frostkier",
+  "reason": "no_message_field",
+  "page_url": "https://rentmasseur.com/mailbox/compose?to=Frostkier",
+  "page_title": "404 Not Found | RentMasseur.com",
+  "iframe_count": 1,
+  "receipt_hash": "9de18a9e4d946eb3"
+}
